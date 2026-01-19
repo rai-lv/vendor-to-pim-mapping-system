@@ -38,7 +38,7 @@ side_effects:
   overwrites_outputs: true
 
 logging_and_receipt:
-  writes_run_receipt: false
+  writes_run_receipt: TBD
   run_receipt_bucket: TBD
   run_receipt_key_pattern: TBD
   counters_observed:

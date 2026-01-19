@@ -1,1 +1,48 @@
+job_id: TBD
+glue_job_name: TBD
+runtime: python_shell                  # pyspark | python_shell | TBD
+entrypoint: glue_script.py
 
+parameters:
+  - JOB_NAME
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+
+inputs:
+  - bucket: ${INPUT_BUCKET}               # ${INPUT_BUCKET} only if INPUT_BUCKET is a real parameter in script
+    key_pattern: TBD
+    format: json               # json | ndjson | csv | xml | zip | other | TBD
+    required: TBD             # true | false | TBD
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}               # ${OUTPUT_BUCKET} only if OUTPUT_BUCKET is a real parameter in script
+    key_pattern: TBD
+    format: TBD
+    required: TBD
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: TBD
+    format: json
+    required: TBD
+
+config_files:
+  - repo_path: TBD
+    s3_bucket: ${INPUT_BUCKET}
+    s3_key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
+    required: TBD
+
+side_effects:
+  deletes_inputs: TBD         # true | false | TBD
+  overwrites_outputs: TBD     # true | false | TBD
+
+logging_and_receipt:
+  writes_run_receipt: true     # true | false | TBD
+  run_receipt_bucket: ${OUTPUT_BUCKET}
+  run_receipt_key_pattern: TBD
+  counters_observed:
+    - TBD
+
+notes:
+  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."

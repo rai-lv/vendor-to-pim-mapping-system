@@ -15,7 +15,7 @@ inputs:
   - bucket: ${INPUT_BUCKET}
     key_pattern: TBD
     format: json
-    required: false
+    required: TBD
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
@@ -35,7 +35,7 @@ config_files:
 
 side_effects:
   deletes_inputs: TBD
-  overwrites_outputs: true
+  overwrites_outputs: TBD
 
 logging_and_receipt:
   writes_run_receipt: TBD

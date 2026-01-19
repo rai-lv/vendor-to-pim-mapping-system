@@ -12,29 +12,34 @@ parameters:
   - prepared_output_prefix
 
 inputs:
-  - s3_key_pattern: s3://$INPUT_BUCKET/$prepared_input_key/canonicalCategoryMapping/$vendor_name_forMapping_products(.json|no_ext)
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products
     format: json
     required: false
 
 outputs:
-  - s3_key_pattern: s3://$OUTPUT_BUCKET/$prepared_output_prefix/$vendor_name_categoryMatchingProposals.json
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
     format: json
     required: true
-  - s3_key_pattern: s3://$OUTPUT_BUCKET/$prepared_output_prefix/$vendor_name_categoryMatchingProposals_oneVendor_to_onePim_match.json
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
     format: json
     required: true
 
 config_files:
   - repo_path: TBD
+    s3_bucket: TBD
     s3_key_pattern: TBD
     required: TBD
 
 side_effects:
-  deletes_inputs: false
+  deletes_inputs: TBD
   overwrites_outputs: true
 
 logging_and_receipt:
   writes_run_receipt: false
+  run_receipt_bucket: TBD
   run_receipt_key_pattern: TBD
   counters_observed:
     - TBD

@@ -1,1 +1,56 @@
+job_id: matching_proposals
+glue_job_name: TBD
+runtime: python_shell                  # pyspark | python_shell | TBD
+entrypoint: glue_script.py
 
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - bmecat_input_key
+  - bmecat_output_prefix
+  - JOB_RUN_ID
+
+inputs:
+  - bucket: ${INPUT_BUCKET}               # ${INPUT_BUCKET} only if INPUT_BUCKET is a real parameter in script
+    key_pattern: ${bmecat_input_key}
+    format: xml               # json | ndjson | csv | xml | zip | other | TBD
+    required: TBD             # true | false | TBD
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}               # ${OUTPUT_BUCKET} only if OUTPUT_BUCKET is a real parameter in script
+    key_pattern: TBD
+    format: ndjson
+    required: TBD
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: TBD
+    format: ndjson
+    required: TBD
+
+config_files:
+  - repo_path: TBD
+    s3_bucket: ${INPUT_BUCKET}
+    s3_key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
+    required: true
+
+side_effects:
+  deletes_inputs: TBD         # true | false | TBD
+  overwrites_outputs: TBD     # true | false | TBD
+
+logging_and_receipt:
+  writes_run_receipt: TBD     # true | false | TBD
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed:
+    - vendor_products
+    - product_features
+    - product_mimes
+    - product_relations
+    - product_category_links
+    - product_prices
+    - vendor_categories
+    - skipped_articles_no_id
+
+notes:
+  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."

@@ -1,0 +1,43 @@
+job_id: matching_proposals
+glue_job_name: TBD
+runtime: pyspark
+entrypoint: glue_script.py
+
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+
+inputs:
+  - s3_key_pattern: s3://$INPUT_BUCKET/$prepared_input_key/canonicalCategoryMapping/$vendor_name_forMapping_products(.json|no_ext)
+    format: json
+    required: false
+
+outputs:
+  - s3_key_pattern: s3://$OUTPUT_BUCKET/$prepared_output_prefix/$vendor_name_categoryMatchingProposals.json
+    format: json
+    required: true
+  - s3_key_pattern: s3://$OUTPUT_BUCKET/$prepared_output_prefix/$vendor_name_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: true
+
+config_files:
+  - repo_path: TBD
+    s3_key_pattern: TBD
+    required: TBD
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_key_pattern: TBD
+  counters_observed:
+    - TBD
+
+notes:
+  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."

@@ -1,8 +1,8 @@
-# Artifact Catalog Entry Specification (v1.0)
+# Artifacts Catalog Entry Specification (v1.1)
 
 ## 0) Scope
 
-An **Artifact Catalog** documents **persistent files** produced/consumed by the pipeline (typically S3 objects).
+An **Artifacts Catalog** documents **persistent files** produced/consumed by the pipeline (typically S3 objects).
 Each **entry** describes **one artifact type** (one filename pattern), not a single run instance.
 
 ## 1) Entry structure (MUST)
@@ -24,10 +24,10 @@ Each entry MUST contain all fields below (values may be `TBD` where allowed):
 
 1. **artifact_id:** (repeat the id; must match heading)
 2. **file_name_pattern:** (e.g., `${vendor_name}_categoryMatchingProposals.json` or `TBD`)
-3. **s3_location_pattern:** (bucket + prefix/key pattern; may be `TBD`)
+3. **s3_location_pattern:** (bucket + prefix/key pattern; may be `TBD`; may be a single string or a bullet list of strings)
 4. **format:** one of `json | ndjson | csv | xml | zip | other | TBD`
 5. **producer_job_id:** (job_id folder name, or `TBD`)
-6. **producer_glue_job_name:** (exact AWS Glue job name or `TBD`)
+6. **producer_glue_job_name:** (exact AWS Glue job name, or `${JOB_NAME}`, or `TBD`)
 7. **consumers:** list of job_ids or `TBD`
 8. **purpose:** 1–2 sentences (human meaning)
 9. **content_contract:** (see below)
@@ -59,7 +59,18 @@ This MUST be one of:
 
 ---
 
-## 2) Allowed use of `TBD` (MUST)
+## 2) Source priority (MUST)
+
+Populate artifact catalog entries using this priority order:
+
+1) Use `jobs/<job_id>/job_manifest.yaml` first (inputs/outputs, formats, required/optional, key patterns).
+2) Use business descriptions for `purpose` / business meaning when available.
+3) Use code only when the manifest does not expose something required by this spec (e.g., keying, empty behavior).
+4) Use `TBD` only if none of the above provide provable information.
+
+---
+
+## 3) Allowed use of `TBD` (MUST)
 
 A field MAY be `TBD` only if:
 
@@ -70,7 +81,7 @@ A field MAY be `TBD` only if:
 
 ---
 
-## 3) Verifiable compliance checklist (PASS/FAIL)
+## 4) Verifiable compliance checklist (PASS/FAIL)
 
 An artifact entry is compliant if and only if:
 
@@ -83,14 +94,15 @@ An artifact entry is compliant if and only if:
 
 ---
 
-## 4) Example entry skeleton (format reference)
+## 5) Example entry skeleton (format reference)
 
 ```md
 ## <artifact_id>
 
 - artifact_id: <artifact_id>
 - file_name_pattern: TBD
-- s3_location_pattern: TBD
+- s3_location_pattern:
+  - TBD
 - format: TBD
 - producer_job_id: TBD
 - producer_glue_job_name: TBD
@@ -106,4 +118,3 @@ An artifact entry is compliant if and only if:
   - notes: TBD
 - stability: TBD
 - breaking_change_rules: TBD
-```

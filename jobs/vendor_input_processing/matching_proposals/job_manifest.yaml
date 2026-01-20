@@ -22,10 +22,6 @@ outputs:
     key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
     format: json
     required: TBD
-  - bucket: ${OUTPUT_BUCKET}
-    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
-    format: json
-    required: TBD
 
 config_files:
   - repo_path: TBD
@@ -38,11 +34,11 @@ side_effects:
   overwrites_outputs: true
 
 logging_and_receipt:
-  writes_run_receipt: TBD
+  writes_run_receipt: false
   run_receipt_bucket: TBD
   run_receipt_key_pattern: TBD
   counters_observed:
     - TBD
 
 notes:
-  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."
+  - "Phase 1 reverse-documentation: derived only from TARGET_SCRIPT; unknowns are marked TBD."

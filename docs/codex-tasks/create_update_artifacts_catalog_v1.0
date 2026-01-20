@@ -1,0 +1,166 @@
+## Codex Task — Create/Update artifacts_catalog entries for one job (single TARGET_SCRIPT)
+
+**TARGET_SCRIPT (edit only this line when reusing the task):**
+`jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py`
+
+### Objective
+
+Create or update **artifact entries in `docs/artifacts_catalog.md`** that correspond to **all inputs + outputs** of the job that owns `TARGET_SCRIPT`, strictly following `docs/standards/artifacts_catalog_spec_v1.1.md`. 
+
+### Allowed changes (hard constraint)
+
+* You may **only** create/update:
+
+  * `docs/artifacts_catalog.md`
+* Do **not** modify any other files.
+
+### Derivations (must be automatic; do not ask the user)
+
+From `TARGET_SCRIPT`, derive:
+
+* `JOB_DIR` = directory containing `TARGET_SCRIPT`
+* `JOB_ID` = last folder name of `JOB_DIR`
+* `MANIFEST_PATH` = `${JOB_DIR}/job_manifest.yaml`
+* `ARTIFACTS_CATALOG_PATH` = `docs/artifacts_catalog.md`
+* `SPEC_PATH` = `docs/standards/artifacts_catalog_spec_v1.1.md`
+
+If `MANIFEST_PATH` does not exist → **fail the task** (no fallback guessing from code).
+
+### Source priority (must follow spec)
+
+Populate each artifact entry using:
+
+1. `MANIFEST_PATH` first (inputs/outputs, formats, required/optional, bucket + key patterns)
+2. Business descriptions for purpose/meaning **only if present in repo** (search under `docs/` for a matching preprocessIncomingBmecat business description; otherwise skip)
+3. Use code **only** for `content_contract` items that cannot be proven from manifest/business docs
+4. Use `TBD` only if truly not provable 
+
+### What to add/update in `docs/artifacts_catalog.md`
+
+For this job, add/update one entry **per artifact type** (one filename pattern), covering:
+
+**A) Every manifest input**
+
+* Raw vendor BMECAT XML input (from manifest input list)
+* Any S3 config JSON consumed by the job (from `config_files` section in manifest)
+
+**B) Every manifest output**
+
+* Each NDJSON/JSON output listed in manifest outputs
+
+### Artifact ID rules (automation-safe, deterministic)
+
+For every entry you create/update:
+
+* `artifact_id` must be unique and `snake_case` (per spec).
+* Build it deterministically as:
+
+`<job_id_snake_case>__<artifact_name_snake_case>`
+
+Where:
+
+* `job_id_snake_case` = snake_case version of `JOB_ID`
+* `artifact_name_snake_case` = derived from the **file_name_pattern**:
+
+  * strip `${vendor_name}_` prefix if present
+  * strip file extension
+  * convert to snake_case
+
+Examples (illustrative):
+
+* `preprocess_incoming_bmecat__vendor_products`
+* `preprocess_incoming_bmecat__product_features`
+
+### How to compute required fields (must be evidence-based)
+
+For each entry:
+
+* `file_name_pattern`:
+
+  * Prefer the trailing filename part from manifest `key_pattern`
+  * If `key_pattern` is only a parameter (e.g., `${bmecat_input_key}`) and no filename can be proven → `TBD`
+* `s3_location_pattern`:
+
+  * Always express as `s3://${bucket}/${key_pattern}` (use the manifest’s `bucket` + `key_pattern`)
+* `format`:
+
+  * From manifest `format`
+* `producer_job_id`:
+
+  * For outputs: `JOB_ID`
+  * For external inputs/configs: `TBD` (unless repo contains an upstream producing job you can prove consumes/produces it)
+* `producer_glue_job_name`:
+
+  * If manifest `glue_job_name` is not `TBD`, use it
+  * Else, if manifest parameters include `JOB_NAME`, set to `${JOB_NAME}`
+  * Else `TBD`
+* `required/optional`:
+
+  * **Not a field in the catalog spec**, but it affects `purpose/content_contract` language:
+
+    * mention “optional output” in purpose only if manifest says `required: false`
+
+### Consumers auto-fill (must be automated, no guessing)
+
+Populate `consumers` as follows:
+
+* Scan all other `jobs/**/job_manifest.yaml` files in the repo.
+* If any other job manifest contains an **input** whose `key_pattern` clearly matches this artifact’s `file_name_pattern` (or matches the full key pattern) → add that job’s `job_id` to `consumers`.
+* If no provable consumers found → `TBD` (do not invent).
+
+### content_contract rules (must stay “shape + meaning”, not schema)
+
+For each entry, fill:
+
+* `top_level_type`:
+
+  * `xml` → `scalar`
+  * `json` → decide `object|array|scalar` only if provable; else `TBD`
+  * `ndjson` → `scalar`
+* `primary_keying`:
+
+  * Only if provable (e.g., business description explicitly states “keyed by article_id”); otherwise `TBD`
+* `required_sections`:
+
+  * Use `- TBD` unless you can prove stable top-level “sections” (not individual fields)
+* `empty_behavior`:
+
+  * If job writes an empty object/array explicitly → use that
+  * If the job writes an empty file for NDJSON (0 lines) and no better option exists in spec → set `empty_array` **and** note “represented as 0-line NDJSON” in `content_contract.notes`
+  * If the job may skip writing the file → `absent_file`
+  * If not provable → `TBD`
+* `notes`: short, factual, no speculation
+
+### Stability + breaking change policy
+
+* `stability`: set to `evolving` unless repo contains an explicit stability declaration for this artifact; otherwise `TBD` is allowed.
+* `breaking_change_rules`: do **not** invent a policy. Use `TBD` unless a repo standard/ADR explicitly states one.
+
+### File creation / update rules
+
+* If `docs/artifacts_catalog.md` does not exist:
+
+  * Create it with:
+
+    * Title `# Artifacts Catalog`
+    * Short intro: “This file follows docs/standards/artifacts_catalog_spec_v1.1.md”
+    * Then add the entries.
+* If it exists:
+
+  * Update or insert entries for this job’s artifacts.
+  * If an entry already exists, update it in place rather than duplicating.
+
+### Quality gates (must be verifiable in PR)
+
+Before finishing:
+
+1. Confirm every entry follows the exact heading/field order required by the spec. 
+2. Confirm every manifest input/output/config file resulted in exactly one catalog entry (artifact type).
+3. Confirm `consumers` were derived by scanning other manifests (or set to `TBD` if none provable).
+4. Confirm no file outside `docs/artifacts_catalog.md` was changed. 
+
+### Deliverable
+
+A PR that updates `docs/artifacts_catalog.md` accordingly.
+
+---

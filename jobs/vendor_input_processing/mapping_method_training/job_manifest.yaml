@@ -1,6 +1,6 @@
-job_id: TBD
+job_id: mapping_method_training
 glue_job_name: TBD
-runtime: python_shell                  # pyspark | python_shell | TBD
+runtime: python_shell
 entrypoint: glue_script.py
 
 parameters:
@@ -12,37 +12,112 @@ parameters:
   - OUTPUT_BUCKET
 
 inputs:
-  - bucket: ${INPUT_BUCKET}               # ${INPUT_BUCKET} only if INPUT_BUCKET is a real parameter in script
-    key_pattern: TBD
-    format: json               # json | ndjson | csv | xml | zip | other | TBD
-    required: TBD             # true | false | TBD
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_*.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingSet.json
+    format: json
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
 
 outputs:
-  - bucket: ${OUTPUT_BUCKET}               # ${OUTPUT_BUCKET} only if OUTPUT_BUCKET is a real parameter in script
-    key_pattern: TBD
-    format: TBD
-    required: TBD
-  - bucket: ${INPUT_BUCKET}
-    key_pattern: TBD
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/run_receipts/run_receipt_${vendor_name}_<run_id>.json
     format: json
-    required: TBD
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/stable_training_deltas/stable_training_delta_${vendor_name}_<run_id>.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingSet.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Unigrams_v1.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Pairs_v1.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/rules_snapshot/rules_snapshot_${vendor_name}_<run_id>.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/product_rule_hits/product_rule_hits_${vendor_name}_<run_id>.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/product_rule_hits/product_multimapping_exceptions_${vendor_name}_<run_id>.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/vendor_category_product_rule_hits/vendor_category_product_rule_hits_${vendor_name}_<run_id>.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/rule_validation_status/rule_validation_status_${vendor_name}_<run_id>.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/vendor_category_mapping_status/vendor_category_mapping_status_${vendor_name}_<run_id>.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_<run_id_no_dashes>.json
+    format: json
+    required: true
 
 config_files:
   - repo_path: TBD
     s3_bucket: ${INPUT_BUCKET}
     s3_key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
-    required: TBD
+    required: true
 
 side_effects:
-  deletes_inputs: TBD         # true | false | TBD
-  overwrites_outputs: TBD     # true | false | TBD
+  deletes_inputs: false
+  overwrites_outputs: true
 
 logging_and_receipt:
-  writes_run_receipt: true     # true | false | TBD
+  writes_run_receipt: true
   run_receipt_bucket: ${OUTPUT_BUCKET}
-  run_receipt_key_pattern: TBD
+  run_receipt_key_pattern: ${prepared_output_prefix}/mappingMethodTraining/run_receipts/run_receipt_${vendor_name}_<run_id>.json
   counters_observed:
-    - TBD
+    - step2_full
+    - step2_1to1
+    - category_mapping_reference
+    - stable_training_set
+    - stable_training_delta
+    - stable_training_set_upsert
+    - stable_training_evidence_unigrams
+    - stable_training_evidence_pairs
+    - contains_any_exclude_any_rules
+    - rules_snapshot
+    - product_rule_hits
+    - vendor_category_product_rule_hits
+    - rule_validation_status_total_rules
+    - rule_validation_status_supported_rules
+    - rule_validation_status_violated_rules
+    - rule_validation_status_not_applicable_rules
+    - vendor_category_mapping_status
 
 notes:
-  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."
+  - "Phase 1 reverse-documentation: derived only from TARGET_SCRIPT; unknowns are marked TBD."
+  - "TBD_EXPLANATIONS: (auto-filled list below)"
+  - "glue_job_name: TBD — Glue job name is not referenced in the script beyond reading JOB_NAME."
+  - "config_files[0].repo_path: TBD — script does not reference a repository path for the denylist config."

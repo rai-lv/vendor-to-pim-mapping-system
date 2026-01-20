@@ -1,4 +1,4 @@
-# System Context — AI-Supported Data Automation Monorepo (Context Pack) — v1.1
+# System Context — AI-Supported Data Automation Monorepo (Context Pack) — v1.2
 
 ## Purpose of this document
 This document is the single, stable reference for:
@@ -39,19 +39,30 @@ A major use case currently managed in this repo is **vendor→PIM assortment map
 
 Manifests must be evidence-based (derived from the script). No guessing.
 
-### Business description truth (current reality vs intended artifact)
-There are two different concepts:
+### Business description truth
 
-1) **Business descriptions (current reality)**
-- Job business descriptions may exist as free text documents (for example in `docs/business_descriptions/`).
-- These are valid input material for planning and for creating structured docs, but they are not a strict standard artifact unless you enforce a spec for them.
+There are **two different standardized artifacts** that serve **different purposes**. They must not be treated as interchangeable.
 
-2) **Script cards (intended standardized artifact)**
-- A script card is a standardized job description that complies with `docs/standards/script_card_spec_v1.0.md` (or its successor).
-- Script cards are stored under `docs/script_cards/<job_id>.md`.
-- A script card is “authoritative for business intent” only when it exists and complies with the spec.
+1. **Business descriptions (business intent + business logic)**
 
-Definitions shared across jobs must live in `docs/glossary.md` (not duplicated per job card).
+* **What it is:** a business-level explanation of **why the job exists**, **what outcome it produces**, its **key business rules/controls**, and explicit **boundaries (non-goals)**.
+* **Spec:** `docs/standards/business_description_spec_v1.0.md`
+* **Location:** `docs/business_descriptions/<job_id>.md` (or `.txt` if you keep text format)
+* **Authoritative for:** business intent, business meaning of inputs/outputs (“what it represents”), boundaries, and stakeholder-relevant processing logic.
+* **Notes:** storage details (bucket/prefix patterns) are only mentioned if they change business meaning; otherwise they are out of scope by spec.
+
+2. **Script cards (operational + interface reference)**
+
+* **What it is:** a standardized **operational + interface** description of **one executable job**: parameters, I/O interface blocks, side effects, high-level steps, invariants, failure modes, operator checks.
+* **Spec:** `docs/standards/script_card_spec_v1.0.md`
+* **Location:** `docs/script_cards/<job_id>.md`
+* **Authoritative for:** externally observable job behavior and operator-facing contract (what it reads/writes, required/optional, side effects), **not** the deeper business “why”.
+* **Hard boundary:** script cards **must not** define global terms and **must not** include full output schemas; those belong elsewhere.
+
+Definitions shared across jobs must live in `docs/glossary.md` (not duplicated per job doc). Output structure (“what’s inside” as a schema) belongs in `docs/artifacts_catalog.md` and/or `schemas/`, not in script cards.
+
+**Authority rule:** A business description or script card is only “authoritative” for its scope **if it exists and complies with its spec**. Otherwise fall back to code + manifest truth.
+
 
 ### Standards truth
 Rules that control naming, manifest fields, script-card structure, and Codex-task structure live under:
@@ -85,7 +96,7 @@ Core docs:
 
 Job intent docs:
 - `docs/script_cards/<job_id>.md` — standardized script cards (only when present and spec-compliant).
-- `docs/business_descriptions/` — non-standard business descriptions, if you keep them.
+- `docs/business_descriptions/` — standardized business descriptions.
 
 Codex task assets:
 - `docs/codex-tasks/` — templates, checklists, and task prompt files used to drive PR creation:

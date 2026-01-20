@@ -21,6 +21,10 @@ inputs:
     format: json
     required: true
   - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_*.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
     key_pattern: canonical_mappings/stable_training_sets/StableTrainingSet.json
     format: json
     required: false
@@ -84,10 +88,6 @@ config_files:
     s3_bucket: ${INPUT_BUCKET}
     s3_key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
     required: true
-  - repo_path: TBD
-    s3_bucket: ${INPUT_BUCKET}
-    s3_key_pattern: canonical_mappings/Category_Mapping_Reference_*.json
-    required: true
 
 side_effects:
   deletes_inputs: false
@@ -121,4 +121,3 @@ notes:
   - "TBD_EXPLANATIONS: (auto-filled list below)"
   - "glue_job_name: TBD — Glue job name is not referenced in the script beyond reading JOB_NAME."
   - "config_files[0].repo_path: TBD — script does not reference a repository path for the denylist config."
-  - "config_files[1].repo_path: TBD — script does not reference a repository path for the category mapping reference."

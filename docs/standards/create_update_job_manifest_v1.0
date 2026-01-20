@@ -1,30 +1,25 @@
 TARGET_SCRIPT: jobs/vendor_input_processing/matching_proposals/glue_script.py
 
-TASK TYPE: Create/Update job_manifest.yaml (Phase 1 reverse-documentation)
+TASK TYPE: Generate/Refresh job_manifest.yaml (Usable, low-TBD, evidence-based)
 
-NOTE ON “TBD” (MUST OBEY)
-- TBD is ALLOWED (as we agreed) ONLY when a value is not directly provable from TARGET_SCRIPT.
-- If TARGET_SCRIPT contains explicit evidence for a field, you MUST NOT leave it as TBD.
+GOAL
+Create or update the manifest located next to TARGET_SCRIPT:
+- jobs/vendor_input_processing/matching_proposals/job_manifest.yaml
 
-CONTEXT (MUST OBEY)
-- Repository: vendor-to-pim-mapping-system
-- Phase: Phase 1 = document WHAT EXISTS (NO refactoring, NO behavior changes)
-- Sources of truth (ONLY):
-  1) TARGET_SCRIPT
-- Output file to create/update (ONLY this file):
-  - jobs/vendor_input_processing/matching_proposals/job_manifest.yaml
-- HARD CONSTRAINTS:
-  - DO NOT modify TARGET_SCRIPT
-  - DO NOT change any other file
-  - DO NOT guess. If not provable from TARGET_SCRIPT, write "TBD"
-  - Placeholders must use ${PARAM_NAME} where PARAM_NAME is an actual runtime parameter name in TARGET_SCRIPT.
+PHASE RULE
+Phase 1 documentation only: describe WHAT EXISTS. No refactoring. No behavior changes.
 
-OBJECTIVE
-Create or update jobs/vendor_input_processing/matching_proposals/job_manifest.yaml so that it truthfully documents the job interface as implemented in TARGET_SCRIPT.
-Populate all values that are explicitly provable; use TBD only where not provable.
+ALLOWED SOURCES (ONLY)
+1) TARGET_SCRIPT (including helper functions defined inside the same file)
 
-REQUIRED YAML FORMAT (keys + order MUST MATCH)
-job_id: TBD
+HARD CONSTRAINTS
+- Do NOT modify TARGET_SCRIPT.
+- Do NOT modify any other file.
+- Do NOT guess. If something cannot be proven from TARGET_SCRIPT, write "TBD".
+- BUT: If something IS provable from TARGET_SCRIPT, you MUST populate it (TBD is not allowed in that case).
+
+MANIFEST SCHEMA (MUST MATCH EXACTLY; keep this key order)
+job_id: <parent folder name of TARGET_SCRIPT>
 glue_job_name: TBD
 runtime: TBD
 entrypoint: glue_script.py
@@ -39,10 +34,6 @@ inputs:
     required: TBD
 
 outputs:
-  - bucket: TBD
-    key_pattern: TBD
-    format: TBD
-    required: TBD
   - bucket: TBD
     key_pattern: TBD
     format: TBD
@@ -66,61 +57,98 @@ logging_and_receipt:
     - TBD
 
 notes:
-  - "Phase 1 reverse-documentation: all entries derived only from TARGET_SCRIPT; unknowns are marked TBD."
+  - "Phase 1 reverse-documentation: derived only from TARGET_SCRIPT; unknowns are marked TBD."
+  - "TBD_EXPLANATIONS: (auto-filled list below)"
 
-DERIVATION RULES (STRICT)
-1) job_id:
-   - Set job_id to the name of the folder that contains TARGET_SCRIPT (the parent directory name).
-   - Example: if TARGET_SCRIPT is .../matching_proposals/glue_script.py => job_id = matching_proposals
+EXTRACTION REQUIREMENTS (THIS IS THE CORE)
+A) Identify runtime parameters
+- Extract the full, exact parameter list from the script’s argument parsing (e.g., getResolvedOptions(...) or argparse).
+- Populate parameters with the exact names and casing, in the same order as in the code.
+- If no explicit parameter parsing exists, leave parameters as TBD (and explain why in TBD_EXPLANATIONS).
 
-2) runtime:
-   - Set runtime = pyspark ONLY if TARGET_SCRIPT initializes GlueContext/SparkContext/SparkSession or uses pyspark DataFrames.
-   - Else set runtime = python_shell if it is plain Python without Spark/GlueContext.
-   - Else TBD.
+B) Determine runtime (must not be TBD if decidable)
+- If the script instantiates/uses SparkContext/SparkSession/GlueContext OR reads/writes via spark.* then runtime=pyspark.
+- If it is plain Python without Spark/GlueContext usage then runtime=python_shell.
+- Otherwise runtime=TBD and explain.
 
-3) parameters:
-   - Populate from getResolvedOptions(...) argument list OR argparse OR explicit env var reads.
-   - Preserve exact casing/order as in the script.
+C) Enumerate ALL outputs (must not miss any)
+You MUST enumerate every output that the script can write to S3 on a successful run, including outputs written through helper functions defined in the same file.
 
-4) inputs/outputs:
-   - Identify S3 buckets and keys from string construction in TARGET_SCRIPT.
-   - If the script uses INPUT_BUCKET/OUTPUT_BUCKET params, set bucket to ${INPUT_BUCKET} / ${OUTPUT_BUCKET}.
-   - key_pattern must be a parameterized pattern using ${...} where possible, but ONLY if it is explicitly constructed by the script.
-   - format:
-     - If script writes Spark DataFrame using .write.json(...) and copies a part file as-is => format = ndjson
-     - If script writes a single JSON object via json.dumps(...) => format = json
-     - Otherwise TBD.
-   - required:
-     - true only if the script hard-fails when missing.
-     - false only if the script explicitly handles absence gracefully (e.g., writes empty output and exits).
-     - otherwise TBD.
+Output discovery rule:
+- Treat as an "output write" any call (direct or via helper) that results in:
+  - boto3 S3 put_object/copy_object/upload_file, OR
+  - Spark write/save to an s3://... path, OR
+  - any helper function that wraps one of the above.
 
-5) side_effects booleans (IMPORTANT):
-   - overwrites_outputs:
-     - true if the script writes to deterministic final keys/prefixes (no run_id/timestamp in the final output key) or explicitly says overwrite/copies to same key.
-     - false if script writes unique run-scoped outputs and does not overwrite previous keys.
-     - otherwise TBD.
-   - deletes_inputs:
-     - true only if the script deletes the declared input objects/prefixes.
-     - false if the script never deletes inputs (deleting temporary OUTPUT prefixes does NOT count as deleting inputs).
-     - otherwise TBD.
+For each distinct final artifact the script writes:
+- Add an outputs[] entry with:
+  - bucket: ${OUTPUT_BUCKET} or ${INPUT_BUCKET} if the bucket is derived from those params; otherwise a literal if hardcoded; otherwise TBD.
+  - key_pattern: a parameterized pattern representing the final key (use ${param} placeholders only for params that actually exist in parameters list).
+  - format: set only if the script explicitly makes it unambiguous; else TBD.
+  - required: must be decided from control flow (see section E).
 
-6) config_files:
-   - Fill only if TARGET_SCRIPT reads a config file from S3 (bucket + key). Otherwise keep as TBD (do not invent).
+IMPORTANT:
+- If the script writes 2 different final keys, outputs[] MUST contain 2 entries. Do not collapse.
 
-7) logging_and_receipt:
-   - writes_run_receipt true only if the script writes a run receipt artifact; otherwise false if explicitly absent; else TBD.
-   - counters_observed: list only if script emits named counters; else TBD.
+D) Enumerate inputs
+Identify the primary input artifact(s) the job consumes.
+- If the script constructs or searches S3 keys/prefixes, capture the best representable key_pattern.
+- bucket must use ${INPUT_BUCKET} when derived from that param.
+- format: set only if the script explicitly constrains it; else TBD.
+- required: must be decided from control flow (see section E).
 
-QUALITY GATE (MUST)
-Before finalizing, perform a self-check:
-- No field remains TBD if TARGET_SCRIPT provides explicit evidence.
-- No field is filled with a value that cannot be pointed to in TARGET_SCRIPT.
+E) Decide required=true/false (must not be TBD if decidable)
+For each input and output, determine requiredness from explicit behavior:
+
+Inputs:
+- required=true if the script explicitly raises/exits with error when input is missing.
+- required=false if the script explicitly handles missing input (e.g., writes empty output / logs and returns success).
+- required=TBD only if neither behavior is provable.
+
+Outputs:
+- required=true if the script writes this output on ALL successful exit paths (including early-success exits that write empty {} / empty array).
+- required=false if there exists any successful path where the job completes without writing this output.
+- required=TBD only if you cannot prove either from code.
+
+F) Decide side_effects booleans (must not be TBD if decidable)
+- deletes_inputs:
+  - true only if the script deletes objects in the input bucket/prefix.
+  - false if all delete operations target output/temp areas only, and no deletes target inputs.
+  - TBD only if deletion target cannot be determined.
+- overwrites_outputs:
+  - true if the script writes/copies to a deterministic final key (same key reused across runs) OR explicitly overwrites.
+  - false if final output keys are always unique per run AND no overwrite is performed.
+  - TBD only if not provable.
+
+G) Decide writes_run_receipt (must not be TBD)
+- If the script writes a dedicated receipt-like artifact (explicit key/variable/filename indicating receipt), set true and fill run_receipt_* if determinable.
+- If there is no receipt-writing behavior in the script, set writes_run_receipt=false and set run_receipt_bucket/key_pattern to TBD.
+
+H) config_files.required must not be TBD if decidable
+- If the script reads a config file from S3, set config_files[0].required=true and populate bucket/key_pattern if determinable.
+- If the script does not read any config file, set config_files[0].required=false (leave other config fields TBD).
+
+TBD_EXPLANATIONS REQUIREMENT (MAKE TBDs USABLE)
+At the bottom of notes, append a bullet list where each item is:
+- "<field_path>: TBD — <why not provable from TARGET_SCRIPT>"
+
+Example field_path formats:
+- "glue_job_name"
+- "inputs[0].format"
+- "logging_and_receipt.counters_observed"
+
+QUALITY GATES (MUST)
+1) outputs[] must include every distinct final output key written by the job (including via helpers).
+2) required fields must not be TBD when code makes them decidable.
+3) writes_run_receipt must be true or false (never TBD).
+4) side_effects booleans must not be TBD when code makes them decidable.
+5) The manifest must remain fully within Phase 1 scope.
 
 PR REQUIREMENTS
 - Create a PR that changes ONLY:
-  - jobs/vendor_input_processing/matching_proposals/job_manifest.yaml
-- PR description MUST include an “Evidence Map” section:
-  - For every non-TBD field: point to the concrete cue in TARGET_SCRIPT (function/variable names, parameter names, and the constructed key names; no long code blocks).
-  - For every remaining TBD: state “TBD (not provable from TARGET_SCRIPT)”.
-  - Confirm TARGET_SCRIPT unchanged.
+  jobs/vendor_input_processing/matching_proposals/job_manifest.yaml
+
+- PR description MUST include an "Evidence Map":
+  For each non-TBD manifest field, list:
+    field_path -> evidence pointer (function name / variable / literal key fragment / control-flow statement)
+  For each TBD, confirm it appears in TBD_EXPLANATIONS.

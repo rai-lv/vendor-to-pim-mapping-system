@@ -117,7 +117,7 @@ Optional operational doc (only if you decide it is needed and define a spec for 
 ---
 
 ## Working approach (planning & execution)
-This is the expected operating loop.
+This is the expected operating loop. It enforces **two planning layers** before any code change is turned into a Codex task.
 
 ### Step 1 — Define objective (human)
 Objective must include:
@@ -125,16 +125,30 @@ Objective must include:
 - explicit out-of-scope boundaries,
 - success criteria that can be tested.
 
-### Step 2 — Plan (ChatGPT-assisted, evidence-based)
-Planning output must be explicit:
-- required changes (jobs impacted, new jobs, new artifacts, new configs),
-- dependencies and ordering,
-- risks and unknowns called out explicitly.
+### Step 2a — Overarching plan (pipeline-level, ChatGPT-assisted)
+Create or update the end-to-end pipeline plan for the objective:
+- list the capabilities/steps in the intended processing sequence (first → last),
+- identify decision points and fallback paths (e.g., “if mapping not possible, then …”),
+- define the conceptual artifacts exchanged between steps (names + meaning, not S3 paths),
+- state which existing jobs already cover which steps (if any),
+- explicitly mark unknowns and open decisions (no assumptions).
 
-### Step 3 — Decompose into development elements (ChatGPT-assisted)
-Each element must be small enough for one Codex PR and must specify:
+This step must be agreed before planning any single capability in depth.
+
+### Step 2b — Capability plan (step-level, ChatGPT-assisted)
+Select one capability/step from the pipeline plan and specify it precisely:
+- inputs/outputs (meaning, not storage),
+- rules/logic and constraints,
+- acceptance criteria (testable),
+- boundaries (what this capability explicitly does NOT do),
+- dependencies on upstream artifacts and downstream consumers.
+
+Only after this step is agreed, the capability may be decomposed into implementable elements.
+
+### Step 3 — Decompose the capability into development elements (ChatGPT-assisted)
+Break the capability into elements small enough for one Codex PR each. Each element must specify:
 - target repo paths,
-- allowed changes (file list),
+- allowed changes (explicit file list),
 - acceptance criteria.
 
 ### Step 4 — Codex task creation (ChatGPT-assisted)
@@ -161,6 +175,7 @@ You manually update the script version in AWS Glue.
 
 ### Step 8 — Documentation update (Codex task or human)
 When required, documentation artifacts are created/updated via Codex tasks constrained by specs.
+
 
 ---
 

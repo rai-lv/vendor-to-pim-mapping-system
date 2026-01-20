@@ -31,7 +31,7 @@ inputs:
   - bucket: ${OUTPUT_BUCKET}
     key_pattern: ${prepared_output_prefix}/${vendor_name}_forMapping_products
     format: ndjson
-    required: TBD
+    required: true
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
@@ -120,5 +120,4 @@ notes:
   - "Phase 1 reverse-documentation: derived only from TARGET_SCRIPT; unknowns are marked TBD."
   - "TBD_EXPLANATIONS: (auto-filled list below)"
   - "glue_job_name: TBD — Glue job name is not referenced in the script beyond reading JOB_NAME."
-  - "inputs[4].required: TBD — script reads the forMapping products object but has no explicit missing-input handling to prove requiredness."
   - "config_files[0].repo_path: TBD — script does not reference a repository path for the denylist config."

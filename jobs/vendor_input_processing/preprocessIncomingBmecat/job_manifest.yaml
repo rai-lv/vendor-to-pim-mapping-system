@@ -1,6 +1,6 @@
-job_id: matching_proposals
+job_id: preprocessIncomingBmecat
 glue_job_name: TBD
-runtime: python_shell                  # pyspark | python_shell | TBD
+runtime: python_shell
 entrypoint: glue_script.py
 
 parameters:
@@ -10,23 +10,42 @@ parameters:
   - vendor_name
   - bmecat_input_key
   - bmecat_output_prefix
-  - JOB_RUN_ID
 
 inputs:
-  - bucket: ${INPUT_BUCKET}               # ${INPUT_BUCKET} only if INPUT_BUCKET is a real parameter in script
+  - bucket: ${INPUT_BUCKET}
     key_pattern: ${bmecat_input_key}
-    format: xml               # json | ndjson | csv | xml | zip | other | TBD
-    required: TBD             # true | false | TBD
+    format: xml
+    required: true
 
 outputs:
-  - bucket: ${OUTPUT_BUCKET}               # ${OUTPUT_BUCKET} only if OUTPUT_BUCKET is a real parameter in script
-    key_pattern: TBD
-    format: ndjson
-    required: TBD
   - bucket: ${OUTPUT_BUCKET}
-    key_pattern: TBD
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_products.json
     format: ndjson
-    required: TBD
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_features.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_mimes.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_relations.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_prices.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_categories.json
+    format: ndjson
+    required: false
 
 config_files:
   - repo_path: TBD
@@ -35,11 +54,11 @@ config_files:
     required: true
 
 side_effects:
-  deletes_inputs: TBD         # true | false | TBD
-  overwrites_outputs: TBD     # true | false | TBD
+  deletes_inputs: false
+  overwrites_outputs: true
 
 logging_and_receipt:
-  writes_run_receipt: TBD     # true | false | TBD
+  writes_run_receipt: false
   run_receipt_bucket: TBD
   run_receipt_key_pattern: TBD
   counters_observed:
@@ -53,4 +72,9 @@ logging_and_receipt:
     - skipped_articles_no_id
 
 notes:
-  - "Phase 1 reverse-documentation: all entries derived only from glue_script.py; unknowns are marked TBD."
+  - "Phase 1 reverse-documentation: derived only from TARGET_SCRIPT; unknowns are marked TBD."
+  - "TBD_EXPLANATIONS: (auto-filled list below)"
+  - "glue_job_name: TBD — no Glue job name is declared in TARGET_SCRIPT."
+  - "config_files[0].repo_path: TBD — TARGET_SCRIPT does not reference a repo path for the config file."
+  - "logging_and_receipt.run_receipt_bucket: TBD — TARGET_SCRIPT does not write a run receipt to S3."
+  - "logging_and_receipt.run_receipt_key_pattern: TBD — TARGET_SCRIPT does not write a run receipt to S3."

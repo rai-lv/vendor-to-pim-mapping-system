@@ -13,9 +13,9 @@ parameters:
 
 inputs:
   - bucket: ${INPUT_BUCKET}
-    key_pattern: TBD
-    format: json
-    required: TBD
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products*
+    format: TBD
+    required: false
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
@@ -34,8 +34,8 @@ config_files:
     required: TBD
 
 side_effects:
-  deletes_inputs: TBD
-  overwrites_outputs: TBD
+  deletes_inputs: false
+  overwrites_outputs: true
 
 logging_and_receipt:
   writes_run_receipt: TBD

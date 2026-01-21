@@ -61,6 +61,45 @@ Step B: Normalize the base token to an artifact type name:
 
 The resulting `artifact_id` MUST be stable across runs and deterministic given the same repo state.
 
+#### 1.0.2 file_name_pattern definition and sourcing (MUST) ####
+
+#### 1.0.2.1 Definition (MUST)
+`file_name_pattern` is the **terminal filename pattern** of the artifact type: the last segment of the object key
+(after the final `/`).
+
+It is a pattern (may contain placeholders) that represents the artifact type across runs.
+It MUST NOT be a concrete run instance filename.
+
+#### 1.0.2.2 Source priority (MUST)
+Populate `file_name_pattern` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse its `file_name_pattern` unless a change is proven.
+2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`):
+   - If the relevant `key_pattern` ends with a filename segment, set `file_name_pattern` to that terminal segment.
+3) **Manifest placeholder fallback**:
+   - If the manifest `key_pattern` is a single parameter placeholder representing a full key (e.g., `${bmecat_input_key}`)
+     and no filename segment can be extracted, set `file_name_pattern` to that placeholder token (e.g., `${bmecat_input_key}`).
+4) **Code (last resort)**:
+   - Only if the manifest does not contain a usable terminal segment or placeholder, and the code constructs a stable filename
+     pattern explicitly (e.g., via literal string templates). Otherwise do not guess.
+
+If none of the above yields a stable token, set `file_name_pattern: TBD`.
+
+#### 1.0.2.3 Run-context tokens (timestamps/run IDs) (MUST)
+If filenames include run-context such as timestamps or run IDs, `file_name_pattern` MUST express them as placeholders,
+not concrete values.
+
+Accepted placeholder tokens include (examples):
+- `${timestamp}`, `${run_id}`, `${vendor_timestamp}`, `${date}`, `${datetime}`
+
+Rules:
+- Manifests MUST represent run-context in `key_pattern` using placeholders (not literal timestamps).
+- `file_name_pattern` MUST preserve those placeholders.
+- Concrete filenames containing literal timestamps MUST NOT be copied into `file_name_pattern`.
+
+If a manifest provides only a concrete timestamped filename and no placeholder can be proven,
+set `file_name_pattern: TBD` and record the reason in `content_contract.notes`.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

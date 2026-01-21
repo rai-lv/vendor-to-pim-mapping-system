@@ -129,6 +129,36 @@ This specification is scoped to **file artifacts stored in S3**, because job man
 Non-S3 artifacts (e.g., database tables, API endpoints, message topics) are out of scope for this catalog and require a separate
 catalog/spec if introduced in the system.
 
+#### 1.0.4 format definition and sourcing (MUST) ####
+
+#### 1.0.4.1 Definition (MUST)
+`format` specifies the **serialization format of the artifact file as stored** (what a consumer must parse).
+It does not describe schema or business meaning.
+
+Allowed values:
+`json | ndjson | csv | xml | zip | other | TBD`
+
+Rules:
+- If `format = other`, `content_contract.notes` MUST name the actual format in plain text.
+- `TBD` is allowed only if the format cannot be proven from in-repo evidence.
+
+#### 1.0.4.2 Source priority (MUST)
+Populate `format` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse `format` unless a change is proven.
+2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`): use the `format` value from the relevant `inputs[]`, `outputs[]`, or `config_files[]` item.
+3) **File extension inference** (controlled fallback):
+   - If the manifest `format` is missing or `TBD`, infer from `file_name_pattern` if it ends with a known extension:
+     - `.json` → `json`
+     - `.ndjson` → `ndjson`
+     - `.csv` → `csv`
+     - `.xml` → `xml`
+     - `.zip` → `zip`
+4) **Code (last resort)**:
+   - Only if the manifest and filename pattern do not prove the format, and the code proves the read/write format via explicit logic
+     (e.g., line-by-line JSON writing for NDJSON, `json.dumps` for JSON document). Otherwise do not guess.
+
+If none of the above yields a provable value, set `format: TBD`.
 
 ### 1.1 Entry header (MUST)
 

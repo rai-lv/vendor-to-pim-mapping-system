@@ -13,7 +13,8 @@ vendor-to-pim-mapping-system/
 	<job2_business_description>.md
     context_packs/
       vendor_to_pim_mapping.md     # 1-page truth: scope + links to docs + guardrails
-      github_element_map	
+      github_element_map
+	  system_context.md
     script_cards/
       <job1>.md                    # one per job: factual I/O + side effects + invariants
       <job2>.md

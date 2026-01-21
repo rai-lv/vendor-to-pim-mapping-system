@@ -15,6 +15,50 @@ This specification defines the **minimum necessary fields** to:
 
 Each artifact entry MUST be a standalone markdown block with the following headings and keys **in exactly this order**.
 
+### 1.0 artifact_id definition and derivation (MUST)
+
+#### 1.0.1 Definition (MUST)
+`artifact_id` is the stable canonical identifier for an **artifact type**.
+
+An artifact type represents the same kind of persistent file across runs (same semantic payload + role),
+not a specific run instance.
+
+Therefore, `artifact_id` MUST NOT encode run context such as:
+- timestamps
+- vendor values (e.g., actual vendor names)
+- run_id / execution ids
+
+`artifact_id` MUST be usable as a stable reference key across documentation and Codex tasks.
+
+#### 1.0.2 Source-of-truth rule (MUST)
+If an entry already exists in `docs/artifacts_catalog.md`, its `artifact_id` is the source of truth and MUST be reused.
+Codex MUST NOT rename existing `artifact_id`s.
+
+#### 1.0.3 Deterministic derivation rule for new entries (MUST)
+If no entry exists yet, `artifact_id` MUST be assigned deterministically using only in-repo evidence.
+
+Canonical construction:
+`<producer_job_id_snake_case>__<artifact_type_snake_case>`
+
+Where:
+- `<producer_job_id_snake_case>` is the job folder name of the producing job (for outputs), normalized to snake_case.
+  - If the artifact is not produced by an in-repo job (external input/config), use the **consumer job_id** (the job that uses it).
+- `<artifact_type_snake_case>` is derived from the manifest `key_pattern` as follows:
+
+Step A: Determine the base token:
+1) If the manifest `key_pattern` ends with a filename segment (contains a terminal segment with an extension), use that filename.
+2) Else if `key_pattern` is a single parameter placeholder like `${bmecat_input_key}`, use the parameter name (e.g., `bmecat_input_key`).
+3) Else use the terminal path segment of `key_pattern`.
+
+Step B: Normalize the base token to an artifact type name:
+- Remove common run-context placeholders/prefixes from the start of the base token, at minimum:
+  - `${vendor_name}_`
+  - `${vendor}_`
+- Remove the file extension (`.json`, `.ndjson`, `.xml`, etc.).
+- Convert the result to `snake_case`.
+
+The resulting `artifact_id` MUST be stable across runs and deterministic given the same repo state.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

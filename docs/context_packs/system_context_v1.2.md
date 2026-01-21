@@ -100,7 +100,7 @@ Job intent docs:
 
 Codex task assets:
 - `docs/codex-tasks/` — templates, checklists, and task prompt files used to drive PR creation:
-  - `task_template_v1.md`
+  - `task_template.md`
   - `pr_review_checklist.md`
   - task prompts such as `create-update-job-manifest_v1.3.txt` (or newer)
 

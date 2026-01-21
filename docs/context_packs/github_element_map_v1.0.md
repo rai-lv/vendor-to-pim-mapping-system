@@ -21,8 +21,8 @@ vendor-to-pim-mapping-system/
       <job3>.md
     standards/
 	artifact_catalog_spec_v1.0.md
-	business_description_spec_v1.0
-	pipeline_inventory_spec_v1.0
+	business_description_spec_v1.0.md
+	pipeline_inventory_spec_v1.0.md
 	script_card_spec_v1.0.md
     codex-tasks/
       context_header_template.md   # paste block for every Codex task

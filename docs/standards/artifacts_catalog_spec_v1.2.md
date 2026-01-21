@@ -100,6 +100,36 @@ Rules:
 If a manifest provides only a concrete timestamped filename and no placeholder can be proven,
 set `file_name_pattern: TBD` and record the reason in `content_contract.notes`.
 
+#### 1.0.3 s3_location_pattern definition and sourcing (MUST) ####
+
+#### 1.0.3.1 Definition (MUST)
+`s3_location_pattern` is the canonical **S3 URI pattern** that locates the artifact type in storage.
+
+It MUST represent a stable pattern (may contain placeholders) and MUST NOT be a single run instance path with concrete
+run-context values (timestamps, vendor values), unless those are expressed as placeholders.
+
+A single artifact type MAY have multiple S3 location patterns; in that case `s3_location_pattern` MUST be a bullet list.
+
+#### 1.0.3.2 Source priority (MUST)
+Populate `s3_location_pattern` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse its `s3_location_pattern` unless a change is proven.
+2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`):
+   - For each relevant manifest item (`inputs[]`, `outputs[]`, `config_files[]`), construct:
+     `s3://${bucket}/${key_pattern}`
+   - If both `bucket` and `key_pattern` are present, `s3_location_pattern` MUST NOT be `TBD`.
+3) **Code (last resort)**:
+   - Only if the manifest does not provide `bucket` and/or `key_pattern`, and the code proves a stable S3 key pattern
+     via explicit string templates. Otherwise do not guess.
+
+If none of the above yields a provable stable S3 pattern, set `s3_location_pattern: TBD`.
+
+#### 1.0.3.3 Scope note (MUST)
+This specification is scoped to **file artifacts stored in S3**, because job manifests express storage as `bucket` + `key_pattern`.
+Non-S3 artifacts (e.g., database tables, API endpoints, message topics) are out of scope for this catalog and require a separate
+catalog/spec if introduced in the system.
+
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

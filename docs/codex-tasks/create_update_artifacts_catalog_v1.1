@@ -1,0 +1,235 @@
+## Codex Task — Create/Update `docs/artifacts_catalog.md` entries for one job (v1.1)
+
+**TARGET_SCRIPT (edit only this line when reusing the task):**
+`jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py`
+
+### Objective
+
+Create or update **artifact entries in `docs/artifacts_catalog.md`** that correspond to **all inputs + outputs + config_files** of the job that owns `TARGET_SCRIPT`, strictly following:
+
+* `docs/standards/artifacts_catalog_spec_v1.1.md`
+
+### Allowed changes (hard constraint)
+
+You may **only** create/update:
+
+* `docs/artifacts_catalog.md`
+
+Do **not** modify any other files.
+
+### Derivations (must be automatic; do not ask the user)
+
+From `TARGET_SCRIPT`, derive:
+
+* `JOB_DIR` = directory containing `TARGET_SCRIPT`
+* `JOB_ID` = last folder name of `JOB_DIR`
+* `MANIFEST_PATH` = `${JOB_DIR}/job_manifest.yaml`
+* `ARTIFACTS_CATALOG_PATH` = `docs/artifacts_catalog.md`
+* `SPEC_PATH` = `docs/standards/artifacts_catalog_spec_v1.1.md`
+
+If `MANIFEST_PATH` does not exist → **fail the task** (no fallback guessing from code).
+
+---
+
+## Source priority (must follow spec)
+
+Populate each artifact entry using this priority:
+
+1. Use `MANIFEST_PATH` first (inputs/outputs/config_files, formats, required, bucket + key_pattern).
+2. Use business descriptions for `purpose` / business meaning **only if present in repo** under `docs/business_descriptions/` and clearly matching `JOB_ID`.
+3. Use code only for `content_contract` items that cannot be proven from (1) or (2).
+4. Use `TBD` only if truly not provable.
+
+No invented facts.
+
+---
+
+## What must be represented in the catalog
+
+For the current job (`JOB_ID`), create/update one artifacts catalog entry per artifact type, covering:
+
+A) **Every `inputs[]` item** in the manifest
+B) **Every `outputs[]` item** in the manifest
+C) **Every `config_files[]` item** in the manifest
+
+**Rule:** If multiple manifest entries refer to the same artifact type (same file pattern), represent it once in the catalog (do not duplicate).
+
+---
+
+## Artifact ID rules (deterministic; no “__tbd”)
+
+Each catalog entry MUST have a stable `artifact_id` in snake_case.
+
+Construct `artifact_id` deterministically as:
+
+`<job_id_snake_case>__<artifact_key_snake_case>`
+
+Where:
+
+* `job_id_snake_case` = snake_case of `JOB_ID`
+* `artifact_key_snake_case` is derived in this order:
+
+1. If the manifest entry’s `key_pattern` ends with a filename (contains a final `/` segment with `.` extension), use that filename without extension.
+2. Else if the manifest entry’s `key_pattern` is a pure parameter placeholder (e.g., `${bmecat_input_key}`), use the **parameter name** (e.g., `bmecat_input_key`).
+3. Else use the last path segment of `key_pattern` (without slashes), normalized to snake_case.
+
+**Forbidden:** using `tbd` in `artifact_id`.
+
+---
+
+## Producer/consumer lineage rules (automation-safe)
+
+### Producers
+
+* For **outputs** produced by this job:
+
+  * `producer_job_id: <JOB_ID>`
+  * `producer_glue_job_name:`
+
+    * use manifest `glue_job_name` if not `TBD`, else if manifest includes parameter `JOB_NAME`, set `${JOB_NAME}`, else `TBD`.
+
+* For **inputs** and **config_files** consumed by this job:
+
+  * `producer_job_id: TBD`
+  * `producer_glue_job_name: TBD`
+    (Do not attribute production of inputs to the current job.)
+
+### Consumers
+
+* For **inputs** and **config_files**: `consumers` MUST include the current job (`JOB_ID`) because it consumes them.
+* For **outputs**:
+
+  * determine additional consumers by scanning all other `jobs/**/job_manifest.yaml` files.
+  * Add a job as a consumer ONLY if a downstream manifest contains an input whose `bucket` + `key_pattern` matches this artifact’s location/pattern (see matching rules below).
+  * If no provable downstream consumers exist: `consumers: - TBD` (do not guess).
+
+#### Matching rules for discovering downstream consumers
+
+An output artifact matches a downstream input if any of these conditions is met:
+
+1. Exact match of `bucket` and `key_pattern` (after normalizing whitespace).
+2. Filename match:
+
+   * Downstream `key_pattern` ends with the same filename pattern as this artifact’s `file_name_pattern`
+3. Prefix+filename match:
+
+   * The downstream `key_pattern` contains this artifact’s filename pattern as its last segment and shares a common prefix root.
+
+If matching is ambiguous (multiple plausible artifacts), do not add consumers → leave `TBD`.
+
+---
+
+## Entry field population rules (per spec)
+
+For every created/updated entry, populate fields per `artifacts_catalog_spec_v1.1.md`:
+
+### Required fields
+
+* `artifact_id`: as defined above
+
+* `file_name_pattern`:
+
+  * If `key_pattern` ends in a filename → use that filename pattern (may include placeholders).
+  * If `key_pattern` is a parameter placeholder like `${bmecat_input_key}` → set `file_name_pattern: ${bmecat_input_key}` (not `TBD`).
+  * Otherwise set `TBD` only if no stable name can be proven.
+
+* `s3_location_pattern`:
+
+  * Must be `s3://${bucket}/${key_pattern}`
+  * If multiple locations apply (rare for one manifest item), use a bullet list as allowed by the spec.
+
+* `format`: from manifest (`json|ndjson|xml|...|TBD`)
+
+* `producer_job_id` / `producer_glue_job_name`: per lineage rules above
+
+* `consumers`:
+
+  * For inputs/config_files: include `JOB_ID` at minimum
+  * For outputs: derived by scanning manifests; otherwise `TBD`
+
+* `purpose`:
+
+  * Use business description if present and clearly refers to the artifact.
+  * Else derive a minimal, non-speculative sentence from the manifest and naming (e.g., “Normalized vendor products extracted from BMECAT.”)
+  * Do not invent business meaning.
+
+* `content_contract` (shape + meaning only):
+
+  * `top_level_type`:
+
+    * `format=xml` → `scalar`
+    * `format=ndjson` → `scalar`
+    * `format=json`:
+
+      * set to `object|array|scalar` only if provable from code or business description; else `TBD`
+  * `primary_keying`:
+
+    * only if provable from business description or code (explicit keying); else `TBD`
+  * `required_sections`:
+
+    * only list high-level sections if provable from code/business description.
+    * For config JSON: if code enforces required top-level blocks, list them (high level).
+    * Otherwise `- TBD`
+  * `empty_behavior`:
+
+    * if code writes `{}` → `empty_object`
+    * if code writes `[]` → `empty_array`
+    * if code can legitimately skip writing the file on a successful path → `absent_file`
+    * if not provable → `TBD`
+    * For NDJSON: if “0 records” results in 0-line output and this is provable, set `empty_array` and note “represented as 0-line NDJSON” in notes.
+  * `notes`: factual, short
+
+* `stability`:
+
+  * Do not default to `evolving`.
+  * Use `stable|evolving|experimental` only if provable from repo docs/standards; else `TBD`.
+
+* `breaking_change_rules`:
+
+  * Do not invent policy. Use `TBD` unless a repo standard/ADR explicitly states one.
+
+---
+
+## File creation / update rules
+
+* If `docs/artifacts_catalog.md` does not exist:
+
+  * Create it with:
+
+    * title `# Artifacts Catalog`
+    * one-line note “Follows docs/standards/artifacts_catalog_spec_v1.1.md”
+    * then the entries.
+
+* If it exists:
+
+  * Update existing entries in place where `artifact_id` matches.
+  * Insert missing entries for this job.
+  * Do not delete unrelated entries.
+
+---
+
+## Quality gates (must be satisfied)
+
+Before finishing, confirm in PR description:
+
+1. **Coverage:** Every manifest `inputs[]`, `outputs[]`, and `config_files[]` item is represented by exactly one catalog entry (or merged correctly if same artifact type).
+2. **No unstable IDs:** No `artifact_id` contains `tbd`.
+3. **Lineage correctness:** No input/config entry uses `${JOB_NAME}` as producer; outputs may.
+4. **Consumers evidence-based:** Outputs only list consumers proven by scanning other manifests; otherwise `TBD`. Inputs/configs list `JOB_ID` as consumer.
+5. **Spec compliance:** Each entry follows the exact field order required by the spec.
+6. **Scope:** Only `docs/artifacts_catalog.md` changed.
+
+---
+
+## Deliverable
+
+Create a PR that updates only `docs/artifacts_catalog.md` per the above rules.
+PR description must include:
+
+* `TARGET_SCRIPT`, `JOB_ID`, `MANIFEST_PATH`
+* a bullet list of created/updated `artifact_id`s
+* a short note explaining any remaining `TBD`s and why they are not provable from repo evidence
+
+```
+::contentReference[oaicite:1]{index=1}
+```

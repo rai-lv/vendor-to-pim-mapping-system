@@ -1,4 +1,4 @@
-# Job Inventory Specification (v1.2)
+# Job Inventory Specification (v1.3)
 
 ## 0) Purpose and scope
 
@@ -25,7 +25,7 @@ This specification defines:
 
 For each job row:
 
-1. **Interface fields** (parameters, inputs, outputs, side effects, runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
+1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters, if present in manifest), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
 2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
 3. **Business purpose text** MAY come from a business description document if present; otherwise `TBD`.
    - If a business description exists, it MUST be taken from `docs/business_job_descriptions/<job_id>.md`.
@@ -49,7 +49,7 @@ Match outcome:
 - If exactly one match is found, use that entry’s `artifact_id`.
 - If zero or multiple matches are found, write `TBD` in the corresponding position and add an open verification item tagged `[TBD-artifact-catalog]`.
 
-No additional heuristics are allowed in v1.2 (to keep automation deterministic).
+No additional heuristics are allowed in v1.3 (to keep automation deterministic).
 
 ---
 
@@ -82,10 +82,11 @@ Under `## Jobs`, there MUST be **one single markdown table** with exactly these 
 9. `inputs`
 10. `outputs`
 11. `side_effects`
-12. `upstream_job_ids`
-13. `downstream_job_ids`
-14. `status`
-15. `last_reviewed`
+12. `evidence_artifacts`
+13. `upstream_job_ids`
+14. `downstream_job_ids`
+15. `status`
+16. `last_reviewed`
 
 ### Column value rules (MUST)
 
@@ -118,6 +119,14 @@ Interface lists:
 
 Side effects:
 - `side_effects`: compact string `deletes_inputs=<v>; overwrites_outputs=<v>` where `<v>` is `true|false|TBD`
+
+Evidence artifacts:
+- `evidence_artifacts`: compact string `run_receipt=<v>; counters=<v>`
+  - `run_receipt` value `<v>` is `true|false|TBD`
+  - `counters` value `<v>` is:
+    - comma-separated counter names (no values), OR
+    - `NONE` (only if the manifest explicitly indicates there are no counters), OR
+    - `TBD` (if not determinable from the manifest)
 
 Dependencies:
 - `upstream_job_ids`: comma-separated job_ids or `TBD`
@@ -157,6 +166,7 @@ Each bullet MUST start with one of these tags:
 - `[TBD-inputs]`
 - `[TBD-outputs]`
 - `[TBD-side-effects]`
+- `[TBD-evidence]`
 - `[TBD-wiring]`
 - `[TBD-artifact-catalog]`
 
@@ -184,6 +194,7 @@ The inventory file is compliant if:
 - every job_id is unique and snake_case
 - `executor`, `runtime`, `status` values are from allowed enums
 - `side_effects` follows the required `deletes_inputs=...; overwrites_outputs=...` format
+- `evidence_artifacts` follows the required `run_receipt=...; counters=...` format
 - dependency bullets follow the exact `A -> B : artifact` format
 - open items bullets start with one of the allowed tags
 - `inputs` and `outputs` are semicolon-separated lists aligned to manifest counts, or `NONE` if the manifest count is zero

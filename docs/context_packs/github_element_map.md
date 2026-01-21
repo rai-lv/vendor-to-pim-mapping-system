@@ -1,3 +1,5 @@
+github_element_map_v1.0.md
+
 vendor-to-pim-mapping-system/
   README.md
   CHANGELOG.md

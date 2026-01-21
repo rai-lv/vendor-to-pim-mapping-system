@@ -160,6 +160,47 @@ Populate `format` using this priority:
 
 If none of the above yields a provable value, set `format: TBD`.
 
+#### 1.0.5 producer_job_id definition and sourcing (MUST) ####
+
+#### 1.0.5.1 Definition (MUST)
+`producer_job_id` is the **repository job identifier** (job folder name) of the job that produces the artifact type.
+
+A job is considered a producer if it **writes** the artifact as part of normal execution, including:
+- create new
+- overwrite/replace
+- append (content changes)
+- update-in-place via write-then-replace
+
+`producer_job_id` is a repo-internal identifier used for documentation linking and automation.
+It is not an AWS Glue console job name.
+
+#### 1.0.5.2 Source priority (MUST)
+Populate `producer_job_id` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse `producer_job_id` unless a change is proven.
+2) **Job manifest** (`jobs/<job_group>/<job_id>/job_manifest.yaml`):
+   - If the artifact corresponds to an item in `outputs[]` of that manifest, then `producer_job_id` MUST be `<job_id>`.
+3) **Code (last resort)**:
+   - Only if no manifest exists or outputs are not declared, and the code proves the job writes the artifact via stable patterns.
+   - Otherwise do not guess.
+
+If the artifact is not produced by any in-repo job (e.g., vendor-provided inputs, manually maintained external files),
+set `producer_job_id: TBD`.
+
+#### 1.0.5.3 Single-writer rule and shared-artifact exception (MUST)
+By default, an artifact type MUST have exactly one producing job in this monorepo (single-writer rule).
+
+If multiple in-repo jobs write the same artifact type, this is a specification violation unless the artifact is explicitly
+declared as a shared artifact in:
+`docs/registries/shared_artifacts_allowlist.yaml`.
+
+For allowlisted shared artifacts:
+- the artifacts catalog entry MUST keep a single `producer_job_id` as the canonical producer (the primary owner), and
+- MAY additionally include `additional_writer_job_ids` as an optional field.
+
+If multiple writers are detected and the artifact is not allowlisted, automated updates MUST fail with an instruction to
+create/update the shared-artifact allowlist and add an ADR under `docs/decisions/`.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

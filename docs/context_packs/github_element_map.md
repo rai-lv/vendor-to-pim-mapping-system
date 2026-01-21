@@ -26,7 +26,9 @@ vendor-to-pim-mapping-system/
 		pipeline_inventory_spec_v1.0.md
 		script_card_spec_v1.0.md
     	naming-standard.md             # current naming conventions (as-is)
-    codex-tasks/
+    registries/
+		shared_artifacts_allowlist.yaml
+	codex-tasks/
       context_header_template.md   # paste block for every Codex task
       task_template.md             # one task = one PR template
       pr_review_checklist.md       # operator-friendly PR checklist

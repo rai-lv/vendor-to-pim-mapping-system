@@ -19,11 +19,11 @@ vendor-to-pim-mapping-system/
       <job2>.md
       <job3>.md
     standards/
-	artifact_catalog_spec_v1.0.md
-	business_description_spec_v1.0.md
-	pipeline_inventory_spec_v1.0.md
-	script_card_spec_v1.0.md
-    naming-standard.md             # current naming conventions (as-is)
+		artifact_catalog_spec_v1.0.md
+		business_description_spec_v1.0.md
+		pipeline_inventory_spec_v1.0.md
+		script_card_spec_v1.0.md
+    	naming-standard.md             # current naming conventions (as-is)
     codex-tasks/
       context_header_template.md   # paste block for every Codex task
       task_template.md             # one task = one PR template

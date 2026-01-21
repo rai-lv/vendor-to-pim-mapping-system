@@ -105,7 +105,7 @@ Codex task assets:
   - task prompts such as `create-update-job-manifest_v1.3.txt` (or newer)
 
 Cross-job overview docs (kept consistent with manifests and script cards where available):
-- `docs/pipeline_inventory.md`
+- `docs/job_inventory.md`
 - `docs/artifacts_catalog.md`
 
 Optional operational doc (only if you decide it is needed and define a spec for it):

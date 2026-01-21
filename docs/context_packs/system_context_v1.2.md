@@ -27,10 +27,10 @@ A major use case currently managed in this repo is **vendor→PIM assortment map
 
 ## Truth sources and “what to trust”
 ### Code truth
-- `jobs/<job_id>/glue_script.py` is the source of truth for runtime behavior.
+- `jobs/<job_group>/<job_id>/glue_script.py` is the source of truth for runtime behavior.
 
 ### Interface truth (automation-relevant)
-- `jobs/<job_id>/job_manifest.yaml` is the source of truth for:
+- `jobs/<job_group>/<job_id>/job_manifest.yaml` is the source of truth for:
   - parameters,
   - S3 inputs (required/optional),
   - S3 outputs (required/optional),
@@ -47,7 +47,7 @@ There are **two different standardized artifacts** that serve **different purpos
 
 * **What it is:** a business-level explanation of **why the job exists**, **what outcome it produces**, its **key business rules/controls**, and explicit **boundaries (non-goals)**.
 * **Spec:** `docs/standards/business_description_spec_v1.0.md`
-* **Location:** `docs/business_descriptions/<job_id>.md` (or `.txt` if you keep text format)
+* **Location:** `docs/business_job_descriptions/<job_id>.md` (or `.txt` if you keep text format)
 * **Authoritative for:** business intent, business meaning of inputs/outputs (“what it represents”), boundaries, and stakeholder-relevant processing logic.
 * **Notes:** storage details (bucket/prefix patterns) are only mentioned if they change business meaning; otherwise they are out of scope by spec.
 
@@ -78,7 +78,7 @@ If a Codex task, a manifest, or a script card conflicts with a standard, the sta
 - `CHANGELOG.md`: high-level changes (optional).
 
 ### Jobs
-`jobs/<job_id>/` contains everything directly tied to one job.
+`jobs/<job_group>/<job_id>/` contains everything directly tied to one job.
 
 Required files per job:
 - `glue_script.py` — deployed Glue code.
@@ -96,7 +96,7 @@ Core docs:
 
 Job intent docs:
 - `docs/script_cards/<job_id>.md` — standardized script cards (only when present and spec-compliant).
-- `docs/business_descriptions/` — standardized business descriptions.
+- `docs/business_job_descriptions/` — standardized business descriptions.
 
 Codex task assets:
 - `docs/codex-tasks/` — templates, checklists, and task prompt files used to drive PR creation:

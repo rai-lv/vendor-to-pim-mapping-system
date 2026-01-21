@@ -5,7 +5,7 @@ vendor-to-pim-mapping-system/
   CHANGELOG.md
 
   docs/
-    pipeline_inventory.md          # factual index of jobs (what exists)
+    job_inventory.md          # factual index of jobs (what exists)
     artifacts_catalog.md           # factual catalog of produced files (what exists)
     execution_map.md               # factual Make → Glue wiring (if known)
     glossary.md                    # canonical term definitions (as used today)

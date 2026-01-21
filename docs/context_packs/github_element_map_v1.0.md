@@ -7,7 +7,6 @@ vendor-to-pim-mapping-system/
     artifacts_catalog.md           # factual catalog of produced files (what exists)
     execution_map.md               # factual Make → Glue wiring (if known)
     glossary.md                    # canonical term definitions (as used today)
-    naming-standard.md             # current naming conventions (as-is)
     business_job_descriptions/
 	<job1_business_description>.md
 	<job2_business_description>.md
@@ -24,6 +23,7 @@ vendor-to-pim-mapping-system/
 	business_description_spec_v1.0.md
 	pipeline_inventory_spec_v1.0.md
 	script_card_spec_v1.0.md
+    naming-standard.md             # current naming conventions (as-is)
     codex-tasks/
       context_header_template.md   # paste block for every Codex task
       task_template.md             # one task = one PR template

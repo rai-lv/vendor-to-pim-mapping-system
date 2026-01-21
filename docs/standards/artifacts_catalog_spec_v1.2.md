@@ -15,9 +15,11 @@ This specification defines the **minimum necessary fields** to:
 
 Each artifact entry MUST be a standalone markdown block with the following headings and keys **in exactly this order**.
 
-### 1.0 artifact_id definition and derivation (MUST)
+### Definitions and derivations ###
 
-#### 1.0.1 Definition (MUST)
+#### 1.0.1 artifact_id definition and derivation (MUST) ####
+
+#### 1.0.1.1 Definition (MUST)
 `artifact_id` is the stable canonical identifier for an **artifact type**.
 
 An artifact type represents the same kind of persistent file across runs (same semantic payload + role),
@@ -30,11 +32,11 @@ Therefore, `artifact_id` MUST NOT encode run context such as:
 
 `artifact_id` MUST be usable as a stable reference key across documentation and Codex tasks.
 
-#### 1.0.2 Source-of-truth rule (MUST)
+#### 1.0.1.2 Source-of-truth rule (MUST)
 If an entry already exists in `docs/artifacts_catalog.md`, its `artifact_id` is the source of truth and MUST be reused.
 Codex MUST NOT rename existing `artifact_id`s.
 
-#### 1.0.3 Deterministic derivation rule for new entries (MUST)
+#### 1.0.1.3 Deterministic derivation rule for new entries (MUST)
 If no entry exists yet, `artifact_id` MUST be assigned deterministically using only in-repo evidence.
 
 Canonical construction:

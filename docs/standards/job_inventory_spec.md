@@ -41,6 +41,7 @@ If `job_manifest.yaml` is missing for such a folder, the job row MUST still exis
 For each job row:
 
 1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
+Clarification: config_files[] from the manifest are not represented as separate interface columns in docs/job_inventory.md in v1.4. The inventory indexes only inputs[] and outputs[]. (Artifact consumers may still be derived from config_files[] in the artifacts catalog.)
 2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
 3. **Business purpose text** MAY come from a business description document if present; otherwise `TBD`.
    - If a business description exists, it MUST be taken from `docs/business_job_descriptions/<job_id>.md`.

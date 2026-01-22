@@ -1,5 +1,7 @@
 # Artifacts Catalog Entry Specification (v1.3.5)
 
+# Artifacts Catalog
+
 ## 0) Scope
 
 An **Artifacts Catalog** documents **persistent artifacts** (typically S3 objects) produced/consumed by jobs.

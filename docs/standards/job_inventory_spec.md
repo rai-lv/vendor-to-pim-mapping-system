@@ -89,9 +89,13 @@ Manifest `job_id` consistency check (MUST):
 ### Business purpose extraction rule (deterministic, MAY)
 
 If `docs/business_job_descriptions/<job_id>.md` exists:
-- set `business_purpose` to the first sentence of the first paragraph under the heading that starts with `## 1)`.
+- set `business_purpose` by extracting the value from the first line in section `## 1)` that starts with:
+  - `Business purpose (one sentence):`
+- The extracted value is the substring after the colon (`:`), trimmed of surrounding whitespace.
+- If the line exists but the value is empty after trimming, set `business_purpose=TBD` and add `[TBD-biz-purpose]`.
 
-If the document does not contain such a heading, set `business_purpose=TBD`.
+If the document does not contain such a line under the `## 1)` section, set `business_purpose=TBD` and add `[TBD-biz-purpose]`.
+
 
 ### Artifact linking rule (MUST)
 
@@ -275,6 +279,7 @@ Each bullet MUST start with one of these tags:
 - `[TBD-evidence]`
 - `[TBD-wiring]`
 - `[TBD-artifact-catalog]`
+- `[TBD-biz-purpose]`
 
 Example:
 - `[TBD-wiring] Confirm Make scenario that triggers job_id=matching_proposals.`

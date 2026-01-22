@@ -1,0 +1,337 @@
+# Job Manifest Specification (v1.0)
+
+## 0) Purpose and scope
+
+`jobs/<job_group>/<job_id>/job_manifest.yaml` is the **machine-readable interface contract** for one job.
+
+This spec defines:
+- where the manifest lives and how it is named
+- the required schema (keys, types, enums)
+- deterministic rules for unknowns (`TBD`) and evidence notes
+- stability rules so automations can extract data reliably (e.g., for `docs/job_inventory.md`)
+
+Out of scope:
+- business meaning and rationale (belongs to `docs/business_job_descriptions/<job_id>.*`)
+- code-level implementation details (belongs to `glue_script.py` and script cards)
+
+---
+
+## 1) Definition and alignment within this system
+
+### 1.1 What a job manifest represents
+
+A job manifest is the **source of truth for automation-relevant interface facts** about a job:
+- parameters
+- S3 inputs (required/optional)
+- S3 outputs (required/optional)
+- side effects (delete/overwrite)
+- run receipt behavior and counters (if present)
+
+Manifests MUST be **evidence-based** (derived from the script and/or declared deployment configuration). No guessing.
+
+### 1.2 Primary consumer alignment
+
+The manifest schema is aligned to `docs/standards/job_inventory_spec.md` in that `job_inventory` automation expects these manifest keys to exist and be stable:
+- `glue_job_name`
+- `runtime`
+- `parameters`
+- `inputs[]`
+- `outputs[]`
+- `side_effects.*`
+- `logging_and_receipt.*`
+
+---
+
+## 2) Location and naming convention
+
+### 2.1 Required location per job folder
+
+For each job folder:
+- `jobs/<job_group>/<job_id>/glue_script.py`
+- `jobs/<job_group>/<job_id>/job_manifest.yaml`
+
+### 2.2 `job_id` consistency rule
+
+- The canonical `job_id` for repo indexing is the folder name: `jobs/<job_group>/<job_id>/`.
+- The manifest MUST contain a top-level `job_id` key whose value matches the folder `<job_id>` exactly.
+
+If the manifest `job_id` is not equal to the folder `<job_id>`, this is a spec violation and should be handled as a verification item by inventory/QA processes.
+
+---
+
+## 3) Design principles
+
+1. **Deterministic extraction:** automations must not interpret prose or infer behavior.
+2. **Stable patterns:** use placeholders for run-specific values; do not hardcode concrete timestamps/vendor identifiers in patterns.
+3. **Uniform field names:** all S3 locations use the same pair of fields: `bucket` + `key_pattern`.
+4. **Explain unknowns:** if anything is `TBD`, the reason must be documented in `notes`.
+
+---
+
+## 4) Schema overview
+
+Top-level keys and whether they are required:
+
+| Key | Required | Type | Purpose |
+|---|---:|---|---|
+| `job_id` | yes | string | Identifier for this job (must match folder `<job_id>`) |
+| `glue_job_name` | yes (Glue scope) | string or `TBD` | Deployed Glue job name (deployment identity) |
+| `runtime` | yes | enum | Execution runtime type |
+| `entrypoint` | recommended | string | Entry file name inside job folder (commonly `glue_script.py`) |
+| `parameters` | yes | list(string) or `TBD` | Parameter names only (no values) |
+| `inputs` | yes | list(input_item) or `TBD` | Declared required/optional input artifacts |
+| `outputs` | yes | list(output_item) or `TBD` | Declared required/optional output artifacts |
+| `config_files` | optional | list(config_item) | Static config artifacts used by job |
+| `side_effects` | yes | object | Delete/overwrite behaviors |
+| `logging_and_receipt` | yes | object | Run receipt behavior and observed counters |
+| `notes` | required if any `TBD` exists | list(string) | Evidence notes and `TBD` explanations |
+
+---
+
+## 5) Normative definitions (MUST)
+
+### 5.1 Allowed unknown marker
+
+- `TBD` is the only allowed unknown marker for scalar fields.
+- For lists:
+  - `[]` means **provably empty**.
+  - Missing key means **schema violation** (unless explicitly marked as optional in this spec).
+  - If list content is unknown, the entire key value MUST be `TBD` (not a partially guessed list).
+
+### 5.2 `runtime` enum
+
+`runtime` MUST be one of:
+- `pyspark`
+- `python_shell`
+- `python`
+- `nodejs`
+- `other`
+- `TBD`
+
+### 5.3 `parameters`
+
+`parameters` MUST be:
+- a list of strings (parameter names only), OR
+- `TBD`
+
+Rules:
+- If the job is proven to have no parameters: `parameters: []`
+- Parameter values MUST NOT appear in the manifest.
+
+### 5.4 `inputs[]` and `outputs[]`
+
+`inputs` and `outputs` MUST be:
+- a list of items in the schemas below, OR
+- `TBD`
+
+Ordering rule:
+- List order MUST be stable and meaningful (do not reorder between updates unless the interface truly changed).
+- Automations (e.g., job inventory) preserve this order.
+
+#### 5.4.1 `input_item` schema
+
+Each `inputs[]` item MUST be an object with:
+
+| Field | Required | Type | Meaning |
+|---|---:|---|---|
+| `bucket` | yes | string or `TBD` | Bucket name or placeholder (without `s3://`) |
+| `key_pattern` | yes | string or `TBD` | Key or prefix pattern (no `s3://`) |
+| `format` | yes | enum | Data format |
+| `required` | yes | `true`/`false`/`TBD` | Whether absence causes job failure |
+
+`format` enum for inputs/outputs MUST be one of:
+- `json`
+- `ndjson`
+- `csv`
+- `xml`
+- `zip`
+- `other`
+- `TBD`
+
+#### 5.4.2 `output_item` schema
+
+Same as `input_item`:
+- `bucket`, `key_pattern`, `format`, `required`
+
+### 5.5 `config_files[]` (optional)
+
+Purpose:
+- Declare static configs the job reads (often referenced by scripts and stored in S3).
+- This block is optional because some repositories track configs only in S3 without mirroring.
+
+Each `config_files[]` item MUST be an object with:
+
+| Field | Required | Type | Meaning |
+|---|---:|---|---|
+| `bucket` | yes | string or `TBD` | Bucket name or placeholder |
+| `key_pattern` | yes | string or `TBD` | Key/pattern to the config artifact |
+| `format` | recommended | enum | `json|yaml|other|TBD` |
+| `required` | yes | `true`/`false`/`TBD` | Whether job fails without it |
+| `repo_path` | optional | string or `TBD` | Path to optional repo-mirrored config (if maintained) |
+
+Allowed `format` enum for `config_files[]`:
+- `json`
+- `yaml`
+- `other`
+- `TBD`
+
+#### 5.5.1 Deprecation rule (uniform S3 fields)
+
+To keep parsing uniform:
+- New manifests MUST use `bucket` + `key_pattern` everywhere.
+- Legacy keys `s3_bucket` / `s3_key_pattern` MUST NOT be used in new manifests.
+- If legacy keys exist in older manifests, a migration should replace them with `bucket` / `key_pattern`.
+
+### 5.6 `side_effects`
+
+`side_effects` MUST be an object with:
+
+| Field | Required | Type | Meaning |
+|---|---:|---|---|
+| `deletes_inputs` | yes | `true`/`false`/`TBD` | Job deletes input objects after processing |
+| `overwrites_outputs` | yes | `true`/`false`/`TBD` | Job overwrites existing outputs |
+
+### 5.7 `logging_and_receipt`
+
+`logging_and_receipt` MUST be an object with:
+
+| Field | Required | Type | Meaning |
+|---|---:|---|---|
+| `writes_run_receipt` | yes | `true`/`false`/`TBD` | Whether a run receipt/status artifact is written |
+| `run_receipt_bucket` | yes | string or `TBD` | Bucket/pattern for run receipt (if written) |
+| `run_receipt_key_pattern` | yes | string or `TBD` | Key pattern for run receipt (if written) |
+| `counters_observed` | yes | list(string) or `TBD` | Names of counters emitted/recorded |
+
+Rules:
+- If `writes_run_receipt` is `false`, `run_receipt_bucket` and `run_receipt_key_pattern` MAY be `TBD` but must be explained in `notes`.
+- If `writes_run_receipt` is `true`, both `run_receipt_bucket` and `run_receipt_key_pattern` MUST be concrete (not `TBD`).
+
+### 5.8 `notes`
+
+`notes` is REQUIRED if any `TBD` appears anywhere in the manifest.
+
+Minimum requirement if present:
+- Provide at least one explicit explanation line for each `TBD` field.
+- Explanations must state why the value is unknown and what evidence source was checked.
+
+Recommended pattern:
+- Include a single line marker like `TBD_EXPLANATIONS:` and then list each field explanation.
+
+---
+
+## 6) Placeholder and pattern rules (MUST)
+
+### 6.1 Allowed placeholder style
+
+Canonical placeholder style is `${NAME}`.
+
+Rules:
+- Placeholder names are case-sensitive.
+- Placeholders MUST NOT contain spaces.
+- Bucket placeholders are allowed (e.g., `${INPUT_BUCKET}`).
+- Key placeholders are allowed (e.g., `${vendor_name}`, `${timestamp}`).
+
+### 6.2 Stability requirement
+
+- `bucket` and `key_pattern` MUST be stable patterns.
+- Concrete run-specific values (e.g., a specific timestamp string) MUST NOT be embedded directly.
+- If a stable pattern cannot be stated, the field must be `TBD` with an explanation in `notes`.
+
+### 6.3 No `s3://` prefixes
+
+- `bucket` MUST NOT include `s3://`.
+- `key_pattern` MUST NOT include `s3://`.
+
+---
+
+## 7) Sourcing rules (MUST; to keep manifests evidence-based)
+
+For each field, the manifest should reflect the best available evidence:
+
+- `runtime`: derived from the script/job type (e.g., Glue Python Shell vs Spark).
+- `parameters`: derived from script argument parsing and/or job configuration.
+- `inputs/outputs`: derived from actual S3 reads/writes performed (including config-driven patterns if stable).
+- `side_effects`: derived from script behavior (explicit delete/overwrite) and/or job design conventions if explicitly implemented.
+- `logging_and_receipt`: derived from actual run receipt writing; counters derived from logged/emitted metrics.
+
+If the script does not provide evidence for a field, set it to `TBD` and explain in `notes`.
+
+---
+
+## 8) Alignment rules with other documents (informational)
+
+- `docs/job_inventory.md` is compiled from manifests and artifact catalog links; it must not invent interface facts.
+- Business descriptions remain the place for intent/context; manifests remain the place for interface facts.
+
+---
+
+## 9) Compliance checklist (PASS/FAIL)
+
+A manifest is compliant if:
+
+**Structure**
+- file exists at `jobs/<job_group>/<job_id>/job_manifest.yaml`
+- `job_id` exists and matches folder `<job_id>`
+- required top-level keys exist: `job_id`, `glue_job_name`, `runtime`, `parameters`, `inputs`, `outputs`, `side_effects`, `logging_and_receipt`
+
+**Types and enums**
+- `runtime` is one of the allowed values (or `TBD`)
+- `parameters` is a list of strings (or `TBD`)
+- `inputs/outputs` are lists of objects with required fields (or `TBD`)
+- `required` flags are `true|false|TBD`
+- `format` values follow the allowed enums (or `TBD`)
+
+**Uniform S3 fields**
+- all S3 references use `bucket` + `key_pattern`
+- legacy `s3_bucket/s3_key_pattern` are not used in new manifests
+
+**TBD discipline**
+- if any `TBD` appears anywhere, `notes` exists and contains explicit explanations for each TBD field
+
+---
+
+## 10) Minimal template
+
+```yaml
+job_id: <folder_job_id>
+glue_job_name: <glue_job_name_or_TBD>
+runtime: <pyspark|python_shell|python|nodejs|other|TBD>
+entrypoint: glue_script.py
+
+parameters:
+  - <PARAM_NAME>
+  - <PARAM_NAME>
+
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${some_input_key}
+    format: xml
+    required: true
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${output_prefix}${vendor_name}_something.ndjson
+    format: ndjson
+    required: true
+
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/..._${vendor_name}.json
+    format: json
+    required: true
+    repo_path: TBD
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: TBD
+
+logging_and_receipt:
+  writes_run_receipt: TBD
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+
+notes:
+  - "TBD_EXPLANATIONS:"
+  - "glue_job_name: TBD — <reason>."
+  - "side_effects.overwrites_outputs: TBD — <reason>."

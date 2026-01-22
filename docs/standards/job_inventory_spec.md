@@ -32,7 +32,7 @@ Canonical `job_id` rule (MUST):
 - The canonical `job_id` used in `docs/job_inventory.md` MUST be the folder name `<job_id>` from `jobs/<job_group>/<job_id>/`.
 - The canonical `job_id` MUST be snake_case.
 - If the folder `<job_id>` is not snake_case, the inventory MUST still use the folder name as-is and MUST add an open verification item:
-  - `[TBD-job-id-format] Folder job_id is not snake_case: jobs/<job_group>/<job_id>/`.
+  - `[TBD-job-id-format] Folder job_id is not snake_case: jobs/<job_group>/<job_id>/.`
 
 If `job_manifest.yaml` is missing for such a folder, the job row MUST still exist, but all manifest-derived fields MUST be `TBD` and an open verification item `[TBD-manifest]` MUST be added.
 
@@ -51,6 +51,10 @@ For each job row:
 ### 1.3 Manifest field mapping (MUST)
 
 To avoid guessing, the following inventory fields MUST be sourced from these `job_manifest.yaml` keys:
+
+Scalar `TBD` handling (MUST):
+- If a manifest key is present but its value is the scalar string `TBD`, treat it as unknown exactly as if the key were missing.
+- Apply the same behavior defined for the missing-key case (including setting the derived inventory field to `TBD` and adding the corresponding open verification item tag if the missing-key case defines one).
 
 Manifest `job_id` consistency check (MUST):
 - If the manifest contains a top-level key `job_id` and its value differs from the canonical folder-based `job_id`,
@@ -320,4 +324,3 @@ The inventory file is compliant if:
 - dependency bullets follow the exact `A -> B : artifact` format
 - open items bullets start with one of the allowed tags
 - `inputs` and `outputs` are semicolon-separated lists aligned to manifest counts, or `NONE` if the manifest count is zero
-- FAIL if any discovered job (glue_script.py present) is missing job_manifest.yaml (i.e., [TBD-manifest] exists).

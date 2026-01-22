@@ -264,9 +264,8 @@ def parse_artifact_entry(lines):
     keys = []
     values = {}
     for line in lines:
-        stripped = line.strip()
-        if stripped.startswith("- "):
-            key_part = stripped[2:]
+        if line.startswith("- "):
+            key_part = line[2:]
             if ":" in key_part:
                 key, value = key_part.split(":", 1)
                 key = key.strip()
@@ -280,6 +279,15 @@ def parse_artifact_entry(lines):
 def validate_artifacts_catalog(path: Path, allowlist):
     violations = []
     lines = path.read_text(encoding="utf-8").splitlines()
+    if "# Artifacts Catalog" not in lines:
+        violations.append(
+            Violation(
+                "artifacts_catalog",
+                path,
+                "missing_title",
+                "Artifacts catalog must include the '# Artifacts Catalog' title.",
+            )
+        )
     heading_indices = [index for index, line in enumerate(lines) if line.startswith("## ")]
     for idx, start in enumerate(heading_indices):
         end = heading_indices[idx + 1] if idx + 1 < len(heading_indices) else len(lines)

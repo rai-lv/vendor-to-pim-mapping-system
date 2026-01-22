@@ -201,6 +201,49 @@ For allowlisted shared artifacts:
 If multiple writers are detected and the artifact is not allowlisted, automated updates MUST fail with an instruction to
 create/update the shared-artifact allowlist and add an ADR under `docs/decisions/`.
 
+#### 1.0.6 consumers definition and sourcing (MUST) ####
+
+#### 1.0.6.1 Definition (MUST)
+`consumers` is the list of repository job identifiers (job folder names) of jobs that **consume** the artifact type.
+
+A job is a consumer if it reads/uses the artifact as part of normal execution via any of the following manifest sections:
+- `inputs[]`
+- `config_files[]`
+
+`consumers` lists only in-repo jobs (monorepo scope). External systems are out of scope.
+
+#### 1.0.6.2 Source priority (MUST)
+Populate `consumers` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse `consumers` unless changes are proven.
+2) **Derivation from other job manifests** (`jobs/**/job_manifest.yaml`):
+   - A job is a consumer if any item in its `inputs[]` or `config_files[]` matches this artifact type using the matching rules below.
+3) **Code (last resort)**:
+   - Only if the manifest does not declare the input, and code proves a stable S3 read pattern for this artifact type. Otherwise do not guess.
+
+If consumers cannot be proven without ambiguity, set:
+- `consumers: TBD`
+
+#### 1.0.6.3 Matching rules (MUST)
+Consumer derivation MUST follow these rules, in order:
+
+Rule A (preferred): **terminal filename match**
+- Compare the terminal segment of the candidate job manifest `key_pattern` with this entry’s `file_name_pattern`.
+- If they match exactly (including placeholders), the candidate job is a consumer.
+
+Rule B (stronger match for ambiguous filenames): **full S3 pattern match**
+- Construct `s3://${bucket}/${key_pattern}` for the candidate manifest item.
+- If it matches exactly one of the entry’s `s3_location_pattern` strings, the candidate job is a consumer.
+
+If multiple artifact entries could match the same manifest item using Rule A (ambiguous),
+Rule B MUST be attempted. If ambiguity remains, the consumer MUST NOT be added.
+
+#### 1.0.6.4 Allowed use of TBD (MUST)
+`consumers` MUST be `TBD` if:
+- the artifact is only consumed by systems not represented as jobs in the repo, or
+- manifests do not contain matchable patterns (e.g., only opaque key placeholders), or
+- matching is ambiguous and cannot be resolved using Rule B.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

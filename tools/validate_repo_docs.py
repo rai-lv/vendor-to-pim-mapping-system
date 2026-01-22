@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
@@ -260,26 +259,62 @@ def load_shared_artifacts_allowlist(path: Path):
     return set()
 
 
+# Matches markdown bullets with arbitrary indentation, e.g.:
+# "- key: value"
+# "  - key: value"
+_BULLET_RE = re.compile(r"^(?P<indent>[ \t]*)-\s+(?P<rest>.*)$")
+
+
 def parse_artifact_entry(lines):
+    """
+    Extract the ordered list of *top-level* keys from an artifact entry.
+
+    Key design goal:
+    - Accept Markdown-valid indentation for the entry's main bullets (often 0–3 spaces, but allow any).
+    - Do NOT treat nested bullets (e.g. under content_contract) as top-level keys.
+
+    Strategy:
+    - Collect all bullet lines that look like 'key: ...' plus their indentation level.
+    - Determine the minimum indentation among those candidates within the entry block.
+    - Treat only bullets at that minimum indentation as the entry's top-level keys.
+    """
+    candidates = []
+    for raw in lines:
+        m = _BULLET_RE.match(raw)
+        if not m:
+            continue
+        rest = m.group("rest")
+        if ":" not in rest:
+            continue
+        indent_len = len(m.group("indent"))
+        key, value = rest.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        candidates.append((indent_len, key, value))
+
+    if not candidates:
+        return [], {}
+
+    min_indent = min(indent for indent, _, _ in candidates)
+
     keys = []
     values = {}
-    for line in lines:
-        if line.startswith("- "):
-            key_part = line[2:]
-            if ":" in key_part:
-                key, value = key_part.split(":", 1)
-                key = key.strip()
-                value = value.strip()
-                keys.append(key)
-                if key not in values:
-                    values[key] = value
+    for indent_len, key, value in candidates:
+        if indent_len != min_indent:
+            continue
+        keys.append(key)
+        if key not in values:
+            values[key] = value
+
     return keys, values
 
 
 def validate_artifacts_catalog(path: Path, allowlist):
     violations = []
     lines = path.read_text(encoding="utf-8").splitlines()
-    if "# Artifacts Catalog" not in lines:
+
+    # Spec requires a top-level title; be robust to whitespace.
+    if not any(line.strip() == "# Artifacts Catalog" for line in lines):
         violations.append(
             Violation(
                 "artifacts_catalog",
@@ -288,6 +323,7 @@ def validate_artifacts_catalog(path: Path, allowlist):
                 "Artifacts catalog must include the '# Artifacts Catalog' title.",
             )
         )
+
     heading_indices = [index for index, line in enumerate(lines) if line.startswith("## ")]
     for idx, start in enumerate(heading_indices):
         end = heading_indices[idx + 1] if idx + 1 < len(heading_indices) else len(lines)
@@ -344,6 +380,7 @@ def validate_job_inventory(path: Path):
         for heading in JOB_INVENTORY_HEADINGS:
             if line.strip() == heading:
                 heading_positions[heading] = index
+
     if len(heading_positions) != len(JOB_INVENTORY_HEADINGS):
         missing = [heading for heading in JOB_INVENTORY_HEADINGS if heading not in heading_positions]
         violations.append(

@@ -97,6 +97,7 @@ Top-level keys and whether they are required:
   - `[]` means **provably empty**.
   - Missing key means **schema violation** (unless explicitly marked as optional in this spec).
   - If list content is unknown, the entire key value MUST be `TBD` (not a partially guessed list).
+- For list-typed keys (`parameters`, `inputs`, `outputs`, `counters_observed`), unknown MUST be represented as the scalar string `TBD` (not `[TBD]`, not omitted).
 
 ### 5.2 `runtime` enum
 
@@ -255,6 +256,8 @@ For each field, the manifest should reflect the best available evidence:
 - `logging_and_receipt`: derived from actual run receipt writing; counters derived from logged/emitted metrics.
 
 If the script does not provide evidence for a field, set it to `TBD` and explain in `notes`.
+
+This manifest spec applies only to AWS Glue jobs represented by the `jobs/<job_group>/<job_id>/glue_script.py` convention; for this scope, `glue_job_name` is required and non-Glue jobs must not use `job_manifest.yaml` under this convention.
 
 ---
 

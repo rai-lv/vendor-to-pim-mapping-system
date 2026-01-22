@@ -225,6 +225,7 @@ Recommended pattern:
 ### 6.1 Allowed placeholder style
 
 Canonical placeholder style is `${NAME}`.
+Note: Other documents (e.g., business descriptions) may show placeholders as <vendor> or {vendor} for readability. In job_manifest.yaml, the canonical placeholder style MUST be ${NAME}.
 
 Rules:
 - Placeholder names are case-sensitive.

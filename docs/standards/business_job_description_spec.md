@@ -1,4 +1,4 @@
-## Business Description Standard for Jobs (v1.1)
+## Business Job Description Standard for Jobs (v1.1)
 
 **Purpose:** Framework for writing future business-level job descriptions in a consistent, readable way.
 

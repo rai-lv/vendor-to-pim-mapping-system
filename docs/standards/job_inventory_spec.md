@@ -320,3 +320,4 @@ The inventory file is compliant if:
 - dependency bullets follow the exact `A -> B : artifact` format
 - open items bullets start with one of the allowed tags
 - `inputs` and `outputs` are semicolon-separated lists aligned to manifest counts, or `NONE` if the manifest count is zero
+- FAIL if any discovered job (glue_script.py present) is missing job_manifest.yaml (i.e., [TBD-manifest] exists).

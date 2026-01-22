@@ -302,6 +302,62 @@ Populate `purpose` using this priority:
 If business intent is not documented, use an explicit unknown-safe fallback sentence such as:
 - “Output written by <producer_job_id>; business purpose not documented yet.”
 
+#### 1.0.9 content_contract definition and sourcing (MUST) ####
+
+#### 1.0.9.1 Definition (MUST)
+`content_contract` is the minimal parse- and validation contract for the artifact type.
+It describes high-level structure and valid empty representation, without defining a field-by-field schema.
+
+It MUST be evidence-based and MUST NOT speculate.
+
+#### 1.0.9.2 Source priority (MUST)
+Populate `content_contract` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse `content_contract` unless a change is proven.
+2) **Code (primary for structure)** (`jobs/<job_id>/glue_script.py`):
+   - Use only provable facts from explicit object/array/stream construction and write behavior.
+3) **Job manifest (supporting evidence)** (`jobs/<job_id>/job_manifest.yaml`):
+   - Use for format-related constraints and location context, but do not infer structure unless explicitly stated.
+4) **Business descriptions / script cards (supporting evidence)**:
+   - May be used only to confirm naming of sections if explicitly stated and consistent with code.
+5) If no provable value exists for a sub-field, set that sub-field to `TBD`.
+
+`evidence_sources` MUST include the actual source files used.
+
+#### 1.0.9.3 Sub-field sourcing rules (MUST)
+
+**top_level_type**
+- Set to `object` if code writes a single JSON object as the stored artifact (e.g., dumps a dict / writes `{...}`).
+- Set to `array` if code writes a single JSON array (e.g., dumps a list / writes `[...]`).
+- Set to `scalar` only if code writes a single scalar value (rare).
+- For `ndjson` streams, set `top_level_type: TBD` and describe stream semantics in `notes` (see below), unless code proves
+  a different top-level container.
+
+**primary_keying**
+- Set only if code (or explicit business docs consistent with code) proves top-level keying (e.g., “object keyed by vendor_category_id”).
+- Otherwise set `TBD`.
+
+**required_sections**
+- List only coarse, stable top-level sections that code explicitly constructs or validates (e.g., top-level keys in a JSON object).
+- Do not list inferred fields or deep schema.
+- If not provable, use `- TBD`.
+
+**empty_behavior**
+Set based on provable producer behavior:
+- `empty_object` if the job writes `{}` to represent no data.
+- `empty_array` if the job writes `[]` to represent no data.
+- `empty_file` if the job writes a zero-byte object.
+- `absent_file` if the job can succeed without writing the artifact at all.
+- If not provable, set `TBD`.
+
+**notes**
+- Use for short factual clarifications (e.g., “NDJSON: one JSON object per line”, compression/zip behavior, known quirks).
+- For `ndjson`, notes MUST explicitly state the stream semantics if known from code.
+
+#### 1.0.9.4 Non-guessing rule (MUST)
+`content_contract` MUST NOT be inferred from intent, file naming, or assumed conventions.
+Only manifest/code/business docs may be used, and only when they provide explicit evidence.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`
@@ -323,7 +379,7 @@ Each entry MUST contain all fields below (values may be `TBD` where allowed):
 6. **consumers:** list of job_ids that consume it, or `TBD`
 7. **presence_on_success:** one of `required | optional | conditional | TBD`
 8. **purpose:** 1–2 sentences (human meaning; must not speculate)
-9. **content_contract:** (see below)
+9. **content_contract:**
 10. **evidence_sources:** (see below)
 
 #### 1.2.1 evidence_sources (MUST)
@@ -337,23 +393,9 @@ or `- TBD` if no in-repo evidence exists (discouraged; should be rare).
 
 Purpose: make the entry auditable and prevent silent drift in automated updates.
 
-### 1.3 content_contract (MUST)
-
-`content_contract` MUST contain exactly these sub-fields:
-
-* **top_level_type:** one of `object | array | scalar | TBD`
-* **primary_keying:** (e.g., “keyed by vendor_category_id”, or `TBD`)
-* **required_sections:** bullet list of required high-level parts of the content, or `- TBD`
-* **empty_behavior:** one of `empty_object | empty_array | empty_file | absent_file | TBD`
-* **notes:** free text or `TBD` (short)
-
-Rules:
-- No field-by-field schema here. This is a “shape + meaning” contract.
-- `ndjson` is typically represented as a stream; describe stream semantics in `notes`.
-
 ---
 
-## 1.4 Optional fields (MAY)
+## 1.3 Optional fields (MAY)
 
 The following fields MAY be added, but are NOT required for compliance:
 

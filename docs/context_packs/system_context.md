@@ -67,7 +67,7 @@ There are **two different standardized artifacts** that serve **different purpos
 * **Authoritative for:** externally observable job behavior and operator-facing contract (what it reads/writes, required/optional, side effects), **not** the deeper business “why”.
 * **Hard boundary:** script cards **must not** define global terms and **must not** include full output schemas; those belong elsewhere.
 
-Definitions shared across jobs must live in `docs/glossary.md` (not duplicated per job doc). Output structure (“what’s inside” as a schema) belongs in `docs/artifacts_catalog.md` and/or `schemas/`, not in script cards.
+Definitions shared across jobs must live in `docs/glossary.md` (not duplicated per job doc). High-level output structure (content contract) belongs in docs/artifacts_catalog.md. Full output schemas (field-level) belong in schemas/ (if maintained). Script cards must not include full output schemas.
 
 **Authority rule:** A business description or script card is only “authoritative” for its scope **if it exists and complies with its spec**. Otherwise fall back to code + manifest truth.
 

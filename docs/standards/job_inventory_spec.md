@@ -1,4 +1,4 @@
-# Job Inventory Specification (v1.3)
+# Job Inventory Specification (v1.4)
 
 ## 0) Purpose and scope
 
@@ -99,7 +99,7 @@ Match outcome:
 - If exactly one match is found, use that entry’s `artifact_id`.
 - If zero or multiple matches are found, write `TBD` in the corresponding position and add an open verification item tagged `[TBD-artifact-catalog]`.
 
-No additional heuristics are allowed in v1.3 (to keep automation deterministic).
+No additional heuristics are allowed in v1.4 (to keep automation deterministic).
 
 ---
 
@@ -203,6 +203,34 @@ Rules:
 - Each listed link must correspond to the `upstream_job_ids` / `downstream_job_ids` columns in the Jobs table.
 - Use `TBD` if the linking artifact is not yet cataloged.
 - If no dependency evidence exists for a job, its upstream/downstream columns remain `TBD` (do not claim `NONE`).
+
+### Dependency derivation rule (MUST; automation-derived)
+
+Dependencies MUST be derived automatically from artifact-level evidence in the Jobs table:
+
+Definitions:
+- For each job, define `job_outputs` as the set of `artifact_id` values present in its `outputs` list (excluding `TBD` and `NONE`).
+- For each job, define `job_inputs` as the set of `artifact_id` values present in its `inputs` list (excluding `TBD` and `NONE`).
+
+Derivation:
+1. For each `artifact_id` that appears in any job’s `outputs`, compute:
+   - `producers(artifact_id)` = all jobs whose `job_outputs` contains the `artifact_id`
+   - `consumers(artifact_id)` = all jobs whose `job_inputs` contains the `artifact_id`
+
+2. If `len(producers(artifact_id)) == 1`:
+   - Let `P` be the single producer.
+   - For each consumer `C` in `consumers(artifact_id)`:
+     - Create a dependency link bullet: `- P -> C : artifact_id`
+     - Record `P` in `C.upstream_job_ids` (comma-separated list, unique)
+     - Record `C` in `P.downstream_job_ids` (comma-separated list, unique)
+
+3. If `len(producers(artifact_id)) > 1`:
+   - NO dependency link bullets MUST be created for this `artifact_id`.
+   - Add an open verification item:
+     - `[TBD-wiring] Multiple producers for artifact_id=<artifact_id>: <producer_job_id_1>, <producer_job_id_2>, ... . Dependency edges not generated.`
+
+Notes:
+- If a job has no derived upstream/downstream entries, the corresponding columns MUST remain `TBD` (consistent with the “absence of evidence ≠ evidence of absence” rule).
 
 ---
 

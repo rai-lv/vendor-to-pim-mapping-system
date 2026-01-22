@@ -274,6 +274,34 @@ If no value can be proven, set `presence_on_success: TBD`.
 `presence_on_success` MUST NOT be inferred from intent or naming conventions.
 Only manifest or provable code behavior may be used.
 
+#### 1.0.8 purpose definition and sourcing (MUST) ####
+
+#### 1.0.8.1 Definition (MUST)
+`purpose` is a 1–2 sentence business-level description of:
+- what the artifact represents (human meaning), and
+- why it exists (business intent / role).
+
+It MUST NOT include implementation details (Spark/Glue mechanics) and MUST NOT speculate.
+
+#### 1.0.8.2 Source priority (MUST)
+Populate `purpose` using this priority:
+
+1) **Business job descriptions** (`docs/business_descriptions/<job_id>.*`):
+   - If the artifact is produced by a job, extract the purpose of the specific output artifact from the producer job’s business description.
+2) **Script cards** (`docs/script_cards/<job_id>.md`):
+   - Use only if the script card explicitly states the business meaning of the output artifact.
+3) **Manifest/code (fallback; “what” only)**:
+   - If no business description or script card provides business intent, derive a minimal strictly factual purpose from manifest/code
+     describing what the file is (e.g., “Output written by <job_id> containing aggregated records keyed by vendor_category_id.”).
+   - Do not claim downstream usage unless documented in in-repo business descriptions or ADRs.
+
+`evidence_sources` MUST include the actual source files used.
+
+#### 1.0.8.3 No-empty rule (MUST)
+`purpose` MUST NOT be `TBD`.
+If business intent is not documented, use an explicit unknown-safe fallback sentence such as:
+- “Output written by <producer_job_id>; business purpose not documented yet.”
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

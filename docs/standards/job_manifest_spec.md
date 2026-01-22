@@ -11,7 +11,7 @@ This spec defines:
 - stability rules so automations can extract data reliably (e.g., for `docs/job_inventory.md`)
 
 Out of scope:
-- business meaning and rationale (belongs to `docs/business_job_descriptions/<job_id>.*`)
+- business meaning and rationale (belongs to `docs/business_job_descriptions/<job_id>.md`)
 - code-level implementation details (belongs to `glue_script.py` and script cards)
 
 ---

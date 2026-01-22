@@ -1,0 +1,17 @@
+name: CI Probe Pip Pyyaml
+
+on:
+  pull_request:
+
+jobs:
+  pip-probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Pip install pyyaml
+        run: python -m pip install --disable-pip-version-check pyyaml

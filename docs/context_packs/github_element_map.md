@@ -27,7 +27,7 @@ vendor-to-pim-mapping-system/
 		script_card_spec.md
     	naming-standard.md             # current naming conventions (as-is)
     registries/
-		shared_artifacts_allowlist.yaml
+		shared_artifacts_allowlist.yaml # normative registry: enables shared-artifact exception (see artifacts_catalog_spec.md §3.6)
 	codex-tasks/
       context_header_template.md   # paste block for every Codex task
       task_template.md             # one task = one PR template

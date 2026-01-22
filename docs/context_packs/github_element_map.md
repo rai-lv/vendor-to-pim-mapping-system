@@ -22,7 +22,7 @@ vendor-to-pim-mapping-system/
       <job3>.md
     standards/
 		artifact_catalog_spec.md
-		business_description_spec.md
+		business_job_description_spec.md
 		pipeline_inventory_spec.md
 		script_card_spec.md
     	naming-standard.md             # current naming conventions (as-is)

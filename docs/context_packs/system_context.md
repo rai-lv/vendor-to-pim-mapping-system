@@ -45,7 +45,7 @@ A major use case currently managed in this repo is **vendor→PIM assortment map
   * side effects (deletes/overwrites),
   * run receipt behavior and counters (if present).
 
-Manifests must be evidence-based (derived from the script). No guessing.
+Manifests must be evidence-based (derived from the script and deployment configuration where needed). No guessing.
 
 ### Business description truth
 
@@ -95,7 +95,7 @@ If a Codex task, a manifest, or a script card conflicts with a standard, the sta
 Required files per job:
 
 * `glue_script.py` — deployed Glue code.
-* `job_manifest.yaml` — machine-readable contract derived from the script.
+* `job_manifest.yaml` — machine-readable contract derived from the script and deployment configuration where needed.
 
 Optional per job (used only if the user decides to maintain them):
 

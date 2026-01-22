@@ -45,6 +45,7 @@ A major use case currently managed in this repo is **vendor→PIM assortment map
   * side effects (deletes/overwrites),
   * run receipt behavior and counters (if present).
 
+Manifest placeholder style MUST be ${NAME} (no <name> / {name} placeholders inside job_manifest.yaml). This is a strict manifest rule; other docs may use other placeholder styles for readability.
 Manifests must be evidence-based (derived from the script and deployment configuration where needed). No guessing.
 
 ### Business description truth
@@ -113,6 +114,8 @@ Core docs:
 * `docs/registries/` — machine-readable normative registries that are referenced by standards and by Codex tasks.
   Registries are not prose specifications; they are authoritative input data for automation when a standard explicitly points to them.
   No registry is assumed to exist unless it is explicitly introduced by a standard/ADR and created in the repository.
+* `docs/registries/shared_artifacts_allowlist.yaml` — normative allowlist used by docs/standards/artifacts_catalog_spec.md to permit multiple producer jobs for one artifact_id.
+  If an artifact has multiple producers and the artifact_id is not allowlisted, catalog automation must stop (governance violation).
 
 Job intent docs:
 

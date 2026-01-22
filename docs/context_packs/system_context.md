@@ -54,8 +54,8 @@ There are **two different standardized artifacts** that serve **different purpos
 1. **Business descriptions (business intent + business logic)**
 
 * **What it is:** a business-level explanation of **why the job exists**, **what outcome it produces**, its **key business rules/controls**, and explicit **boundaries (non-goals)**.
-* **Spec:** `docs/standards/business_description_spec_v1.0.md`
-* **Location:** `docs/business_job_descriptions/<job_id>.md` (or `.txt` if the user keeps text format)
+* **Spec:** `docs/standards/business_description_spec.md`
+* **Location:** `docs/business_job_descriptions/<job_id>.md`
 * **Authoritative for:** business intent, business meaning of inputs/outputs (“what it represents”), boundaries, and stakeholder-relevant processing logic.
 * **Notes:** storage details (bucket/prefix patterns) are only mentioned if they change business meaning; otherwise they are out of scope by spec.
 

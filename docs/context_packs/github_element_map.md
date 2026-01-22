@@ -35,6 +35,9 @@ vendor-to-pim-mapping-system/
     decisions/
       ADR-0001-monorepo.md         # the monorepo decision (only this for phase 1)
 
+  tools/
+    validate_repo_docs.py          # repo validation tooling (not deployed job code)
+
   jobs/
     Vendor_input_processing/
 	<job1>/

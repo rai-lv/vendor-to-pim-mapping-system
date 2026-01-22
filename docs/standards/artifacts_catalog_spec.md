@@ -244,6 +244,36 @@ Rule B MUST be attempted. If ambiguity remains, the consumer MUST NOT be added.
 - manifests do not contain matchable patterns (e.g., only opaque key placeholders), or
 - matching is ambiguous and cannot be resolved using Rule B.
 
+#### 1.0.7 presence_on_success definition and sourcing (MUST) ####
+
+#### 1.0.7.1 Definition (MUST)
+`presence_on_success` defines the expected existence of the artifact type **after a successful run of its producer job**.
+
+Allowed values:
+- `required` — the artifact MUST exist after every successful run of the producer job
+- `optional` — the artifact MAY or MAY NOT exist after a successful run (missing is not an error)
+- `conditional` — the artifact MUST exist only when a provable condition holds; otherwise it may be missing on success
+- `TBD` — cannot be proven from in-repo evidence
+
+#### 1.0.7.2 Source priority (MUST)
+Populate `presence_on_success` using this priority:
+
+1) **Existing catalog entry**: if the artifact entry already exists, reuse `presence_on_success` unless a change is proven.
+2) **Producer job manifest** (`jobs/<producer_job_id>/job_manifest.yaml`):
+   - If the artifact corresponds to an item in `outputs[]` with `required: true`, set `presence_on_success: required`.
+   - If the artifact corresponds to an item in `outputs[]` with `required: false`, set `presence_on_success: optional`.
+3) **Code (only to detect conditional)**:
+   - If the manifest indicates `required: true/false` but the code proves the job can succeed without writing the artifact
+     based on a condition (e.g., early exit on empty input, feature flag, mode switch), set `presence_on_success: conditional`.
+   - The condition MUST be summarized in `content_contract.notes` (brief, non-speculative).
+4) If `producer_job_id: TBD`, set `presence_on_success: TBD` unless another in-repo producer is proven.
+
+If no value can be proven, set `presence_on_success: TBD`.
+
+#### 1.0.7.3 Non-guessing rule (MUST)
+`presence_on_success` MUST NOT be inferred from intent or naming conventions.
+Only manifest or provable code behavior may be used.
+
 ### 1.1 Entry header (MUST)
 
 `## <artifact_id>`

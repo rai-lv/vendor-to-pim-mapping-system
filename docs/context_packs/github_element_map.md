@@ -21,10 +21,10 @@ vendor-to-pim-mapping-system/
       <job2>.md
       <job3>.md
     standards/
-		artifact_catalog_spec_v1.0.md
-		business_description_spec_v1.0.md
-		pipeline_inventory_spec_v1.0.md
-		script_card_spec_v1.0.md
+		artifact_catalog_spec.md
+		business_description_spec.md
+		pipeline_inventory_spec.md
+		script_card_spec.md
     	naming-standard.md             # current naming conventions (as-is)
     registries/
 		shared_artifacts_allowlist.yaml

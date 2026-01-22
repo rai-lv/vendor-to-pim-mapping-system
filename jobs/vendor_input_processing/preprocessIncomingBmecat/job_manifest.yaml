@@ -1,0 +1,71 @@
+job_id: preprocessIncomingBmecat
+glue_job_name: TBD
+runtime: TBD
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - bmecat_input_key
+  - bmecat_output_prefix
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${bmecat_input_key}
+    format: xml
+    required: true
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_products.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_features.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_mimes.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_relations.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_prices.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_categories.json
+    format: ndjson
+    required: false
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
+    format: json
+    required: true
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: TBD
+logging_and_receipt:
+  writes_run_receipt: TBD
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+notes:
+  - TBD_EXPLANATIONS:
+  - glue_job_name: TBD — Glue job name is not defined in the script; only runtime arguments are parsed, glue_script.py.
+  - runtime: TBD — Script does not include explicit runtime declarations beyond standard Python; no Spark/Glue runtime flags in glue_script.py.
+  - side_effects.overwrites_outputs: TBD — Script writes outputs via put_object but does not state overwrite semantics in glue_script.py.
+  - logging_and_receipt.writes_run_receipt: TBD — No explicit run receipt artifact write is defined in glue_script.py.
+  - logging_and_receipt.run_receipt_bucket: TBD — Run receipt bucket not specified because no run receipt write is defined in glue_script.py.
+  - logging_and_receipt.run_receipt_key_pattern: TBD — Run receipt key pattern not specified because no run receipt write is defined in glue_script.py.
+  - logging_and_receipt.counters_observed: TBD — No explicit counter emission schema is defined beyond logs in glue_script.py.

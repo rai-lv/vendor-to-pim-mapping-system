@@ -1,0 +1,42 @@
+job_id: matching_proposals
+glue_job_name: TBD
+runtime: pyspark
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products${extension}
+    format: TBD
+    required: false
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: false
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: TBD
+logging_and_receipt:
+  writes_run_receipt: TBD
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+notes:
+  - TBD_EXPLANATIONS:
+  - glue_job_name: TBD — Glue job name is not defined in the script; only runtime arguments are parsed, glue_script.py.
+  - inputs[0].format: TBD — Input file can be read as standard JSON or multiline JSON, but the script does not specify whether it is JSON vs NDJSON, glue_script.py.
+  - side_effects.overwrites_outputs: TBD — Output writes do not explicitly declare overwrite behavior in glue_script.py.
+  - logging_and_receipt.writes_run_receipt: TBD — No explicit run receipt artifact write is defined in glue_script.py.
+  - logging_and_receipt.run_receipt_bucket: TBD — Run receipt bucket not specified because no run receipt write is defined in glue_script.py.
+  - logging_and_receipt.run_receipt_key_pattern: TBD — Run receipt key pattern not specified because no run receipt write is defined in glue_script.py.
+  - logging_and_receipt.counters_observed: TBD — No explicit counter emission schema is defined beyond logs in glue_script.py.

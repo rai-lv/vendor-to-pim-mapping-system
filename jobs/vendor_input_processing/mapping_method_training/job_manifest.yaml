@@ -1,0 +1,33 @@
+job_id: mapping_method_training
+glue_job_name: TBD
+runtime: TBD
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+inputs: TBD
+outputs: TBD
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
+    format: json
+    required: true
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+logging_and_receipt:
+  writes_run_receipt: true
+  run_receipt_bucket: ${OUTPUT_BUCKET}
+  run_receipt_key_pattern: ${prepared_output_prefix}/mappingMethodTraining/run_receipts/run_receipt_${vendor_name}_${run_id}.json
+  counters_observed: TBD
+notes:
+  - TBD_EXPLANATIONS:
+  - glue_job_name: TBD — Glue job name is not defined in the script; only runtime arguments are parsed, glue_script.py.
+  - runtime: TBD — Script does not include explicit runtime declarations beyond standard Python; no Spark/Glue runtime flags in glue_script.py.
+  - inputs: TBD — Script reads multiple S3 inputs (step2 outputs, mapping references, training sets, and config) with conditional existence checks; full input list is not enumerated here, glue_script.py.
+  - outputs: TBD — Script writes multiple S3 artifacts across training deltas, evidence, rules, and receipts; full output list is not enumerated here, glue_script.py.
+  - logging_and_receipt.counters_observed: TBD — Run receipt includes many nested count structures; stable counter list is not fully enumerated here, glue_script.py.

@@ -132,6 +132,9 @@ Cross-job overview docs (kept consistent with manifests and script cards where a
 * `docs/job_inventory.md`
 * `docs/artifacts_catalog.md`
 
+docs/job_inventory.md indexes jobs represented as jobs/<job_group>/<job_id>/ folders discovered by presence of glue_script.py. 
+Optional Lambda helpers and Make scenarios are tracked elsewhere unless explicitly added to the job folder convention.
+
 Optional operational doc (only if the user decides it is needed and defines a spec for it):
 
 * `docs/execution_map.md` — runbook-style orchestration view. Not mandatory unless explicitly adopted.

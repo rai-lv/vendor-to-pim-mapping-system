@@ -109,6 +109,10 @@ Core docs:
 * `docs/glossary.md` — canonical definitions (shared terms).
 * `docs/context_packs/system_context.md` — this file.
 * `docs/standards/` — specs Codex tasks must reference for verification.
+  `docs/standards/` defines the rules; `docs/registries/` holds the rule data those rules refer to.
+* `docs/registries/` — machine-readable normative registries referenced by standards and Codex tasks.
+  These files are not prose specs; they are controlled lists/rule sets that automation must treat as authoritative input.
+  Examples: shared artifact allowlists, token denylists, controlled vocabularies used by tasks.
 
 Job intent docs:
 

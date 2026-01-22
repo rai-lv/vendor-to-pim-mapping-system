@@ -384,14 +384,32 @@ Each entry MUST contain all fields below (values may be `TBD` where allowed):
 
 #### 1.2.1 evidence_sources (MUST)
 
-`evidence_sources` MUST be a bullet list of repo paths used to populate the entry, using only:
+##### 1.2.1.1 Definition (MUST)
+`evidence_sources` is the auditable list of **exact repository paths** that were actually used to populate the fields of this artifact entry.
+It is an execution trace of the documentation update (Codex task), not a list of “related” files.
+
+##### 1.2.1.2 Allowed sources (MUST)
+`evidence_sources` MUST be a bullet list using only the following repo paths/patterns:
+
 - `jobs/<job_id>/job_manifest.yaml`
 - `jobs/<job_id>/glue_script.py`
 - `docs/business_descriptions/<job_id>.*`
+- `docs/script_cards/<job_id>.md`
 - `docs/decisions/ADR-*.md`
-or `- TBD` if no in-repo evidence exists (discouraged; should be rare).
+- `docs/registries/shared_artifacts_allowlist.yaml` (only if the entry uses the shared-artifact exception)
+
+If no in-repo evidence exists (discouraged; should be rare), use:
+- `- TBD`
+
+##### 1.2.1.3 Population rules (MUST)
+- The list MUST include **only** files that were actually read/used to populate values in the entry.
+- The list MUST NOT include files “just in case”.
+- The list MUST be de-duplicated.
+- If at least one allowed evidence file was used, `- TBD` MUST NOT be used.
+- Any automation that updates an entry MUST update `evidence_sources` to match the files it used in that update.
 
 Purpose: make the entry auditable and prevent silent drift in automated updates.
+
 
 ---
 

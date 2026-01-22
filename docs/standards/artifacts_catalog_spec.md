@@ -1,477 +1,343 @@
-# Artifacts Catalog Entry Specification (v1.2)
+# Artifacts Catalog Entry Specification (v1.3.5)
 
 ## 0) Scope
 
-An **Artifacts Catalog** documents **persistent files** produced/consumed by the system (typically S3 objects).
-Each **entry** describes **one artifact type** (one filename pattern), not a single run instance.
+An **Artifacts Catalog** documents **persistent artifacts** (typically S3 objects) produced/consumed by jobs.
+Each **catalog entry** represents **one artifact type** (stable pattern), not a single run instance.
 
-This specification defines the **minimum necessary fields** to:
-- auto-create/update entries from GitHub evidence (manifests + code + business descriptions)
-- reference artifacts reliably in further Codex-driven planning/coding tasks
+This spec defines a framework that is:
+- executable for automation (deterministic create/update rules)
+- readable for human review
+- auditable via explicit evidence sources
+
+The catalog file is:
+- `docs/artifacts_catalog.md`
 
 ---
 
-## 1) Entry structure (MUST)
+## 1) Catalog file and entry grammar (MUST)
 
-Each artifact entry MUST be a standalone markdown block with the following headings and keys **in exactly this order**.
+### 1.1 Catalog file structure (MUST)
 
-### Definitions and derivations ###
+`docs/artifacts_catalog.md` MUST contain:
+- a top-level title: `# Artifacts Catalog`
+- then a sequence of entries, each entry starting with `## <artifact_id>`
 
-#### 1.0.1 artifact_id definition and derivation (MUST) ####
+No other entry delimiter is allowed.
 
-#### 1.0.1.1 Definition (MUST)
-`artifact_id` is the stable canonical identifier for an **artifact type**.
+### 1.2 Entry block grammar (MUST)
 
-An artifact type represents the same kind of persistent file across runs (same semantic payload + role),
-not a specific run instance.
+Each entry MUST follow this structure:
 
-Therefore, `artifact_id` MUST NOT encode run context such as:
-- timestamps
-- vendor values (e.g., actual vendor names)
-- run_id / execution ids
+- A heading line: `## <artifact_id>`
+- Then a bullet list with keys **in exactly this order**:
 
-`artifact_id` MUST be usable as a stable reference key across documentation and Codex tasks.
+1. `artifact_id`
+2. `file_name_pattern`
+3. `s3_location_pattern`
+4. `format`
+5. `producer_job_id`
+6. `producers` (MUST be present only if shared-artifact exception applies; otherwise MUST be absent)
+7. `consumers`
+8. `presence_on_success`
+9. `purpose`
+10. `content_contract`
+11. `evidence_sources`
 
-#### 1.0.1.2 Source-of-truth rule (MUST)
-If an entry already exists in `docs/artifacts_catalog.md`, its `artifact_id` is the source of truth and MUST be reused.
-Codex MUST NOT rename existing `artifact_id`s.
+### 1.3 Allowed markers for unknown/empty (MUST)
 
-#### 1.0.1.3 Deterministic derivation rule for new entries (MUST)
-If no entry exists yet, `artifact_id` MUST be assigned deterministically using only in-repo evidence.
+- `TBD` is the only allowed unknown marker.
+- `NONE` is the only allowed explicit-empty marker and MUST be used only when emptiness is provable from evidence.
 
-Canonical construction:
-`<producer_job_id_snake_case>__<artifact_type_snake_case>`
+Scalar `TBD` discipline (MUST):
+- For list-typed fields (`consumers`, `producers`, `evidence_sources`, `required_sections`), unknown MUST be expressed as the scalar string `TBD` (not `[TBD]`, not omitted).
 
-Where:
-- `<producer_job_id_snake_case>` is the job folder name of the producing job (for outputs), normalized to snake_case.
-  - If the artifact is not produced by an in-repo job (external input/config), use the **consumer job_id** (the job that uses it).
-- `<artifact_type_snake_case>` is derived from the manifest `key_pattern` as follows:
+---
 
-Step A: Determine the base token:
-1) If the manifest `key_pattern` ends with a filename segment (contains a terminal segment with an extension), use that filename.
-2) Else if `key_pattern` is a single parameter placeholder like `${bmecat_input_key}`, use the parameter name (e.g., `bmecat_input_key`).
+## 2) Deterministic matching and placeholder normalization (MUST)
+
+### 2.1 Placeholder normalization for matching (MUST)
+
+To make matching deterministic across placeholder styles, automations MUST normalize placeholders before comparison.
+
+Normalization rule:
+- Replace any `${...}` token with `<VAR>`.
+- Replace any `{...}` token with `<VAR>`.
+- Replace any `<...>` token with `<VAR>`.
+- No other transformations are allowed (no fuzzy matching).
+
+After normalization, compare strings literally.
+
+### 2.2 Entry matching for create/update (MUST)
+
+Automations that create or update entries MUST follow this matching algorithm to decide whether a candidate artifact
+reference corresponds to an existing entry.
+
+Candidate source:
+- a job manifest item from `outputs[]`, `inputs[]`, or `config_files[]` (job_manifest.yaml)
+
+Scalar TBD guard (MUST):
+- If a candidate block (`outputs`, `inputs`, or `config_files`) is the scalar string `TBD`, stop derivation for that block.
+- Do not create new entries from scalar `TBD` blocks.
+
+Step 1 — Construct candidate S3 pattern:
+- Construct `s3://${bucket}/${key_pattern}` from the manifest item.
+- If `bucket` or `key_pattern` is `TBD`, treat the candidate S3 pattern as `TBD` and continue to Step 3.
+
+Step 2 — Primary match: normalized S3 location match:
+- Normalize candidate S3 pattern and each existing entry’s `s3_location_pattern` (see 2.1).
+- If exactly one entry matches, reuse that entry.
+- If more than one entry matches, automation MUST NOT choose; stop and require human resolution.
+
+Step 3 — Secondary match: terminal filename match:
+- Extract terminal segment from the candidate `key_pattern` (after the final `/`).
+- Normalize it and compare to existing entries’ `file_name_pattern` (see 2.1).
+- If exactly one entry matches, reuse that entry.
+- If more than one matches, stop and require human resolution.
+
+Step 4 — No match found:
+- Create a new entry and assign `artifact_id` using section 3.1.
+
+---
+
+## 3) Field definitions and sourcing rules (MUST)
+
+### 3.1 `artifact_id` (MUST)
+
+Definition:
+- Stable canonical identifier for an artifact type.
+- MUST NOT encode run context (timestamps, run ids, concrete vendor values).
+
+If entry exists:
+- Existing `artifact_id` MUST be reused; renaming existing ids is forbidden.
+
+If entry does not exist (deterministic derivation rule):
+`<producer_anchor>__<artifact_type_snake_case>`
+
+Producer anchor:
+- For produced artifacts: `producer_anchor = <producer_job_id>` (folder job_id of the producing job).
+- For external (not produced in repo): `producer_anchor = <lexicographically smallest proven consumer job_id>`.
+- If no in-repo consumer can be proven: `producer_anchor = external`.
+
+Artifact type token derivation (from manifest `key_pattern`):
+1) If `key_pattern` ends with a filename segment containing an extension, use that filename.
+2) Else if `key_pattern` is exactly one parameter placeholder (e.g., `${bmecat_input_key}`), use the parameter name without `${}`.
 3) Else use the terminal path segment of `key_pattern`.
 
-Step B: Normalize the base token to an artifact type name:
-- Remove common run-context placeholders/prefixes from the start of the base token, at minimum:
-  - `${vendor_name}_`
-  - `${vendor}_`
-- Remove the file extension (`.json`, `.ndjson`, `.xml`, etc.).
-- Convert the result to `snake_case`.
+Normalization:
+- Remove common run-context prefixes from the start (at minimum `${vendor_name}_`, `${vendor}_` if present).
+- Remove file extension.
+- Convert to `snake_case`.
 
-The resulting `artifact_id` MUST be stable across runs and deterministic given the same repo state.
+### 3.2 `file_name_pattern` (MUST)
 
-#### 1.0.2 file_name_pattern definition and sourcing (MUST) ####
+Definition:
+- Terminal filename pattern (last segment after final `/`), may contain placeholders.
+- MUST NOT be a concrete run instance filename.
 
-#### 1.0.2.1 Definition (MUST)
-`file_name_pattern` is the **terminal filename pattern** of the artifact type: the last segment of the object key
-(after the final `/`).
+Source priority:
+1) existing entry (unless change is proven)
+2) manifest terminal segment (from `key_pattern`)
+3) if `key_pattern` is a single placeholder representing a full key, set `file_name_pattern` to that placeholder token
+4) code (last resort; only if a stable filename pattern is explicitly constructed)
 
-It is a pattern (may contain placeholders) that represents the artifact type across runs.
-It MUST NOT be a concrete run instance filename.
+If no stable value can be proven: `TBD`.
 
-#### 1.0.2.2 Source priority (MUST)
-Populate `file_name_pattern` using this priority:
+### 3.3 `s3_location_pattern` (MUST)
 
-1) **Existing catalog entry**: if the artifact entry already exists, reuse its `file_name_pattern` unless a change is proven.
-2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`):
-   - If the relevant `key_pattern` ends with a filename segment, set `file_name_pattern` to that terminal segment.
-3) **Manifest placeholder fallback**:
-   - If the manifest `key_pattern` is a single parameter placeholder representing a full key (e.g., `${bmecat_input_key}`)
-     and no filename segment can be extracted, set `file_name_pattern` to that placeholder token (e.g., `${bmecat_input_key}`).
-4) **Code (last resort)**:
-   - Only if the manifest does not contain a usable terminal segment or placeholder, and the code constructs a stable filename
-     pattern explicitly (e.g., via literal string templates). Otherwise do not guess.
+Definition:
+- Stable S3 location pattern(s) for the artifact type.
+- Allowed representation:
+  - a single string `s3://...`, OR
+  - a bullet list of strings under `s3_location_pattern:`
 
-If none of the above yields a stable token, set `file_name_pattern: TBD`.
+Automation parsing rule:
+- If scalar string is used, treat it as a list of exactly one string for matching and updates.
 
-#### 1.0.2.3 Run-context tokens (timestamps/run IDs) (MUST)
-If filenames include run-context such as timestamps or run IDs, `file_name_pattern` MUST express them as placeholders,
-not concrete values.
+Source priority:
+1) existing entry (unless change is proven)
+2) manifest item(s) (`s3://${bucket}/${key_pattern}`)
+3) code (last resort; only if stable pattern is explicitly proven)
 
-Accepted placeholder tokens include (examples):
-- `${timestamp}`, `${run_id}`, `${vendor_timestamp}`, `${date}`, `${datetime}`
+If no stable pattern can be proven: `TBD`.
 
-Rules:
-- Manifests MUST represent run-context in `key_pattern` using placeholders (not literal timestamps).
-- `file_name_pattern` MUST preserve those placeholders.
-- Concrete filenames containing literal timestamps MUST NOT be copied into `file_name_pattern`.
-
-If a manifest provides only a concrete timestamped filename and no placeholder can be proven,
-set `file_name_pattern: TBD` and record the reason in `content_contract.notes`.
-
-#### 1.0.3 s3_location_pattern definition and sourcing (MUST) ####
-
-#### 1.0.3.1 Definition (MUST)
-`s3_location_pattern` is the canonical **S3 URI pattern** that locates the artifact type in storage.
-
-It MUST represent a stable pattern (may contain placeholders) and MUST NOT be a single run instance path with concrete
-run-context values (timestamps, vendor values), unless those are expressed as placeholders.
-
-A single artifact type MAY have multiple S3 location patterns; in that case `s3_location_pattern` MUST be a bullet list.
-
-#### 1.0.3.2 Source priority (MUST)
-Populate `s3_location_pattern` using this priority:
-
-1) **Existing catalog entry**: if the artifact entry already exists, reuse its `s3_location_pattern` unless a change is proven.
-2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`):
-   - For each relevant manifest item (`inputs[]`, `outputs[]`, `config_files[]`), construct:
-     `s3://${bucket}/${key_pattern}`
-   - If both `bucket` and `key_pattern` are present, `s3_location_pattern` MUST NOT be `TBD`.
-3) **Code (last resort)**:
-   - Only if the manifest does not provide `bucket` and/or `key_pattern`, and the code proves a stable S3 key pattern
-     via explicit string templates. Otherwise do not guess.
-
-If none of the above yields a provable stable S3 pattern, set `s3_location_pattern: TBD`.
-
-#### 1.0.3.3 Scope note (MUST)
-This specification is scoped to **file artifacts stored in S3**, because job manifests express storage as `bucket` + `key_pattern`.
-Non-S3 artifacts (e.g., database tables, API endpoints, message topics) are out of scope for this catalog and require a separate
-catalog/spec if introduced in the system.
-
-#### 1.0.4 format definition and sourcing (MUST) ####
-
-#### 1.0.4.1 Definition (MUST)
-`format` specifies the **serialization format of the artifact file as stored** (what a consumer must parse).
-It does not describe schema or business meaning.
+### 3.4 `format` (MUST)
 
 Allowed values:
-`json | ndjson | csv | xml | zip | other | TBD`
+- `json | ndjson | csv | xml | zip | other | TBD`
 
-Rules:
-- If `format = other`, `content_contract.notes` MUST name the actual format in plain text.
-- `TBD` is allowed only if the format cannot be proven from in-repo evidence.
+Source priority:
+1) existing entry
+2) manifest `format`
+3) file extension from `file_name_pattern` (only if unambiguous)
+Otherwise `TBD`.
 
-#### 1.0.4.2 Source priority (MUST)
-Populate `format` using this priority:
+### 3.5 `producer_job_id` (MUST)
 
-1) **Existing catalog entry**: if the artifact entry already exists, reuse `format` unless a change is proven.
-2) **Job manifest** (`jobs/<job_id>/job_manifest.yaml`): use the `format` value from the relevant `inputs[]`, `outputs[]`, or `config_files[]` item.
-3) **File extension inference** (controlled fallback):
-   - If the manifest `format` is missing or `TBD`, infer from `file_name_pattern` if it ends with a known extension:
-     - `.json` → `json`
-     - `.ndjson` → `ndjson`
-     - `.csv` → `csv`
-     - `.xml` → `xml`
-     - `.zip` → `zip`
-4) **Code (last resort)**:
-   - Only if the manifest and filename pattern do not prove the format, and the code proves the read/write format via explicit logic
-     (e.g., line-by-line JSON writing for NDJSON, `json.dumps` for JSON document). Otherwise do not guess.
+Definition:
+- Folder `<job_id>` of the in-repo job that produces the artifact type (if produced in repo).
+- For shared artifacts (allowlisted), `producer_job_id` is the **canonical owner** (primary accountable producer) of the artifact type.
 
-If none of the above yields a provable value, set `format: TBD`.
+Source priority:
+1) existing entry
+2) derive from the producing job’s manifest: the artifact matches an `outputs[]` item using Section 2 matching
+Otherwise `TBD`.
 
-#### 1.0.5 producer_job_id definition and sourcing (MUST) ####
+### 3.6 Shared artifact exception and `producers` (MUST)
 
-#### 1.0.5.1 Definition (MUST)
-`producer_job_id` is the **repository job identifier** (job folder name) of the job that produces the artifact type.
+Default rule:
+- An artifact type MUST have exactly one producing job (single-writer rule).
 
-A job is considered a producer if it **writes** the artifact as part of normal execution, including:
-- create new
-- overwrite/replace
-- append (content changes)
-- update-in-place via write-then-replace
+Shared-artifact exception:
+- Multiple producers are allowed only if `artifact_id` appears in:
+  - `docs/registries/shared_artifacts_allowlist.yaml`
 
-`producer_job_id` is a repo-internal identifier used for documentation linking and automation.
-It is not an AWS Glue console job name.
+If the exception applies:
+- `producer_job_id` MUST remain a single job_id (canonical owner / primary accountable producer).
+- `producers` MUST be present and MUST list the **additional writer job_ids** (i.e., writers other than `producer_job_id`),
+  sorted lexicographically.
+- `producers` MUST NOT include the `producer_job_id` value.
 
-#### 1.0.5.2 Source priority (MUST)
-Populate `producer_job_id` using this priority:
+If the exception does not apply:
+- `producers` MUST be absent.
+- If multiple producers are detected, automation MUST stop and require resolution (catalog governance violation).
 
-1) **Existing catalog entry**: if the artifact entry already exists, reuse `producer_job_id` unless a change is proven.
-2) **Job manifest** (`jobs/<job_group>/<job_id>/job_manifest.yaml`):
-   - If the artifact corresponds to an item in `outputs[]` of that manifest, then `producer_job_id` MUST be `<job_id>`.
-3) **Code (last resort)**:
-   - Only if no manifest exists or outputs are not declared, and the code proves the job writes the artifact via stable patterns.
-   - Otherwise do not guess.
+### 3.7 `consumers` (MUST)
 
-If the artifact is not produced by any in-repo job (e.g., vendor-provided inputs, manually maintained external files),
-set `producer_job_id: TBD`.
+Definition:
+- List of in-repo job_ids that consume the artifact type.
 
-#### 1.0.5.3 Single-writer rule and shared-artifact exception (MUST)
-By default, an artifact type MUST have exactly one producing job in this monorepo (single-writer rule).
+Source priority:
+1) existing entry
+2) derive from other job manifests:
+   - a job is a consumer if any item in its `inputs[]` or `config_files[]` matches this entry by Section 2 matching
+3) code (last resort; only if stable read pattern is explicitly proven)
 
-If multiple in-repo jobs write the same artifact type, this is a specification violation unless the artifact is explicitly
-declared as a shared artifact in:
-`docs/registries/shared_artifacts_allowlist.yaml`.
+If consumers cannot be proven without ambiguity: `TBD`.
 
-For allowlisted shared artifacts:
-- the artifacts catalog entry MUST keep a single `producer_job_id` as the canonical producer (the primary owner), and
-- MAY additionally include `additional_writer_job_ids` as an optional field.
+Scalar TBD guard:
+- If a candidate job manifest has `inputs: TBD` or `config_files: TBD`, do not attempt matching for that block.
 
-If multiple writers are detected and the artifact is not allowlisted, automated updates MUST fail with an instruction to
-create/update the shared-artifact allowlist and add an ADR under `docs/decisions/`.
-
-#### 1.0.6 consumers definition and sourcing (MUST) ####
-
-#### 1.0.6.1 Definition (MUST)
-`consumers` is the list of repository job identifiers (job folder names) of jobs that **consume** the artifact type.
-
-A job is a consumer if it reads/uses the artifact as part of normal execution via any of the following manifest sections:
-- `inputs[]`
-- `config_files[]`
-
-`consumers` lists only in-repo jobs (monorepo scope). External systems are out of scope.
-
-#### 1.0.6.2 Source priority (MUST)
-Populate `consumers` using this priority:
-
-1) **Existing catalog entry**: if the artifact entry already exists, reuse `consumers` unless changes are proven.
-2) **Derivation from other job manifests** (`jobs/**/job_manifest.yaml`):
-   - A job is a consumer if any item in its `inputs[]` or `config_files[]` matches this artifact type using the matching rules below.
-3) **Code (last resort)**:
-   - Only if the manifest does not declare the input, and code proves a stable S3 read pattern for this artifact type. Otherwise do not guess.
-
-If consumers cannot be proven without ambiguity, set:
-- `consumers: TBD`
-
-#### 1.0.6.3 Matching rules (MUST)
-Consumer derivation MUST follow these rules, in order:
-
-Rule A (preferred): **terminal filename match**
-- Compare the terminal segment of the candidate job manifest `key_pattern` with this entry’s `file_name_pattern`.
-- If they match exactly (including placeholders), the candidate job is a consumer.
-
-Rule B (stronger match for ambiguous filenames): **full S3 pattern match**
-- Construct `s3://${bucket}/${key_pattern}` for the candidate manifest item.
-- If it matches exactly one of the entry’s `s3_location_pattern` strings, the candidate job is a consumer.
-
-If multiple artifact entries could match the same manifest item using Rule A (ambiguous),
-Rule B MUST be attempted. If ambiguity remains, the consumer MUST NOT be added.
-
-#### 1.0.6.4 Allowed use of TBD (MUST)
-`consumers` MUST be `TBD` if:
-- the artifact is only consumed by systems not represented as jobs in the repo, or
-- manifests do not contain matchable patterns (e.g., only opaque key placeholders), or
-- matching is ambiguous and cannot be resolved using Rule B.
-
-#### 1.0.7 presence_on_success definition and sourcing (MUST) ####
-
-#### 1.0.7.1 Definition (MUST)
-`presence_on_success` defines the expected existence of the artifact type **after a successful run of its producer job**.
+### 3.8 `presence_on_success` (MUST)
 
 Allowed values:
-- `required` — the artifact MUST exist after every successful run of the producer job
-- `optional` — the artifact MAY or MAY NOT exist after a successful run (missing is not an error)
-- `conditional` — the artifact MUST exist only when a provable condition holds; otherwise it may be missing on success
-- `TBD` — cannot be proven from in-repo evidence
+- `required | optional | conditional | TBD`
 
-#### 1.0.7.2 Source priority (MUST)
-Populate `presence_on_success` using this priority:
+Source priority:
+1) existing entry
+2) producer manifest output item `required` flag (if available)
+   - if `required: true` => `presence_on_success: required`
+   - if `required: false` => `presence_on_success: optional`
+3) code (only to detect and justify `conditional`)
+   - If the code proves the producer job can succeed without writing the artifact under a specific condition
+     (e.g., early-exit on empty input, mode switch, feature flag, conditional branch),
+     then set `presence_on_success: conditional`.
+   - The condition MUST be captured in `content_contract.notes` in plain English (brief, factual, no speculation).
+4) otherwise `TBD`
 
-1) **Existing catalog entry**: if the artifact entry already exists, reuse `presence_on_success` unless a change is proven.
-2) **Producer job manifest** (`jobs/<producer_job_id>/job_manifest.yaml`):
-   - If the artifact corresponds to an item in `outputs[]` with `required: true`, set `presence_on_success: required`.
-   - If the artifact corresponds to an item in `outputs[]` with `required: false`, set `presence_on_success: optional`.
-3) **Code (only to detect conditional)**:
-   - If the manifest indicates `required: true/false` but the code proves the job can succeed without writing the artifact
-     based on a condition (e.g., early exit on empty input, feature flag, mode switch), set `presence_on_success: conditional`.
-   - The condition MUST be summarized in `content_contract.notes` (brief, non-speculative).
-4) If `producer_job_id: TBD`, set `presence_on_success: TBD` unless another in-repo producer is proven.
+Non-guessing rule (MUST):
+- `presence_on_success` MUST NOT be inferred from intent or naming conventions; only manifest or provable code behavior may be used.
 
-If no value can be proven, set `presence_on_success: TBD`.
+### 3.9 `purpose` (MUST)
 
-#### 1.0.7.3 Non-guessing rule (MUST)
-`presence_on_success` MUST NOT be inferred from intent or naming conventions.
-Only manifest or provable code behavior may be used.
+Definition:
+- 1–2 sentence business-level description of what the artifact is and why it exists.
+- Must not include implementation mechanics and must not speculate about usage.
 
-#### 1.0.8 purpose definition and sourcing (MUST) ####
+Source priority:
+1) producer job business description: `docs/business_job_descriptions/<job_id>.md`
+2) script card: `docs/script_cards/<job_id>.md` (only if it states business meaning explicitly)
+3) minimal factual fallback derived from manifest/code (“what” only)
 
-#### 1.0.8.1 Definition (MUST)
-`purpose` is a 1–2 sentence business-level description of:
-- what the artifact represents (human meaning), and
-- why it exists (business intent / role).
+No-empty rule:
+- `purpose` MUST NOT be `TBD`.
+- If business intent is not documented, use:
+  - `Output written by <producer_job_id>; business purpose not documented yet.`
 
-It MUST NOT include implementation details (Spark/Glue mechanics) and MUST NOT speculate.
+### 3.10 `content_contract` (MUST)
 
-#### 1.0.8.2 Source priority (MUST)
-Populate `purpose` using this priority:
+Definition:
+- Minimal parse/validation contract (high level), not a full schema.
 
-1) **Business job descriptions** (`docs/business_descriptions/<job_id>.*`):
-   - If the artifact is produced by a job, extract the purpose of the specific output artifact from the producer job’s business description.
-2) **Script cards** (`docs/script_cards/<job_id>.md`):
-   - Use only if the script card explicitly states the business meaning of the output artifact.
-3) **Manifest/code (fallback; “what” only)**:
-   - If no business description or script card provides business intent, derive a minimal strictly factual purpose from manifest/code
-     describing what the file is (e.g., “Output written by <job_id> containing aggregated records keyed by vendor_category_id.”).
-   - Do not claim downstream usage unless documented in in-repo business descriptions or ADRs.
+Required subfields (in this order):
+- `top_level_type`
+- `primary_keying`
+- `required_sections`
+- `empty_behavior`
+- `notes`
 
-`evidence_sources` MUST include the actual source files used.
+Allowed values:
+- `top_level_type`: `json_object | json_array | ndjson | csv | xml | zip | other | TBD`
+- `empty_behavior`: `absent_file_allowed | empty_file_allowed | empty_object_allowed | empty_array_allowed | no_empty_allowed | TBD`
+- `primary_keying`: free text or `TBD`
+- `required_sections`: list(string), `NONE`, or `TBD`
+- `notes`: free text or `TBD`
 
-#### 1.0.8.3 No-empty rule (MUST)
-`purpose` MUST NOT be `TBD`.
-If business intent is not documented, use an explicit unknown-safe fallback sentence such as:
-- “Output written by <producer_job_id>; business purpose not documented yet.”
+Operational meaning of `empty_behavior` values (MUST; non-overlapping):
+- `absent_file_allowed` — the producer job can succeed without writing the artifact at all (no object exists at the target key/pattern).
+- `empty_file_allowed` — the producer writes a zero-byte object to represent “no data”.
+- `empty_object_allowed` — the producer writes `{}` to represent “no data”.
+- `empty_array_allowed` — the producer writes `[]` to represent “no data”.
+- `no_empty_allowed` — on success, a non-empty artifact is expected (representation of “no data” is not allowed).
+- `TBD` — cannot be proven from in-repo evidence.
 
-#### 1.0.9 content_contract definition and sourcing (MUST) ####
+Consistency rule with `presence_on_success` (MUST):
+- If `presence_on_success` is set to `conditional` based on provable “success without writing” behavior, then:
+  - `content_contract.empty_behavior` MUST be set to `absent_file_allowed`,
+  - unless code proves that the success path writes an explicit empty representation instead (then use the relevant `empty_*_allowed`).
 
-#### 1.0.9.1 Definition (MUST)
-`content_contract` is the minimal parse- and validation contract for the artifact type.
-It describes high-level structure and valid empty representation, without defining a field-by-field schema.
+Source priority:
+1) existing entry
+2) business descriptions / ADRs (only if they define structural expectations)
+3) manifest/code (only strictly factual structure)
+Otherwise `TBD`.
 
-It MUST be evidence-based and MUST NOT speculate.
+### 3.11 `evidence_sources` (MUST)
 
-#### 1.0.9.2 Source priority (MUST)
-Populate `content_contract` using this priority:
+Definition:
+- List of repo files actually used to populate/confirm fields in the entry.
 
-1) **Existing catalog entry**: if the artifact entry already exists, reuse `content_contract` unless a change is proven.
-2) **Code (primary for structure)** (`jobs/<job_id>/glue_script.py`):
-   - Use only provable facts from explicit object/array/stream construction and write behavior.
-3) **Job manifest (supporting evidence)** (`jobs/<job_id>/job_manifest.yaml`):
-   - Use for format-related constraints and location context, but do not infer structure unless explicitly stated.
-4) **Business descriptions / script cards (supporting evidence)**:
-   - May be used only to confirm naming of sections if explicitly stated and consistent with code.
-5) If no provable value exists for a sub-field, set that sub-field to `TBD`.
-
-`evidence_sources` MUST include the actual source files used.
-
-#### 1.0.9.3 Sub-field sourcing rules (MUST)
-
-**top_level_type**
-- Set to `object` if code writes a single JSON object as the stored artifact (e.g., dumps a dict / writes `{...}`).
-- Set to `array` if code writes a single JSON array (e.g., dumps a list / writes `[...]`).
-- Set to `scalar` only if code writes a single scalar value (rare).
-- For `ndjson` streams, set `top_level_type: TBD` and describe stream semantics in `notes` (see below), unless code proves
-  a different top-level container.
-
-**primary_keying**
-- Set only if code (or explicit business docs consistent with code) proves top-level keying (e.g., “object keyed by vendor_category_id”).
-- Otherwise set `TBD`.
-
-**required_sections**
-- List only coarse, stable top-level sections that code explicitly constructs or validates (e.g., top-level keys in a JSON object).
-- Do not list inferred fields or deep schema.
-- If not provable, use `- TBD`.
-
-**empty_behavior**
-Set based on provable producer behavior:
-- `empty_object` if the job writes `{}` to represent no data.
-- `empty_array` if the job writes `[]` to represent no data.
-- `empty_file` if the job writes a zero-byte object.
-- `absent_file` if the job can succeed without writing the artifact at all.
-- If not provable, set `TBD`.
-
-**notes**
-- Use for short factual clarifications (e.g., “NDJSON: one JSON object per line”, compression/zip behavior, known quirks).
-- For `ndjson`, notes MUST explicitly state the stream semantics if known from code.
-
-#### 1.0.9.4 Non-guessing rule (MUST)
-`content_contract` MUST NOT be inferred from intent, file naming, or assumed conventions.
-Only manifest/code/business docs may be used, and only when they provide explicit evidence.
-
-### 1.1 Entry header (MUST)
-
-`## <artifact_id>`
-
-Rules:
-* `<artifact_id>` MUST be unique across the catalog.
-* `<artifact_id>` MUST be `snake_case`.
-* `<artifact_id>` MUST represent an **artifact type**, not a run instance (no timestamps; no vendor-specific values).
-
-### 1.2 Fields (MUST)
-
-Each entry MUST contain all fields below (values may be `TBD` where allowed):
-
-1. **artifact_id:** (repeat the id; must match heading)
-2. **file_name_pattern:** (e.g., `${vendor_name}_categoryMatchingProposals.json` or `${bmecat_input_key}` or `TBD`)
-3. **s3_location_pattern:** (bucket + key pattern; may be a single string or a bullet list; may be `TBD`)
-4. **format:** one of `json | ndjson | csv | xml | zip | other | TBD`
-5. **producer_job_id:** (job_id folder name if produced by an in-repo job, else `TBD`)
-6. **consumers:** list of job_ids that consume it, or `TBD`
-7. **presence_on_success:** one of `required | optional | conditional | TBD`
-8. **purpose:** 1–2 sentences (human meaning; must not speculate)
-9. **content_contract:**
-10. **evidence_sources:** (see below)
-
-#### 1.2.1 evidence_sources (MUST)
-
-##### 1.2.1.1 Definition (MUST)
-`evidence_sources` is the auditable list of **exact repository paths** that were actually used to populate the fields of this artifact entry.
-It is an execution trace of the documentation update (Codex task), not a list of “related” files.
-
-##### 1.2.1.2 Allowed sources (MUST)
-`evidence_sources` MUST be a bullet list using only the following repo paths/patterns:
-
-- `jobs/<job_id>/job_manifest.yaml`
-- `jobs/<job_id>/glue_script.py`
-- `docs/business_descriptions/<job_id>.*`
+Allowed sources:
+- `jobs/<job_group>/<job_id>/job_manifest.yaml`
+- `jobs/<job_group>/<job_id>/glue_script.py`
+- `docs/business_job_descriptions/<job_id>.md`
 - `docs/script_cards/<job_id>.md`
 - `docs/decisions/ADR-*.md`
-- `docs/registries/shared_artifacts_allowlist.yaml` (only if the entry uses the shared-artifact exception)
+- `docs/registries/shared_artifacts_allowlist.yaml` (only if shared exception is used)
 
-If no in-repo evidence exists (discouraged; should be rare), use:
-- `- TBD`
-
-##### 1.2.1.3 Population rules (MUST)
-- The list MUST include **only** files that were actually read/used to populate values in the entry.
-- The list MUST NOT include files “just in case”.
-- The list MUST be de-duplicated.
+Population rules:
+- MUST include only files actually read/used for the entry.
+- MUST be de-duplicated and sorted lexicographically.
 - If at least one allowed evidence file was used, `- TBD` MUST NOT be used.
-- Any automation that updates an entry MUST update `evidence_sources` to match the files it used in that update.
-
-Purpose: make the entry auditable and prevent silent drift in automated updates.
-
+- If no in-repo evidence exists (discouraged), use the scalar string `TBD`.
 
 ---
 
-## 1.3 Optional fields (MAY)
+## 4) Compliance checklist (PASS/FAIL)
 
-The following fields MAY be added, but are NOT required for compliance:
+An entry is compliant if:
+- entry heading is `## <artifact_id>` and `artifact_id` key equals the heading id
+- keys appear in the exact required order (section 1.2)
+- `purpose` is present and not `TBD`
+- `format` is one of the allowed values
+- `content_contract.empty_behavior` is one of the allowed values
+- if the shared-artifact exception applies (artifact_id is allowlisted in `docs/registries/shared_artifacts_allowlist.yaml`), then:
+  - `producer_job_id` is a single job_id (canonical owner) and MUST NOT be `shared`
+  - `producers` exists and lists additional writer job_ids (sorted lexicographically)
+  - `producers` MUST NOT include `producer_job_id`
+- if the shared-artifact exception does not apply, then:
+  - `producers` is absent
+- placeholder normalization and matching rules (section 2) are the only rules used for create/update decisions
+- `evidence_sources` lists only allowed sources and reflects what was actually used
 
-- **producer_glue_job_name:** (exact AWS Glue job name, or `${JOB_NAME}`, or `TBD`)
-- **stability:** one of `stable | evolving | experimental | TBD`
-- **breaking_change_rules:** one of:
-  - `No breaking changes allowed without ADR and versioned filename`
-  - `Breaking changes allowed if consumers updated in same PR`
-  - `TBD`
-
-These are intentionally optional in v1.2 to keep the catalog automation-focused and minimize unprovable placeholders.
-
----
-
-## 2) Source priority (MUST)
-
-Populate artifact catalog entries using this priority order:
-
-1) Use `jobs/<job_id>/job_manifest.yaml` first (inputs/outputs/config_files, formats, required flags, bucket/key patterns).
-2) Use business descriptions for `purpose` / business meaning when available.
-3) Use code only when the manifest/business description does not expose something required by this spec
-   (notably: `presence_on_success=conditional`, `empty_behavior`, `required_sections`, `primary_keying`).
-4) Use `TBD` only if none of the above provide provable information.
-
-`evidence_sources` MUST list the concrete repo paths actually used.
+The catalog file is compliant if:
+- it contains only valid entry blocks as defined in section 1
+- no duplicate `artifact_id` entries exist
 
 ---
 
-## 3) Allowed use of `TBD` (MUST)
+## 5) Example entry skeleton (compliant)
 
-A field MAY be `TBD` only if:
-* it cannot be proven from the code/docs currently in the repo, **or**
-* it depends on environment wiring not captured in GitHub (e.g., Make scenario details).
-
-Not allowed:
-* inventing values to avoid `TBD`
-* adding consumers/producers without evidence
-
----
-
-## 4) Verifiable compliance checklist (PASS/FAIL)
-
-An artifact entry is compliant if and only if:
-
-* It has the exact heading `## <artifact_id>`
-* All 10 required fields exist
-* `format` uses only allowed values
-* `presence_on_success` uses only allowed values
-* `content_contract` contains all 5 sub-fields with allowed values
-* `evidence_sources` is present and is a bullet list (or `- TBD`)
-
-Optional fields do not affect compliance.
-
----
-
-## 5) Example entry skeleton (format reference)
-
-```md
 ## <artifact_id>
 
 - artifact_id: <artifact_id>
@@ -480,16 +346,79 @@ Optional fields do not affect compliance.
   - TBD
 - format: TBD
 - producer_job_id: TBD
-- consumers:
-  - TBD
+- consumers: TBD
 - presence_on_success: TBD
-- purpose: TBD
+- purpose: Output written by <producer_job_id>; business purpose not documented yet.
 - content_contract:
   - top_level_type: TBD
   - primary_keying: TBD
-  - required_sections:
-    - TBD
+  - required_sections: TBD
   - empty_behavior: TBD
   - notes: TBD
-- evidence_sources:
-  - TBD
+- evidence_sources: TBD
+
+---
+
+## 6) Optional governance fields (MAY)
+
+These fields MAY be added to an entry to support governance and operational review.  
+If present, they MUST appear **only after** `evidence_sources` and **in exactly this order**:
+1) `producer_glue_job_name`  
+2) `stability`  
+3) `breaking_change_rules`
+
+### 6.1 `producer_glue_job_name` (MAY)
+
+Definition:
+- Concrete AWS Glue job name used in deployment for the producer.
+- This is deployment metadata; it may differ from repo `job_id`.
+
+Allowed values:
+- a concrete string (e.g., `preprocess_incoming_bmecat-prod`)
+- `TBD`
+
+Source priority:
+1) existing entry  
+2) producer job manifest `glue_job_name` (if present)  
+3) deployment config (only if represented in repo and explicitly referenced in `evidence_sources`)  
+
+Otherwise `TBD`.
+
+### 6.2 `stability` (MAY)
+
+Definition:
+- Human governance signal for how stable the artifact contract is expected to be.
+
+Allowed values:
+- `stable | evolving | experimental | TBD`
+
+Guidance:
+- `stable` — breaking changes strongly discouraged; require explicit governance action.  
+- `evolving` — contract may change; consumers should be robust.  
+- `experimental` — contract is volatile; consumers should not rely on it.  
+- `TBD` — unknown / not set.
+
+Source priority:
+1) existing entry  
+2) ADR or business description that explicitly states stability expectations  
+
+Otherwise `TBD`.
+
+### 6.3 `breaking_change_rules` (MAY)
+
+Definition:
+- Explicit governance rule for how breaking changes are handled for this artifact type.
+
+Allowed values:
+- `No breaking changes allowed without ADR and versioned filename`
+- `Breaking changes allowed if consumers updated in same PR`
+- `TBD`
+
+Source priority:
+1) existing entry  
+2) ADR or governance doc that explicitly states the rule  
+
+Otherwise `TBD`.
+
+---
+

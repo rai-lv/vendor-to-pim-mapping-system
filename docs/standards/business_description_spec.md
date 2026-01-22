@@ -1,4 +1,4 @@
-## Business Description Standard for Jobs (v1.0)
+## Business Description Standard for Jobs (v1.1)
 
 **Purpose:** Framework for writing future business-level job descriptions in a consistent, readable way.
 
@@ -8,6 +8,7 @@
 
 **Must contain**
 
+* Business purpose (one sentence): <exactly one sentence; starts with this fixed label; must be the first non-empty line in this section>
 * 1–3 sentences: business objective and what outcome is produced.
 * One explicit boundary statement (“Does not …”).
 
@@ -126,9 +127,10 @@ Include only if it affects operations materially:
 ## Minimal template (business style)
 
 ```md
-# <Job Name> — Business Definition (v1.0)
+# <Job Name> — Business Definition (v1.1)
 
 ## 1) Business purpose and context
+Business purpose (one sentence): <...>
 <1–3 sentences.>
 Boundary: Does not ...
 
@@ -168,7 +170,3 @@ Optional inputs:
 ## 9) References
 - Script:
 - Related artifacts:
-```
-
----
-

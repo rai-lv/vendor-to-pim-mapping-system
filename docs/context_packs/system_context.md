@@ -88,6 +88,7 @@ If a Codex task, a manifest, or a script card conflicts with a standard, the sta
 
 * `README.md`: short repo overview + pointers to key docs.
 * `CHANGELOG.md`: high-level changes (optional).
+* `tools/`: repository tooling scripts used for validation/automation; these are not deployed job code.
 
 ### Jobs
 

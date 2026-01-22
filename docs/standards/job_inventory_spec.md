@@ -23,15 +23,65 @@ This specification defines:
 
 ## 1) Source-of-truth rules (MUST)
 
+### 1.1 Job discovery rule (MUST)
+
+A job MUST be included in the inventory if and only if:
+- a folder under `jobs/<job_group>/<job_id>/` contains `glue_script.py`.
+
+If `job_manifest.yaml` is missing for such a folder, the job row MUST still exist, but all manifest-derived fields MUST be `TBD` and an open verification item `[TBD-manifest]` MUST be added.
+
+### 1.2 Row sourcing rules (MUST)
+
 For each job row:
 
-1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters, if present in manifest), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
+1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
 2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
 3. **Business purpose text** MAY come from a business description document if present; otherwise `TBD`.
    - If a business description exists, it MUST be taken from `docs/business_job_descriptions/<job_id>.md`.
 4. **Dependency claims** (upstream/downstream) MUST only be stated if supported by evidence inside this repo (see “Dependency links” rules). Otherwise `TBD`.
 
 **Forbidden:** deriving interface details from Script Cards (they are secondary renderings).
+
+### 1.3 Manifest field mapping (MUST)
+
+To avoid guessing, the following inventory fields MUST be sourced from these `job_manifest.yaml` keys:
+
+- `deployment_name`:
+  - Use `glue_job_name` if present, else `TBD`.
+- `runtime`:
+  - Use `runtime` if present, else `TBD`.
+- `parameters`:
+  - Use `parameters` (list of names) if present.
+  - If `parameters` exists and is an empty list: `NONE`.
+  - Else if missing: `TBD` and add `[TBD-params]`.
+- `inputs`:
+  - Use `inputs[]` items if present (for artifact linking).
+  - If `inputs` exists and has 0 items: `NONE`.
+  - Else if missing: `TBD` and add `[TBD-inputs]`.
+- `outputs`:
+  - Use `outputs[]` items if present (for artifact linking).
+  - If `outputs` exists and has 0 items: `NONE`.
+  - Else if missing: `TBD` and add `[TBD-outputs]`.
+- `side_effects`:
+  - Use `side_effects.deletes_inputs` and `side_effects.overwrites_outputs` if present.
+  - If missing: `TBD` and add `[TBD-side-effects]`.
+- `evidence_artifacts`:
+  - `run_receipt` MUST be sourced from `logging_and_receipt.writes_run_receipt` if present; else `TBD` and add `[TBD-evidence]`.
+  - `counters` MUST be sourced from `logging_and_receipt.counters_observed` if present:
+    - If list is empty: `NONE`.
+    - Else: comma-separated names.
+  - If `logging_and_receipt` is missing entirely: set both to `TBD` and add `[TBD-evidence]`.
+
+`executor` sourcing:
+- If `glue_job_name` exists as a top-level manifest key, set `executor=aws_glue`.
+- Otherwise set `executor=TBD` and add `[TBD-executor]`.
+
+### Business purpose extraction rule (deterministic, MAY)
+
+If `docs/business_job_descriptions/<job_id>.md` exists:
+- set `business_purpose` to the first sentence of the first paragraph under the heading that starts with `## 1)`.
+
+If the document does not contain such a heading, set `business_purpose=TBD`.
 
 ### Artifact linking rule (MUST)
 
@@ -125,8 +175,8 @@ Evidence artifacts:
   - `run_receipt` value `<v>` is `true|false|TBD`
   - `counters` value `<v>` is:
     - comma-separated counter names (no values), OR
-    - `NONE` (only if the manifest explicitly indicates there are no counters), OR
-    - `TBD` (if not determinable from the manifest)
+    - `NONE`, OR
+    - `TBD`
 
 Dependencies:
 - `upstream_job_ids`: comma-separated job_ids or `TBD`
@@ -136,6 +186,10 @@ Lifecycle:
 - `status`: one of `active | deprecated | planned | TBD`
 - `last_reviewed`: ISO date `YYYY-MM-DD` or `TBD`
   - Meaning: last date the row was validated against its manifest + artifact catalog links.
+
+`last_reviewed` automation rule (MUST):
+- When an automation creates or updates a row and can resolve all manifest-derived fields AND can resolve artifact_id links for all inputs/outputs (no `TBD` positions in those lists), it MUST set `last_reviewed` to the automation execution date (local repo convention).
+- Otherwise it MUST NOT change `last_reviewed`.
 
 ---
 
@@ -158,6 +212,7 @@ Under `## Open verification items`, include a bullet list of unresolved facts.
 
 Each bullet MUST start with one of these tags:
 
+- `[TBD-manifest]`
 - `[TBD-runtime]`
 - `[TBD-executor]`
 - `[TBD-deployment]`

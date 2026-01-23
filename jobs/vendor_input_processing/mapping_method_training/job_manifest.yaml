@@ -29,9 +29,13 @@ inputs:
     format: json
     required: false
   - bucket: ${INPUT_BUCKET}
-    key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Unigrams_v1.json
     format: json
-    required: true
+    required: false
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Pairs_v1.json
+    format: json
+    required: false
   - bucket: ${OUTPUT_BUCKET}
     key_pattern: ${prepared_output_prefix}/${vendor_name}_forMapping_products
     format: ndjson
@@ -106,3 +110,4 @@ logging_and_receipt:
 notes:
   - "TBD_EXPLANATIONS:"
   - "logging_and_receipt.counters_observed: TBD — run receipt includes many nested count fields; a stable enumerated counter list is not explicitly defined in the script."
+  - "Placeholders: ${run_id} and ${run_id_compact} are generated at runtime from timestamp and vendor context; ${timestamp} is dynamically selected as the latest Category_Mapping_Reference file."

@@ -13,10 +13,6 @@ parameters:
 
 inputs:
   - bucket: ${INPUT_BUCKET}
-    key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
-    format: json
-    required: true
-  - bucket: ${INPUT_BUCKET}
     key_pattern: ${bmecat_input_key}
     format: xml
     required: true
@@ -59,7 +55,7 @@ config_files:
 
 side_effects:
   deletes_inputs: false
-  overwrites_outputs: TBD
+  overwrites_outputs: true
 
 logging_and_receipt:
   writes_run_receipt: false
@@ -69,7 +65,6 @@ logging_and_receipt:
 
 notes:
   - "TBD_EXPLANATIONS:"
-  - "side_effects.overwrites_outputs: TBD — bmecat_output_prefix comes from job arguments and may include run-specific elements, so overwrite behavior cannot be confirmed from repo evidence."
   - "logging_and_receipt.run_receipt_bucket: TBD — no run receipt S3 write is present in glue_script.py; bucket not applicable but spec requires explanation."
   - "logging_and_receipt.run_receipt_key_pattern: TBD — no run receipt S3 write is present in glue_script.py; key pattern not applicable but spec requires explanation."
   - "logging_and_receipt.counters_observed: TBD — script logs summary counts but does not persist a receipt with a defined counters schema."

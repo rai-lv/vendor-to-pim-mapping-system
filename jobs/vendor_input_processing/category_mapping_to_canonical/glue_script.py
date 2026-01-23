@@ -525,16 +525,36 @@ try:
         f"[INFO] Selected PART-1 part file: s3://{output_bucket}/{part_key_part1}"
     )
 
-    # Final key EXACTLY as previously used: <VENDOR_NAME>_forMapping_products
-    final_key = f"{prepared_output_prefix.rstrip('/')}/{vendor_name}_forMapping_products"
-    print(f"[INFO] Copying PART-1 result to final output: s3://{output_bucket}/{final_key}")
+    # Final keys: primary uses explicit .ndjson extension; legacy kept for backward compatibility
+    final_key_primary = (
+        f"{prepared_output_prefix.rstrip('/')}/{vendor_name}_forMapping_products.ndjson"
+    )
+    final_key_legacy = (
+        f"{prepared_output_prefix.rstrip('/')}/{vendor_name}_forMapping_products"
+    )
+    print(
+        "[INFO] Copying PART-1 result to final output (primary): "
+        f"s3://{output_bucket}/{final_key_primary}"
+    )
 
-    # Copy part file to final key
+    # Copy part file to final primary key
     s3_client.copy_object(
         Bucket=output_bucket,
         CopySource={"Bucket": output_bucket, "Key": part_key_part1},
-        Key=final_key,
+        Key=final_key_primary,
     )
+
+    # Also copy to legacy key if different
+    if final_key_legacy != final_key_primary:
+        print(
+            "[INFO] Copying PART-1 result to final output (legacy): "
+            f"s3://{output_bucket}/{final_key_legacy}"
+        )
+        s3_client.copy_object(
+            Bucket=output_bucket,
+            CopySource={"Bucket": output_bucket, "Key": part_key_part1},
+            Key=final_key_legacy,
+        )
 
     # Cleanup temporary folder
     print(f"[INFO] Cleaning up PART-1 temporary prefix: {tmp_key_prefix_part1}")
@@ -546,7 +566,7 @@ try:
     # =========================================================
     print("[INFO] ===== PART-2: Enriching with existing category mappings =====")
 
-    for_mapping_uri = f"s3://{output_bucket}/{final_key}"
+    for_mapping_uri = f"s3://{output_bucket}/{final_key_primary}"
     print(f"[INFO] Reading for-mapping products from: {for_mapping_uri}")
 
     # This is NDJSON (one JSON per line), so standard read.json works
@@ -1370,14 +1390,25 @@ try:
 
     print(
         f"[INFO] Copying FINAL result (overwriting) to final output: "
-        f"s3://{output_bucket}/{final_key}"
+        f"s3://{output_bucket}/{final_key_primary}"
     )
 
     s3_client.copy_object(
         Bucket=output_bucket,
         CopySource={"Bucket": output_bucket, "Key": part_key_part4},
-        Key=final_key,
+        Key=final_key_primary,
     )
+
+    if final_key_legacy != final_key_primary:
+        print(
+            "[INFO] Copying FINAL result (overwriting) to legacy output: "
+            f"s3://{output_bucket}/{final_key_legacy}"
+        )
+        s3_client.copy_object(
+            Bucket=output_bucket,
+            CopySource={"Bucket": output_bucket, "Key": part_key_part4},
+            Key=final_key_legacy,
+        )
 
     print(f"[INFO] Cleaning up PART-4 temporary prefix: {tmp_key_prefix_part4}")
     for k in tmp_keys_part4:

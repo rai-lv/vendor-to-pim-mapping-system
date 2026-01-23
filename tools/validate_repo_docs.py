@@ -46,6 +46,13 @@ ARTIFACTS_REQUIRED_KEYS_WITHOUT_PRODUCERS = [
     "evidence_sources",
 ]
 
+# Optional governance fields allowed (in order) after evidence_sources in artifacts_catalog entries.
+OPTIONAL_GOVERNANCE_FIELDS = [
+    "producer_glue_job_name",
+    "stability",
+    "breaking_change_rules",
+]
+
 JOB_INVENTORY_HEADINGS = [
     "# Job Inventory",
     "## Scope and evidence",
@@ -259,10 +266,8 @@ def load_shared_artifacts_allowlist(path: Path):
     return set()
 
 
-# Matches markdown bullets with arbitrary indentation, e.g.:
-# "- key: value"
-# "  - key: value"
-_BULLET_RE = re.compile(r"^(?P<indent>[ \t]*)-\s+(?P<rest>.*)$")
+# Markdown bullet: leading spaces allowed; dash; space; then rest
+_BULLET_RE = re.compile(r"^(?P<indent>\s*)-\s+(?P<rest>.*)$")
 
 
 def parse_artifact_entry(lines):
@@ -286,16 +291,18 @@ def parse_artifact_entry(lines):
         rest = m.group("rest")
         if ":" not in rest:
             continue
-        indent_len = len(m.group("indent"))
         key, value = rest.split(":", 1)
         key = key.strip()
         value = value.strip()
+        if not key:
+            continue
+        indent_len = len(m.group("indent"))
         candidates.append((indent_len, key, value))
 
     if not candidates:
         return [], {}
 
-    min_indent = min(indent for indent, _, _ in candidates)
+    min_indent = min(i for i, _, _ in candidates)
 
     keys = []
     values = {}
@@ -311,6 +318,18 @@ def parse_artifact_entry(lines):
 
 def validate_artifacts_catalog(path: Path, allowlist):
     violations = []
+
+    if not path.exists():
+        violations.append(
+            Violation(
+                "artifacts_catalog",
+                path,
+                "missing_file",
+                "docs/artifacts_catalog.md does not exist.",
+            )
+        )
+        return violations
+
     lines = path.read_text(encoding="utf-8").splitlines()
 
     # Spec requires a top-level title; be robust to whitespace.
@@ -338,13 +357,31 @@ def validate_artifacts_catalog(path: Path, allowlist):
             if has_producers
             else ARTIFACTS_REQUIRED_KEYS_WITHOUT_PRODUCERS
         )
-        if keys != expected_keys:
+
+        # Spec allows optional governance fields after evidence_sources (in this exact order):
+        # producer_glue_job_name, stability, breaking_change_rules.
+        # Accept either:
+        # - exact required keys, OR
+        # - required keys plus a valid optional governance tail.
+        extra_keys = []
+        if keys[: len(expected_keys)] == expected_keys:
+            extra_keys = keys[len(expected_keys) :]
+        is_valid_governance_tail = extra_keys == OPTIONAL_GOVERNANCE_FIELDS[: len(extra_keys)]
+
+        if not (keys == expected_keys or is_valid_governance_tail):
+            allowed = ", ".join(expected_keys)
+            allowed_with_tail = (
+                allowed
+                + " [+ optional: "
+                + ", ".join(OPTIONAL_GOVERNANCE_FIELDS)
+                + "]"
+            )
             violations.append(
                 Violation(
                     "artifacts_catalog",
                     path,
                     "invalid_entry_structure",
-                    f"Entry '{artifact_id}' keys must be in order: {', '.join(expected_keys)}.",
+                    f"Entry '{artifact_id}' keys must be in order: {allowed_with_tail}.",
                 )
             )
 
@@ -374,6 +411,18 @@ def validate_artifacts_catalog(path: Path, allowlist):
 
 def validate_job_inventory(path: Path):
     violations = []
+
+    if not path.exists():
+        violations.append(
+            Violation(
+                "job_inventory",
+                path,
+                "missing_file",
+                "docs/job_inventory.md does not exist.",
+            )
+        )
+        return violations
+
     lines = path.read_text(encoding="utf-8").splitlines()
     heading_positions = {}
     for index, line in enumerate(lines):

@@ -1,1 +1,1 @@
-'# Artifacts Catalog'
+# Artifacts Catalog

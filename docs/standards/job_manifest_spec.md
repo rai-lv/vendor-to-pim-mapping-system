@@ -125,6 +125,30 @@ Rules:
 - a list of items in the schemas below, OR
 - `TBD`
 
+#### 5.4.0.1 Format semantics and decision rules (MUST)
+
+This repo distinguishes:
+
+- `ndjson`: newline-delimited JSON (one JSON object per line). This is the default JSON layout for Spark/Glue I/O.
+- `json`: a single JSON document (one object or one array) stored in one file/key.
+
+Decision rules (MUST):
+
+1) If the job uses Spark/Glue JSON writing via any of the following patterns, `format` MUST be `ndjson`:
+   - `DataFrameWriter.json(...)` / `.write.json(...)`
+   - `Dataset.toJSON()` followed by `saveAsTextFile(...)`
+   - any Spark write that produces partition/part files where each record is a JSON line
+   Rationale: Spark writes JSON as JSON Lines / newline-delimited JSON by default. :contentReference[oaicite:1]{index=1}
+
+2) If the job reads JSON via Spark/Glue `read.json(...)` without `multiLine=true`, the expected input `format` MUST be `ndjson`
+   Rationale: Spark reads JSON Lines by default; multiline JSON is an explicit opt-in. :contentReference[oaicite:2]{index=2}
+
+3) `format: json` is only allowed if there is evidence that the artifact is a single JSON document written as one unit
+   (e.g., `json.dump/json.dumps` to a single file/key, or `multiLine=true` semantics are explicitly used).
+
+4) If the script does not provide enough evidence to classify `json` vs `ndjson`, `format` MUST be `TBD` (do not guess),
+   and the `notes` section MUST explain what evidence is missing.
+
 Ordering rule:
 - List order MUST be stable and meaningful (do not reorder between updates unless the interface truly changed).
 - Automations (e.g., job inventory) preserve this order.

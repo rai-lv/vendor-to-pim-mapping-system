@@ -80,6 +80,21 @@ Rules that control naming, manifest fields, script-card structure, and Codex-tas
 
 If a Codex task, a manifest, or a script card conflicts with a standard, the standard wins.
 
+### Automated standards validation (CI gate)
+
+On every Pull Request, the repository runs an automated standards validation check via GitHub Actions.
+
+* **Workflow:** `.github/workflows/validate_standards.yml`
+* **Validator:** `tools/validate_repo_docs.py`
+* **Command:** `python tools/validate_repo_docs.py --all`
+
+**Rule:** A PR must not be merged if this validation fails.
+
+Notes:
+
+* The automated validator enforces a **minimum structural compliance layer** (e.g., required headings, required key presence, placeholder style, and other machine-checkable rules).
+* A passing CI check does not replace human review; it only confirms the repository meets the enforced baseline rules.
+
 ---
 
 ## Repository structure (authoritative)

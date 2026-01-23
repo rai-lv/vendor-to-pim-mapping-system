@@ -1,0 +1,165 @@
+job_id: mapping_method_training
+glue_job_name: ${JOB_NAME}
+runtime: python_shell
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_*.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingSet.json
+    format: json
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/run_receipts/run_receipt_${vendor_name}_${run_id}.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/stable_training_deltas/stable_training_delta_${vendor_name}_${run_id}.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingSet.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Unigrams_v1.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Pairs_v1.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/rules_snapshot/rules_snapshot_${vendor_name}_${run_id}.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/product_rule_hits/product_rule_hits_${vendor_name}_${run_id}.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/product_rule_hits/product_multimapping_exceptions_${vendor_name}_${run_id}.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/vendor_category_product_rule_hits/vendor_category_product_rule_hits_${vendor_name}_${run_id}.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/rule_validation_status/rule_validation_status_${vendor_name}_${run_id}.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/mappingMethodTraining/vendor_category_mapping_status/vendor_category_mapping_status_${vendor_name}_${run_id}.json
+    format: json
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_${run_id_compact}.json
+    format: json
+    required: true
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
+    format: json
+    required: true
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+logging_and_receipt:
+  writes_run_receipt: true
+  run_receipt_bucket: ${OUTPUT_BUCKET}
+  run_receipt_key_pattern: ${prepared_output_prefix}/mappingMethodTraining/run_receipts/run_receipt_${vendor_name}_${run_id}.json
+  counters_observed:
+    - counts.step2_full.vendor_category_count
+    - counts.step2_1to1.vendor_category_count
+    - counts.step2_1to1.existing_category_match_vendor_category_count
+    - counts.category_mapping_reference.pim_category_entry_count
+    - counts.stable_training_set.exists
+    - counts.stable_training_set.record_count
+    - counts.stable_training_delta.vendor_category_count
+    - counts.stable_training_delta.product_count
+    - counts.stable_training_set_upsert.delta_record_count
+    - counts.stable_training_set_upsert.created_key_count
+    - counts.stable_training_set_upsert.updated_key_count
+    - counts.stable_training_set_upsert.final_total_key_count
+    - counts.stable_training_evidence_unigrams.pim_category_count
+    - counts.stable_training_evidence_unigrams.product_count_total
+    - counts.stable_training_evidence_unigrams.unique_token_count_by_field.KEYWORD
+    - counts.stable_training_evidence_unigrams.unique_token_count_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_unigrams.unique_token_count_by_field.CLASS_CODES
+    - counts.stable_training_evidence_unigrams.plural_map_size_by_field.KEYWORD
+    - counts.stable_training_evidence_unigrams.plural_map_size_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_unigrams.plural_normalization_changed_tokens_keyword
+    - counts.stable_training_evidence_unigrams.plural_normalization_changed_tokens_description
+    - counts.stable_training_evidence_unigrams.denylist_removed_tokens_by_field.KEYWORD
+    - counts.stable_training_evidence_unigrams.denylist_removed_tokens_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_pairs.pim_categories_total_by_field.KEYWORD
+    - counts.stable_training_evidence_pairs.pim_categories_total_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_pairs.pim_categories_total_by_field.CLASS_CODES
+    - counts.stable_training_evidence_pairs.pim_categories_with_any_pair_by_field.KEYWORD
+    - counts.stable_training_evidence_pairs.pim_categories_with_any_pair_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_pairs.pim_categories_with_any_pair_by_field.CLASS_CODES
+    - counts.stable_training_evidence_pairs.pairs_total_by_field.KEYWORD
+    - counts.stable_training_evidence_pairs.pairs_total_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_pairs.pairs_total_by_field.CLASS_CODES
+    - counts.stable_training_evidence_pairs.pairs_any_occurrence_indexed_by_field.KEYWORD
+    - counts.stable_training_evidence_pairs.pairs_any_occurrence_indexed_by_field.DESCRIPTION_SHORT
+    - counts.stable_training_evidence_pairs.pairs_any_occurrence_indexed_by_field.CLASS_CODES
+    - counts.contains_any_exclude_any_rules.total_rules_added
+    - counts.contains_any_exclude_any_rules.rules_total_by_field.KEYWORD
+    - counts.contains_any_exclude_any_rules.rules_total_by_field.DESCRIPTION_SHORT
+    - counts.contains_any_exclude_any_rules.rules_total_by_field.CLASS_CODES
+    - counts.rules_snapshot.rules_total
+    - counts.rules_snapshot.pim_categories_with_rules
+    - counts.rules_snapshot.rules_total_by_field.KEYWORD
+    - counts.rules_snapshot.rules_total_by_field.DESCRIPTION_SHORT
+    - counts.rules_snapshot.rules_total_by_field.CLASS_CODES
+    - counts.rules_snapshot.rules_total_by_operator.contains_any
+    - counts.rules_snapshot.rules_total_by_operator.contains_all
+    - counts.rules_snapshot.rules_total_by_operator.contains_any_exclude_any
+    - counts.product_rule_hits.products_total_read
+    - counts.product_rule_hits.products_included_single_mapping
+    - counts.product_rule_hits.products_excluded_multi_mapping
+    - counts.product_rule_hits.products_with_any_rule_hit
+    - counts.product_rule_hits.denylist_removed_tokens_by_field.KEYWORD
+    - counts.product_rule_hits.denylist_removed_tokens_by_field.DESCRIPTION_SHORT
+    - counts.vendor_category_product_rule_hits.vendor_category_count
+    - counts.vendor_category_product_rule_hits.product_count_total
+    - counts.rule_validation_status_total_rules
+    - counts.rule_validation_status_supported_rules
+    - counts.rule_validation_status_violated_rules
+    - counts.rule_validation_status_not_applicable_rules
+    - counts.vendor_category_mapping_status.categories_total
+    - counts.vendor_category_mapping_status.unambiguous_count
+    - counts.vendor_category_mapping_status.conflicting_count
+    - counts.vendor_category_mapping_status.insufficient_count
+    - counts.vendor_category_mapping_status.no_rule_hits_count
+    - reference_update.counts.rules_total
+    - reference_update.counts.rules_supported_total
+    - reference_update.counts.rules_supported_clean_included
+    - reference_update.counts.rules_supported_unclean_dropped
+    - reference_update.counts.rules_violated_excluded
+    - reference_update.counts.rules_not_applicable_included
+    - reference_update.counts.rules_denylisted_dropped

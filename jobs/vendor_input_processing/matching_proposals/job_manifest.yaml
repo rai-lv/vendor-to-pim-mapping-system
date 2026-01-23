@@ -1,0 +1,38 @@
+job_id: matching_proposals
+glue_job_name: ${JOB_NAME}
+runtime: pyspark
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products*
+    format: TBD
+    required: false
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: true
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: []
+notes:
+  - TBD_EXPLANATIONS
+  - inputs[0].format: Input discovery allows either standard JSON or multiline JSON and does not enforce a fixed format; the script attempts both Spark read modes, so the exact format cannot be proven from repo evidence.
+  - logging_and_receipt.run_receipt_bucket: The script does not write a run receipt artifact, so no run receipt bucket is defined in repo evidence.
+  - logging_and_receipt.run_receipt_key_pattern: The script does not write a run receipt artifact, so no run receipt key pattern is defined in repo evidence.

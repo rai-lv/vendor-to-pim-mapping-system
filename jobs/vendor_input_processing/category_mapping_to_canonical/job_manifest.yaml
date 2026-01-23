@@ -1,0 +1,46 @@
+job_id: category_mapping_to_canonical
+glue_job_name: ${JOB_NAME}
+runtime: pyspark
+entrypoint: glue_script.py
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - preprocessed_input_key
+  - prepared_output_prefix
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key}/${vendor_name}_vendor_products.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key}/${vendor_name}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key}/${vendor_name}_vendor_categories.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_${timestamp}.json
+    format: json
+    required: false
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+notes:
+  - TBD_EXPLANATIONS
+  - logging_and_receipt.run_receipt_bucket is TBD because this script does not write a run receipt artifact to S3.
+  - logging_and_receipt.run_receipt_key_pattern is TBD because this script does not write a run receipt artifact to S3.
+  - logging_and_receipt.counters_observed is TBD because no run receipt counters are emitted in the script.

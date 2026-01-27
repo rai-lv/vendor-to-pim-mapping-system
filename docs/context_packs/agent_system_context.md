@@ -1021,7 +1021,7 @@ python tools/coding_agent.py check
 - Step 4: Uses decomposition from Step 3 output
 
 **Quality Gates:**
-- Repository validation: `python tools/validate_repo_docs.py --all`
+- Repository validation: Per `docs/standards/validation_standard.md`
 - Python syntax check: `python -m py_compile <script>`
 - Best practices check: `python tools/coding_agent.py check`
 
@@ -1080,7 +1080,7 @@ Capability: data_validation
 - Must follow manifest spec: docs/standards/job_manifest_spec.md
 
 **Acceptance Criteria:**
-- Manifest validates with: python tools/validate_repo_docs.py --all
+- Manifest validates per `docs/standards/validation_standard.md`
 - Uses ${PLACEHOLDER} style for parameter substitution
 - All inputs/outputs from capability plan are represented
 
@@ -1094,7 +1094,7 @@ Capability: data_validation
 - Must follow specs in docs/standards/
 
 **Acceptance Criteria:**
-- Documentation validates with: python tools/validate_repo_docs.py --all
+- Documentation validates per `docs/standards/validation_standard.md`
 - Aligns with capability plan objectives and acceptance criteria
 ```
 
@@ -1167,7 +1167,7 @@ ONLY the following files may be created or modified:
 ## Quality Gates (Must Pass)
 
 ```bash
-# Repository validation
+# Repository validation (see docs/standards/validation_standard.md for details)
 python tools/validate_repo_docs.py --all
 
 # Python syntax check
@@ -1263,7 +1263,7 @@ python tools/testing_agent.py logs
 #### Test Execution Details
 
 **1. Repository Validation:**
-- Executes: `python tools/validate_repo_docs.py --all`
+- Per `docs/standards/validation_standard.md`
 - Validates: Manifests, script cards, business descriptions against standards
 - Timeout: 300 seconds
 
@@ -1521,7 +1521,7 @@ python tools/documentation_agent.py script-card validate_vendor_data \
 # Next steps:
 # 1. Fill in all TODO sections based on job implementation
 # 2. Ensure parameters, inputs, outputs match job_manifest.yaml
-# 3. Run validation: python tools/validate_repo_docs.py --all
+# 3. Run validation per docs/standards/validation_standard.md
 
 # Create business description
 python tools/documentation_agent.py business-desc validate_vendor_data \
@@ -1567,81 +1567,29 @@ python tools/documentation_agent.py validate
 # Output:
 # Running documentation validation...
 # ------------------------------------------------------------
-# [Output from validate_repo_docs.py --all]
+# [Output from validation - see docs/standards/validation_standard.md]
 # ------------------------------------------------------------
 # ✓ Documentation validation passed
 ```
 
-**Expected Script Card Template:**
-```markdown
-# Script Card: validate_vendor_data
+**Script Card Template:**
+See `docs/standards/script_card_spec.md` for the authoritative template structure and field requirements.
 
-**Version:** 1.0.0  
-**Last Updated:** 2026-01-27  
-**Status:** Draft  
-**Specification:** Based on specification: data_validation_capability
-
----
-
-## Job Identification
-
-- **job_id:** `validate_vendor_data`
-- **Glue Job Name:** `TODO: AWS Glue job name`
-- **Runtime:** `TODO: e.g., AWS Glue 4.0 (Python 3.10, Spark 3.3.0)`
-- **Executor:** AWS Glue
-
----
-
-## Purpose (One-Line Summary)
-
-TODO: Brief one-line description of what this job does.
-
----
-
-## Parameters
-
-| Parameter Name | Type | Required | Default | Description |
-|----------------|------|----------|---------|-------------|
-| TODO           | TODO | Yes/No   | TODO    | TODO        |
-
-[... rest of template sections ...]
-```
-
-**Expected Business Description Template:**
-```markdown
-# Business Job Description: validate_vendor_data
-
-**Version:** 1.0.0  
-**Last Updated:** 2026-01-27  
-**Status:** Draft  
-**Specification:** Based on specification: data_validation_capability
-
----
-
-## Purpose
-
-TODO: Explain **why** this job exists and what business problem it solves.
-
----
-
-## Business Objective
-
-TODO: Define the business objective this job achieves.
-
-[... rest of template sections ...]
-```
+**Business Description Template:**
+See `docs/standards/business_job_description_spec.md` for the authoritative template structure and field requirements.
 
 #### Dependency Handling
 
 **Prerequisites:**
-- `tools/validate_repo_docs.py` for documentation validation
+- Validation tooling per `docs/standards/validation_standard.md`
 - Capability specification (optional, for reference context)
 
 **Integration Points:**
 - **Coding Agent (Step 4):** Codex tasks include documentation requirements
-- **Standards:** Must comply with specs in `docs/standards/`
-  - `script_card_spec.md` for script cards
-  - `business_job_description_spec.md` for business descriptions
+- **Standards:** Must comply with specs in `docs/standards/`:
+  - `script_card_spec.md` for script card template and requirements
+  - `business_job_description_spec.md` for business description template and requirements
+  - `validation_standard.md` for validation procedures
 - **Glossary:** Shared terms go to `docs/glossary.md`
 
 ---
@@ -1680,9 +1628,7 @@ The implementation phase transforms approved capability plans into working code 
 All PRs must pass these gates:
 
 1. **Repository Validation:**
-   ```bash
-   python tools/validate_repo_docs.py --all
-   ```
+   Per `docs/standards/validation_standard.md`
 
 2. **Testing Agent Validation:**
    ```bash

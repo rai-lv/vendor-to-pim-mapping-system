@@ -20,63 +20,86 @@ ROADMAPS_DIR = REPO_ROOT / "docs" / "roadmaps"
 
 
 def generate_planning_template(phase_name: str, description: str = "") -> str:
-    """Generate a planning document template."""
+    """Generate a planning document template for Step 1: Define Objective."""
     timestamp = datetime.now().strftime("%Y-%m-%d")
     
-    return f"""# Planning Phase: {phase_name}
+    return f"""# Objective Definition: {phase_name}
 
 **Date:** {timestamp}
 **Status:** Draft
+**Workflow Step:** Step 1 - Define Objective
 
-## Objective
+## What Must Be Achieved
 
-{description if description else "TODO: Define the high-level objective for this planning phase."}
+{description if description else "TODO: Clearly state what must be achieved by this objective."}
 
-## Scope
+### Specific Goals
+- TODO: List specific, measurable goals
 
-### In Scope
-- TODO: Define what is included in this planning phase
+### Expected Outcomes
+- TODO: Define concrete outcomes that will be delivered
 
-### Out of Scope
-- TODO: Define what is explicitly excluded
+## Out-of-Scope Boundaries (Explicit)
 
-## Constraints
+### What This Does NOT Include
+- TODO: Explicitly state what is out of scope
+- TODO: Define boundaries to prevent scope creep
+- TODO: List related work that is separate from this objective
+
+### Deferred Items
+- TODO: List items that are acknowledged but deferred to future work
+
+## Success Criteria (Testable)
+
+### Functional Criteria
+- TODO: Define functional requirements that can be tested
+- TODO: Specify observable behaviors that indicate success
+
+### Quality Criteria
+- TODO: Define quality metrics (performance, accuracy, reliability)
+- TODO: Specify acceptance thresholds
+
+### Validation Methods
+- TODO: Describe how each criterion will be validated/tested
+
+## Constraints and Dependencies
 
 ### Technical Constraints
 - TODO: List technical limitations or requirements
+- TODO: Specify platform, runtime, or infrastructure constraints
 
 ### Business Constraints
 - TODO: List business requirements or limitations
+- TODO: Specify compliance, regulatory, or policy constraints
 
-### Resource Constraints
-- TODO: List resource availability or limitations
+### Time/Resource Constraints
+- TODO: Note timeline or resource limitations
 
-## Required Information
+### External Dependencies
+- TODO: List dependencies on other systems, teams, or projects
+- TODO: Identify blocking items that must be resolved first
 
-### Data Requirements
-- TODO: Identify needed data sources or artifacts
+## Risk Assessment
 
-### Stakeholder Input
-- TODO: Identify decisions or information needed from stakeholders
+### Known Risks
+| Risk | Impact | Likelihood | Mitigation Strategy |
+|------|--------|------------|---------------------|
+| TODO | High/Medium/Low | High/Medium/Low | TODO |
 
-### Dependencies
-- TODO: List dependencies on other systems or projects
+### Unknowns and Open Questions
+- TODO: List things that are currently unknown
+- TODO: Identify decisions that need to be made
 
-## Success Criteria
+## Approval and Next Steps
 
-- TODO: Define measurable success criteria for this planning phase
+### Stakeholder Sign-off
+- [ ] Objective reviewed and understood
+- [ ] Success criteria agreed upon
+- [ ] Boundaries and constraints confirmed
 
-## Risks and Mitigations
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| TODO | TODO   | TODO        | TODO       |
-
-## Next Steps
-
-1. TODO: Define the immediate next steps
-2. Review and validate objectives with stakeholders
-3. Create detailed specifications via Designer Agent
+### Next Step
+Once approved, proceed to **Step 2a: Create Overarching Plan (Pipeline-Level)**
+using the Pipeline Planner Agent.
 
 ## Notes
 

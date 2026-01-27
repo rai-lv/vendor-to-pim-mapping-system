@@ -1,6 +1,6 @@
 # System Context — AI-Supported Data Automation Monorepo
 
-**Version:** 1.3 (Integrated — Manual, Codex, and Agent Workflows)
+**Version:** 1.3 (Integrated — Manual, Codex, and Agent-Assisted Workflows)
 
 ---
 
@@ -9,7 +9,7 @@
 This document is the **single source of truth** for the `vendor-to-pim-mapping-system` monorepo's:
 - Repository structure and organization
 - Authoritative sources (truth hierarchy)
-- Development workflows (manual, Codex-assisted, and agent-driven)
+- Development workflows (manual, Codex-assisted, and agent-assisted)
 - Non-negotiable rules and quality standards
 - Technology stack and capabilities
 - Common tasks and best practices
@@ -17,7 +17,7 @@ This document is the **single source of truth** for the `vendor-to-pim-mapping-s
 This document supports **three complementary development approaches**:
 1. **Manual development** with ChatGPT planning
 2. **Codex-assisted development** with structured task definitions
-3. **Agent-driven development** with automated planning and execution (v1.3)
+3. **Agent-assisted development** with human oversight and approval gates (v1.3)
 
 For detailed agent roles and workflows, see: [`agent_system_context.md`](agent_system_context.md)
 
@@ -31,7 +31,7 @@ This is an **AI-supported data automation monorepo** for AWS Glue jobs (and opti
 
 Enable efficient, scalable, and high-quality development through:
 - **Structured planning** with explicit boundaries and testable criteria
-- **Multiple workflow options**: manual, Codex-assisted, or agent-driven
+- **Multiple workflow options**: manual, Codex-assisted, or agent-assisted
 - **Enforcement of standards** via automated validation
 - **Evidence-based documentation** derived from actual code
 - **Clear authority hierarchy** preventing conflicting truths
@@ -112,7 +112,7 @@ This repository supports **three complementary workflow approaches**. Teams can 
 |----------|----------|-----------|----------|
 | **Manual** | ChatGPT discussions | Manual coding | Small changes, prototypes, exploratory work |
 | **Codex-Assisted** | Manual planning + structured Codex tasks | Codex generates code from tasks | Standard features, well-defined changes |
-| **Agent-Driven** | Automated agent planning | Automated execution | Large pipelines, systematic development |
+| **Agent-Assisted** | Agent-assisted planning with manual approval | Human-driven execution with agent support | Large pipelines, systematic development |
 
 ### 1. Manual Development Workflow (ChatGPT-Assisted)
 
@@ -148,9 +148,9 @@ This repository supports **three complementary workflow approaches**. Teams can 
 
 ---
 
-### 3. Agent-Driven Development Workflow (v1.3)
+### 3. Agent-Assisted Development Workflow (v1.3)
 
-**Automated planning and execution with agent specialists:**
+**Agent-assisted planning and human-driven execution with approval gates:**
 
 ```
 Step 1: Define Objective (Planner Agent)
@@ -171,15 +171,16 @@ Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agent
 **When to use**: Large pipelines, complex features, systematic development requiring consistency
 
 **Agent Tools**:
-- **Planner Agent** (`tools/planner_agent.py`) — Creates `docs/roadmaps/<objective>.md`
-- **Pipeline Planner Agent** (`tools/pipeline_planner_agent.py`) — Creates `docs/roadmaps/<objective>_pipeline_plan.md`
-- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Creates `docs/specifications/<capability>_capability.yaml`
-- **Coding Agent** (`tools/coding_agent.py`) — Decomposition and Codex task generation
-- **Testing/Documentation/Deployment Agents** — Automated quality gates and deployment
+- **Planner Agent** (`tools/planner_agent.py`) — Assists in creating `docs/roadmaps/<objective>.md` with human approval
+- **Pipeline Planner Agent** (`tools/pipeline_planner_agent.py`) — Assists in creating `docs/roadmaps/<objective>_pipeline_plan.md` with human approval
+- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Assists in creating `docs/specifications/<capability>_capability.yaml` with human approval
+- **Coding Agent** (`tools/coding_agent.py`) — Assists with decomposition and Codex task generation
+- **Testing/Documentation/Deployment Agents** — Assist with quality gates and deployment processes, subject to human review
 
 **Key Features**:
-- Automated planning artifact generation
-- Manual approval gates at each planning step
+- Agent-assisted planning artifact generation with mandatory human approval
+- Manual oversight and approval gates at each planning step
+- Human validation checkpoints before progression to next phase
 - Explicit unknowns and boundaries
 - Evidence-based plans referencing existing code
 
@@ -269,7 +270,7 @@ These rules apply to **all workflows** (manual, Codex, agent):
 - **Language**: Python 3.x
 - **Infrastructure**: AWS S3, AWS Glue
 - **Orchestration**: Make.com (optional)
-- **Planning**: ChatGPT + Codex + Agent System (v1.3)
+- **Planning**: ChatGPT + Codex + Agent-Assisted System (v1.3)
 - **Validation**: Python-based standards validator (`tools/validate_repo_docs.py`)
 
 ---
@@ -335,4 +336,4 @@ If you're unsure about:
 ---
 
 **Last Updated**: 2026-01-27  
-**Version**: 1.3 (Integrated — Manual, Codex, and Agent Workflows)
+**Version**: 1.3 (Integrated — Manual, Codex, and Agent-Assisted Workflows)

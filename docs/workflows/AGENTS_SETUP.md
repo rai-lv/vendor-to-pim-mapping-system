@@ -96,7 +96,9 @@ python tools/coding_agent.py codex-task data_ingestion_capability 1
 
 **Output:** Console output with Codex task details
 
-### 4. Testing Phase
+## Additional Workflow Support
+
+### Testing
 
 **Run full test suite:**
 
@@ -116,7 +118,7 @@ python tools/testing_agent.py run --spec vendor_ingestion_pipeline
 python tools/testing_agent.py logs
 ```
 
-### 5. Documentation Phase
+### Documentation
 
 **Create script card:**
 
@@ -365,7 +367,7 @@ Documentation (Documentation Agent)
    - Let agents handle boilerplate
    - Focus human effort on logic and decisions
 
-5. **Document Continuously**
+6. **Document Continuously**
    - Update documentation as you code
    - Keep script cards and business descriptions in sync
    - Add new terms to glossary

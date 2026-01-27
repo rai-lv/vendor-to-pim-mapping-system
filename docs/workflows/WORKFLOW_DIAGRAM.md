@@ -281,6 +281,6 @@ All agents ready to use! 🚀
 ## See Also
 
 - **Complete Workflow:** `WORKFLOW_5_STEPS.md`
-- **Agent System:** `docs/context_packs/agent_system_context.md`
+- **Agent System:** `../context_packs/agent_system_context.md`
 - **Agent Setup:** `AGENTS_SETUP.md`
-- **Repository Context:** `docs/context_packs/system_context.md`
+- **Repository Context:** `../context_packs/system_context.md`

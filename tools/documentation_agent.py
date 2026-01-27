@@ -362,7 +362,8 @@ def update_glossary_from_spec(spec_name: str) -> int:
         print("\nFrom Business Rules:")
         for rule in business_rules:
             # Extract capitalized terms (potential domain terms)
-            terms = re.findall(r'\b[A-Z][A-Za-z]+\b', rule)
+            # Match words with at least 3 chars starting with capital letter
+            terms = re.findall(r'\b[A-Z][A-Za-z]{2,}\b', rule)
             if terms:
                 print(f"  - Consider terms from: {rule}")
     

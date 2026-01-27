@@ -19,6 +19,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 SPECIFICATIONS_DIR = REPO_ROOT / "docs" / "specifications"
 JOBS_DIR = REPO_ROOT / "jobs"
 
+# Constants
+MIN_FILE_SIZE_FOR_DUPLICATE_CHECK = 100  # bytes
+
 
 def get_specification(spec_name: str) -> dict:
     """Load a specification file."""
@@ -153,7 +156,7 @@ def check_best_practices() -> int:
     file_sizes = {}
     for py_file in python_files:
         size = py_file.stat().st_size
-        if size > 100:  # Ignore very small files
+        if size > MIN_FILE_SIZE_FOR_DUPLICATE_CHECK:
             if size in file_sizes:
                 file_sizes[size].append(py_file)
             else:

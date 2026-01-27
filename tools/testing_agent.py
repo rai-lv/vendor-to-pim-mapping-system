@@ -14,6 +14,7 @@ import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
+from typing import Tuple
 
 import yaml
 
@@ -22,8 +23,11 @@ SPECIFICATIONS_DIR = REPO_ROOT / "docs" / "specifications"
 TESTS_LOGS_DIR = REPO_ROOT / "logs" / "tests_logs"
 JOBS_DIR = REPO_ROOT / "jobs"
 
+# Constants
+VALIDATION_TIMEOUT_SECONDS = 300
 
-def run_validation_tests() -> tuple[int, str]:
+
+def run_validation_tests() -> Tuple[int, str]:
     """
     Run repository validation tests.
     
@@ -41,7 +45,7 @@ def run_validation_tests() -> tuple[int, str]:
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
-            timeout=300
+            timeout=VALIDATION_TIMEOUT_SECONDS
         )
         
         output = result.stdout + "\n" + result.stderr
@@ -52,7 +56,7 @@ def run_validation_tests() -> tuple[int, str]:
         return 1, f"Error: Failed to run validation: {e}"
 
 
-def check_python_syntax() -> tuple[int, str]:
+def check_python_syntax() -> Tuple[int, str]:
     """
     Check Python syntax for all job scripts.
     
@@ -85,7 +89,7 @@ def check_python_syntax() -> tuple[int, str]:
         return 0, f"✓ All {len(python_files)} Python files have valid syntax"
 
 
-def check_yaml_syntax() -> tuple[int, str]:
+def check_yaml_syntax() -> Tuple[int, str]:
     """
     Check YAML syntax for manifests and specifications.
     
@@ -118,7 +122,7 @@ def check_yaml_syntax() -> tuple[int, str]:
         return 0, f"✓ All {len(yaml_files)} YAML files have valid syntax"
 
 
-def infer_tests_from_specification(spec_name: str) -> tuple[int, str]:
+def infer_tests_from_specification(spec_name: str) -> Tuple[int, str]:
     """
     Infer test requirements from a specification.
     

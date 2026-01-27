@@ -862,6 +862,938 @@ Once all required capability plans (Step 2b) are approved:
 
 ---
 
+## Agent Roles — Implementation Agents (Steps 3–5)
+
+### 4. Coding Agent (Steps 3–4: Decompose and Create Codex Tasks)
+
+**Role:** Decompose approved capability plans into PR-sized development elements and generate Codex task specifications with quality gates.
+
+**Script Location:** `tools/coding_agent.py`
+
+**Workflow Position:** Steps 3 and 4 of the 5-step workflow
+
+#### Purpose and Responsibilities
+
+The Coding Agent bridges the gap between planning (Steps 1–2) and implementation (Step 5) by:
+- **Step 3: Decompose Capability** — Breaking down approved capability plans into small, PR-sized development elements
+- **Step 4: Create Codex Tasks** — Generating detailed Codex task specifications with standards references, file restrictions, and quality gates
+
+**Critical Rules:**
+- Each development element must be completable in ONE pull request
+- File changes must be explicitly restricted (allowed file list)
+- All tasks must reference relevant repository standards
+- Quality gates (validation, syntax checks) must be defined
+- Acceptance criteria must be testable from repository contents
+
+#### Inputs
+
+**Primary Input (Step 3):** Approved Step 2b capability specification
+
+**Required Reference:**
+- File: `docs/specifications/<capability_name>_capability.yaml` (from Step 2b)
+
+**Primary Input (Step 4):** Development element definition from Step 3
+
+#### Outputs
+
+**Step 3 Output:** Development elements decomposition (printed to console)
+- List of PR-sized development elements
+- File paths to be modified/created for each element
+- Acceptance criteria per element
+- Dependencies between elements
+
+**Step 4 Output:** Codex task specification (printed to console)
+- Objective and capability reference
+- Standards compliance requirements
+- Explicit file restrictions (allowed file list)
+- Implementation requirements from capability plan
+- Acceptance criteria (element-specific and from capability)
+- Quality gates that must pass
+- Testing strategy
+- Boundaries (what element does NOT do)
+
+#### Workflow Integration
+
+**Trigger:** Manual invocation after Step 2b approval (for Step 3) or after decomposition (for Step 4)
+
+**Step 3 Command:**
+```bash
+python tools/coding_agent.py decompose data_validation_capability
+```
+
+**Step 4 Command:**
+```bash
+python tools/coding_agent.py codex-task data_validation_capability 1
+```
+
+**Additional Commands:**
+```bash
+# Validate repository code and documentation
+python tools/coding_agent.py validate
+
+# Check best practices (TODO comments, duplicate code)
+python tools/coding_agent.py check
+```
+
+**Process Flow (Step 3):**
+1. Agent reads approved Step 2b capability specification
+2. Agent suggests development elements based on:
+   - High-level processing steps from capability plan
+   - Infrastructure elements (manifest, documentation)
+   - Dependencies between elements
+3. Developer reviews and adjusts decomposition
+4. Each element is defined with:
+   - Target repository paths (exact files)
+   - Allowed changes (explicit file restrictions)
+   - Acceptance criteria (testable from repo)
+   - Dependencies on other elements
+
+**Process Flow (Step 4):**
+1. For each development element from Step 3
+2. Agent generates Codex task specification including:
+   - Capability objective and element scope
+   - Standards references (naming, manifest, documentation specs)
+   - Explicit file restrictions (allowed list)
+   - Implementation requirements from capability plan
+   - Acceptance criteria
+   - Quality gates (must pass before PR merge)
+   - Testing strategy
+3. Developer uses Codex task specification to create PR
+4. PR must pass all quality gates before merge
+
+**Next Step:** After Codex tasks are defined → Proceed to **Step 5: Execute PR** (implementation by developer or Codex)
+
+#### Dependency Handling
+
+**Prerequisites:**
+- **Required (Step 3):** Approved Step 2b capability specification
+- **Required (Step 4):** Completed Step 3 decomposition
+
+**Validation:**
+- Step 3: Verifies capability specification exists and is valid YAML
+- Step 4: Uses decomposition from Step 3 output
+
+**Quality Gates:**
+- Repository validation: `python tools/validate_repo_docs.py --all`
+- Python syntax check: `python -m py_compile <script>`
+- Best practices check: `python tools/coding_agent.py check`
+
+#### Example Usage
+
+**Scenario:** Decompose "data_validation" capability and create Codex task for first element.
+
+```bash
+# Step 3: Decompose capability into development elements
+python tools/coding_agent.py decompose data_validation_capability
+
+# Output: Suggested development elements with file restrictions and criteria
+# Review and adjust as needed
+
+# Step 4: Generate Codex task for element 1 (core validation logic)
+python tools/coding_agent.py codex-task data_validation_capability 1
+
+# Output: Codex task specification with standards, restrictions, quality gates
+
+# Validate before starting implementation
+python tools/coding_agent.py validate
+
+# Check best practices
+python tools/coding_agent.py check
+```
+
+**Expected Step 3 Output (Console):**
+```
+# Step 3: Decompose Capability into Development Elements
+================================================================================
+
+Capability: data_validation
+
+## Suggested Development Elements
+
+### Element 1: Core Validation Logic
+**Target Repo Paths:**
+- jobs/vendor_onboarding/validate_vendor_data/glue_script.py
+
+**Allowed Changes:**
+- Create jobs/vendor_onboarding/validate_vendor_data/glue_script.py
+- Create jobs/vendor_onboarding/validate_vendor_data/ directory structure
+
+**Acceptance Criteria:**
+- Script implements all business rules from capability plan (VR-001 to VR-005)
+- Script produces validation_report and validated_data outputs
+- Python syntax is valid
+- Passes repository validation
+
+### Element 2: Job Manifest
+**Target Repo Paths:**
+- jobs/vendor_onboarding/validate_vendor_data/job_manifest.yaml
+
+**Allowed Changes:**
+- Create job_manifest.yaml only
+- Must follow manifest spec: docs/standards/job_manifest_spec.md
+
+**Acceptance Criteria:**
+- Manifest validates with: python tools/validate_repo_docs.py --all
+- Uses ${PLACEHOLDER} style for parameter substitution
+- All inputs/outputs from capability plan are represented
+
+### Element 3: Documentation
+**Target Repo Paths:**
+- docs/script_cards/validate_vendor_data.md
+- docs/business_job_descriptions/validate_vendor_data.md
+
+**Allowed Changes:**
+- Create documentation files only
+- Must follow specs in docs/standards/
+
+**Acceptance Criteria:**
+- Documentation validates with: python tools/validate_repo_docs.py --all
+- Aligns with capability plan objectives and acceptance criteria
+```
+
+**Expected Step 4 Output (Console):**
+```markdown
+# Step 4: Codex Task - Element 1
+================================================================================
+
+**Capability:** data_validation
+**Element ID:** 1
+
+## Objective
+
+Implement Element 1 from the decomposed capability plan.
+Capability objective: Validate vendor submission data against business rules
+
+## Standards References
+
+This implementation MUST comply with the following standards:
+
+- `docs/standards/naming-standard.md`
+- `docs/standards/job_manifest_spec.md`
+- `docs/standards/script_card_spec.md`
+
+## Target Script/Path (Explicit)
+
+**TARGET_SCRIPT:** `jobs/vendor_onboarding/validate_vendor_data/glue_script.py`
+
+## File Restrictions (Explicit)
+
+ONLY the following files may be created or modified:
+
+**Allowed file list:**
+- jobs/vendor_onboarding/validate_vendor_data/glue_script.py
+- jobs/vendor_onboarding/validate_vendor_data/__init__.py (if needed)
+
+**Forbidden:**
+- Any file not in the allowed list above
+- Existing code that works correctly
+
+## Implementation Requirements
+
+### From Capability Plan
+
+**Required Inputs:**
+- staged_raw_data: Unprocessed vendor data staged for validation
+
+**Expected Outputs:**
+- validation_report: Detailed report of validation errors
+- validated_data: Vendor data confirmed to meet business rules
+
+**Business Rules to Enforce:**
+- VR-001: SKU uniqueness check
+- VR-002: Required field validation
+- VR-003: Price range validation
+- VR-004: Category mapping validation
+- VR-005: Data completeness check
+
+## Acceptance Criteria
+
+**Functional:**
+- [ ] Validates all required fields per business rules
+- [ ] Detects duplicate SKUs within submission
+- [ ] Produces detailed validation report with row-level errors
+
+**Quality:**
+- [ ] Processes 10,000 row submission within 5 minutes
+- [ ] Validation accuracy ≥99.9%
+
+## Quality Gates (Must Pass)
+
+```bash
+# Repository validation
+python tools/validate_repo_docs.py --all
+
+# Python syntax check
+python -m py_compile jobs/vendor_onboarding/validate_vendor_data/glue_script.py
+
+# Best practices check
+python tools/coding_agent.py check
+```
+
+## Boundaries (What This Element Does NOT Do)
+
+- Data transformation or normalization (handled by other elements)
+- Direct PIM integration (handled by other jobs)
+```
+
+---
+
+### 5. Testing Agent (Validation and Testing)
+
+**Role:** Validate code contributions through automated testing, syntax checking, and specification-based test inference.
+
+**Script Location:** `tools/testing_agent.py`
+
+**Workflow Position:** Step 5 (PR execution) and continuous validation
+
+#### Purpose and Responsibilities
+
+The Testing Agent ensures code quality and adherence to specifications by:
+- Running repository-wide validation tests
+- Checking Python and YAML syntax
+- Inferring test requirements from capability specifications
+- Generating test logs for audit and review
+- Providing pre-commit and CI validation
+
+**Critical Rules:**
+- All tests must pass before PR merge
+- Test failures must be logged with timestamps
+- Specification-based tests are derived from acceptance criteria
+- Validation includes standards compliance
+
+#### Inputs
+
+**Primary Inputs:**
+- Repository code (Python scripts in `jobs/` directory)
+- YAML files (manifests in `jobs/`, specifications in `docs/specifications/`)
+- Optional: Capability specification for test inference
+
+**Validation Script:**
+- Uses `tools/validate_repo_docs.py` for standards validation
+
+#### Outputs
+
+**Console Output:**
+- Test execution results (pass/fail)
+- Summary of passed and failed tests
+- Detailed error messages for failures
+
+**Log File Output:**
+- Written to: `logs/tests_logs/test_run_<timestamp>.log`
+- Contains: Test run timestamp, all test results, summary
+
+#### Workflow Integration
+
+**Trigger:** 
+- Manual invocation before committing code
+- Automated execution in CI pipeline
+- On-demand for specification validation
+
+**Commands:**
+```bash
+# Run full test suite
+python tools/testing_agent.py run
+
+# Run tests for specific specification
+python tools/testing_agent.py run --spec data_validation_capability
+
+# Infer test requirements from specification
+python tools/testing_agent.py infer data_validation_capability
+
+# List test logs
+python tools/testing_agent.py logs
+```
+
+**Process Flow:**
+1. **Repository Validation:** Runs `validate_repo_docs.py --all`
+2. **Python Syntax Check:** Validates all `.py` files in `jobs/` directory
+3. **YAML Syntax Check:** Validates all `.yaml`/`.yml` files
+4. **Specification Tests (if --spec provided):** Extracts and verifies acceptance criteria
+5. **Generate Summary:** Reports passed/failed counts
+6. **Write Log:** Saves detailed results to log file
+
+#### Test Execution Details
+
+**1. Repository Validation:**
+- Executes: `python tools/validate_repo_docs.py --all`
+- Validates: Manifests, script cards, business descriptions against standards
+- Timeout: 300 seconds
+
+**2. Python Syntax Check:**
+- For each `.py` file in `jobs/` directory
+- Executes: `python -m py_compile <file>`
+- Reports: Syntax errors with file path
+
+**3. YAML Syntax Check:**
+- For each `.yaml` / `.yml` file in `jobs/` and `docs/specifications/`
+- Validates: YAML structure using `yaml.safe_load()`
+- Reports: Parse errors with file path
+
+**4. Specification-Based Tests:**
+- Reads capability specification YAML
+- Extracts: `testing_requirements`, `coding_tasks` with `acceptance_criteria`
+- Displays: Required unit tests, integration tests, and acceptance criteria
+- Does NOT execute tests (inference only)
+
+#### Example Usage
+
+**Scenario:** Validate repository before PR and infer test requirements for data_validation capability.
+
+```bash
+# Run full test suite
+python tools/testing_agent.py run
+
+# Output:
+# Running full test suite...
+# ================================================================================
+# 
+# 1. Repository Validation Tests
+# ------------------------------------------------------------
+# [Output from validate_repo_docs.py]
+# 
+# 2. Python Syntax Checks
+# ------------------------------------------------------------
+# ✓ All 15 Python files have valid syntax
+# 
+# 3. YAML Syntax Checks
+# ------------------------------------------------------------
+# ✓ All 8 YAML files have valid syntax
+# 
+# ================================================================================
+# Test Summary:
+# ------------------------------------------------------------
+# ✓ PASS Validation
+# ✓ PASS Python Syntax
+# ✓ PASS YAML Syntax
+# ------------------------------------------------------------
+# Passed: 3/3
+# Failed: 0/3
+# 
+# ✓ Test log written to: logs/tests_logs/test_run_20260127_103000.log
+
+# Infer test requirements from specification
+python tools/testing_agent.py infer data_validation_capability
+
+# Output:
+# Test Requirements for: data_validation
+# ================================================================================
+# 
+# Unit Tests:
+#   - Test SKU uniqueness validation (VR-001)
+#   - Test required field validation (VR-002)
+#   - Test price range validation (VR-003)
+# 
+# Integration Tests:
+#   - Test end-to-end validation with sample vendor data
+#   - Test validation report generation
+# 
+# Acceptance Criteria by Task:
+# 
+# Task 1: Core Validation Logic
+#   ✓ Validates all required fields per business rules
+#   ✓ Detects duplicate SKUs within submission
+#   ✓ Produces detailed validation report with row-level errors
+
+# List recent test logs
+python tools/testing_agent.py logs
+
+# Output:
+# Recent test logs:
+# --------------------------------------------------------------------------------
+# test_run_20260127_103000.log             2026-01-27 10:30:00 (12543 bytes)
+# test_run_20260127_092000.log             2026-01-27 09:20:00 (11234 bytes)
+# --------------------------------------------------------------------------------
+# Total: 2 log(s)
+```
+
+**Expected Test Log Contents:**
+```
+Test Run: 20260127_103000
+Specification: N/A
+================================================================================
+
+================================================================================
+Validation - PASS
+================================================================================
+[Detailed validation output]
+
+================================================================================
+Python Syntax - PASS
+================================================================================
+✓ All 15 Python files have valid syntax
+
+================================================================================
+YAML Syntax - PASS
+================================================================================
+✓ All 8 YAML files have valid syntax
+
+================================================================================
+Summary: 3 passed, 0 failed
+================================================================================
+```
+
+#### Dependency Handling
+
+**Prerequisites:**
+- `tools/validate_repo_docs.py` must exist for repository validation
+- Python interpreter for syntax checking
+- YAML library for YAML parsing
+
+**Integration Points:**
+- **CI Pipeline:** Automated execution on PR creation
+- **Pre-commit:** Local validation before committing
+- **Coding Agent:** References testing agent for quality gates
+
+---
+
+### 6. Documentation Agent (Documentation Maintenance)
+
+**Role:** Generate and maintain project documentation including script cards, business descriptions, and glossary updates.
+
+**Script Location:** `tools/documentation_agent.py`
+
+**Workflow Position:** Post-implementation (after Step 5) and ongoing maintenance
+
+#### Purpose and Responsibilities
+
+The Documentation Agent ensures documentation stays aligned with code by:
+- Generating script cards (operational reference for jobs)
+- Creating business job descriptions (business context and purpose)
+- Suggesting glossary terms from specifications
+- Validating documentation against repository standards
+- Maintaining consistency between code and documentation
+
+**Critical Rules:**
+- Script cards must match job manifests (parameters, inputs, outputs)
+- Business descriptions focus on "why" (business value), not "how" (technical details)
+- Shared terms belong in `docs/glossary.md`, not duplicated per job
+- All documentation must pass standards validation
+
+#### Inputs
+
+**For Script Cards and Business Descriptions:**
+- Job ID (from `jobs/` directory structure)
+- Optional: Capability specification reference
+
+**For Glossary Suggestions:**
+- Capability specification (`docs/specifications/<name>_capability.yaml`)
+
+#### Outputs
+
+**Script Card:**
+- File: `docs/script_cards/<job_id>.md`
+- Contents: Job identification, purpose, parameters, inputs, outputs, side effects, processing logic, failure modes, operator checks, dependencies
+
+**Business Description:**
+- File: `docs/business_job_descriptions/<job_id>.md`
+- Contents: Purpose (why job exists), business objective, inputs/outputs by business meaning, business rules, boundaries, success criteria, stakeholders
+
+**Glossary Suggestions:**
+- Console output: Suggested terms from specification inputs, outputs, and business rules
+- Recommendation: Add to `docs/glossary.md` if shared across jobs
+
+**Validation Output:**
+- Console output: Results of documentation standards validation
+
+#### Workflow Integration
+
+**Trigger:**
+- Manual invocation after job implementation
+- Part of PR checklist for new jobs
+- Ongoing maintenance for documentation updates
+
+**Commands:**
+```bash
+# Create script card for a job
+python tools/documentation_agent.py script-card validate_vendor_data --spec data_validation_capability
+
+# Create business description for a job
+python tools/documentation_agent.py business-desc validate_vendor_data --spec data_validation_capability
+
+# Suggest glossary terms from specification
+python tools/documentation_agent.py glossary data_validation_capability
+
+# Validate all documentation
+python tools/documentation_agent.py validate
+```
+
+**Process Flow (Script Card):**
+1. Create `docs/script_cards/` directory if needed
+2. Generate script card template with:
+   - Job identification (job_id, Glue job name, runtime)
+   - Purpose (one-line summary)
+   - Parameters table (name, type, required, default, description)
+   - Inputs section (S3 location patterns, file patterns, formats)
+   - Outputs section (S3 location patterns, content contracts)
+   - Side effects
+   - Processing logic (high-level steps)
+   - Failure modes table
+   - Operator checks (pre-run, post-run)
+   - Dependencies (upstream/downstream jobs)
+3. Write template to file
+4. Prompt developer to fill in TODO sections
+
+**Process Flow (Business Description):**
+1. Create `docs/business_job_descriptions/` directory if needed
+2. Generate business description template with:
+   - Purpose (why job exists, business problem it solves)
+   - Business objective
+   - Inputs/outputs by business meaning (NOT technical storage)
+   - Business rules and controls
+   - Boundaries (non-goals, explicit exclusions)
+   - Success criteria (business perspective)
+   - Stakeholders (owner, consumers, reviewers)
+3. Write template to file
+4. Prompt developer to fill in TODO sections with business context
+
+**Process Flow (Glossary Suggestions):**
+1. Read capability specification YAML
+2. Extract potential terms from:
+   - Input names and purposes
+   - Output names and purposes
+   - Business rules (capitalized domain terms)
+3. Display suggestions with recommendation:
+   - Add to `docs/glossary.md` if shared across multiple jobs
+   - Add to `docs/glossary.md` if business domain terms
+   - Do NOT add if obvious from context
+
+#### Example Usage
+
+**Scenario:** Create documentation for "validate_vendor_data" job after implementation.
+
+```bash
+# Create script card
+python tools/documentation_agent.py script-card validate_vendor_data \
+  --spec data_validation_capability
+
+# Output:
+# ✓ Created script card: docs/script_cards/validate_vendor_data.md
+# 
+# Next steps:
+# 1. Fill in all TODO sections based on job implementation
+# 2. Ensure parameters, inputs, outputs match job_manifest.yaml
+# 3. Run validation: python tools/validate_repo_docs.py --all
+
+# Create business description
+python tools/documentation_agent.py business-desc validate_vendor_data \
+  --spec data_validation_capability
+
+# Output:
+# ✓ Created business description: docs/business_job_descriptions/validate_vendor_data.md
+# 
+# Next steps:
+# 1. Fill in all TODO sections with business context
+# 2. Focus on 'why' not 'how'
+# 3. Review with business stakeholders
+
+# Suggest glossary terms
+python tools/documentation_agent.py glossary data_validation_capability
+
+# Output:
+# Suggested glossary terms from specification: data_validation
+# ================================================================================
+# 
+# Review these terms and add to docs/glossary.md if they are shared across jobs:
+# 
+# From Inputs:
+#   - staged_raw_data: Unprocessed vendor data staged for validation
+# 
+# From Outputs:
+#   - validation_report: Detailed report of validation errors
+#   - validated_data: Vendor data confirmed to meet business rules
+# 
+# From Business Rules:
+#   - Consider terms from: Each vendor SKU must be unique within the submission
+# 
+# ================================================================================
+# 
+# Note: These are suggestions. Only add terms to glossary.md if they are:
+#   - Shared across multiple jobs
+#   - Business domain terms
+#   - Not obvious from context
+
+# Validate documentation
+python tools/documentation_agent.py validate
+
+# Output:
+# Running documentation validation...
+# ------------------------------------------------------------
+# [Output from validate_repo_docs.py --all]
+# ------------------------------------------------------------
+# ✓ Documentation validation passed
+```
+
+**Expected Script Card Template:**
+```markdown
+# Script Card: validate_vendor_data
+
+**Version:** 1.0.0  
+**Last Updated:** 2026-01-27  
+**Status:** Draft  
+**Specification:** Based on specification: data_validation_capability
+
+---
+
+## Job Identification
+
+- **job_id:** `validate_vendor_data`
+- **Glue Job Name:** `TODO: AWS Glue job name`
+- **Runtime:** `TODO: e.g., AWS Glue 4.0 (Python 3.10, Spark 3.3.0)`
+- **Executor:** AWS Glue
+
+---
+
+## Purpose (One-Line Summary)
+
+TODO: Brief one-line description of what this job does.
+
+---
+
+## Parameters
+
+| Parameter Name | Type | Required | Default | Description |
+|----------------|------|----------|---------|-------------|
+| TODO           | TODO | Yes/No   | TODO    | TODO        |
+
+[... rest of template sections ...]
+```
+
+**Expected Business Description Template:**
+```markdown
+# Business Job Description: validate_vendor_data
+
+**Version:** 1.0.0  
+**Last Updated:** 2026-01-27  
+**Status:** Draft  
+**Specification:** Based on specification: data_validation_capability
+
+---
+
+## Purpose
+
+TODO: Explain **why** this job exists and what business problem it solves.
+
+---
+
+## Business Objective
+
+TODO: Define the business objective this job achieves.
+
+[... rest of template sections ...]
+```
+
+#### Dependency Handling
+
+**Prerequisites:**
+- `tools/validate_repo_docs.py` for documentation validation
+- Capability specification (optional, for reference context)
+
+**Integration Points:**
+- **Coding Agent (Step 4):** Codex tasks include documentation requirements
+- **Standards:** Must comply with specs in `docs/standards/`
+  - `script_card_spec.md` for script cards
+  - `business_job_description_spec.md` for business descriptions
+- **Glossary:** Shared terms go to `docs/glossary.md`
+
+---
+
+## Summary: Implementation Phase Workflow (Steps 3–5)
+
+The implementation phase transforms approved capability plans into working code with proper testing and documentation.
+
+### Workflow Sequence
+
+```
+┌─────────────────────────────────────────────────────┐
+│ Step 3: Decompose (Coding Agent)                   │
+│ Output: Development elements (console)              │
+│ Review and adjust decomposition                     │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 4: Create Codex Tasks (Coding Agent)          │
+│ Output: Codex task specifications (console)         │
+│ For each development element                        │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 5: Execute PR (Developer/Codex)               │
+│ - Implement code per Codex task                    │
+│ - Run Testing Agent for validation                 │
+│ - Run Documentation Agent for docs                 │
+│ - Pass all quality gates                           │
+│ - Create PR for review                             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Quality Gates (Must Pass Before PR Merge)
+
+All PRs must pass these gates:
+
+1. **Repository Validation:**
+   ```bash
+   python tools/validate_repo_docs.py --all
+   ```
+
+2. **Testing Agent Validation:**
+   ```bash
+   python tools/testing_agent.py run
+   ```
+
+3. **Syntax and Best Practices:**
+   ```bash
+   python tools/coding_agent.py check
+   ```
+
+4. **Documentation Validation:**
+   ```bash
+   python tools/documentation_agent.py validate
+   ```
+
+### Key Principles
+
+1. **Small, Focused PRs:** Each development element = one PR
+2. **Explicit File Restrictions:** Codex tasks specify exact allowed file changes
+3. **Standards Compliance:** All agents reference and enforce repository standards
+4. **Testable Acceptance Criteria:** Criteria must be verifiable from repository contents
+5. **Quality Before Merge:** All quality gates must pass
+
+---
+
+## Agent Deprecation Notice
+
+### Designer Agent
+
+**Script Location:** `tools/designer_agent.py`
+
+**Status:** DEPRECATED / LEGACY
+
+**Reason:** The Designer Agent creates "subsystem specifications" which overlap with the current planning workflow:
+- Step 1 (Planner Agent) defines objectives
+- Step 2a (Pipeline Planner Agent) creates pipeline plans
+- Step 2b (Capability Planner Agent) creates detailed capability specifications
+
+The Designer Agent appears to be from an earlier workflow iteration and creates specifications that duplicate or conflict with the current Step 2b (Capability Planner) output.
+
+**Recommendation:**
+- **DO NOT USE** Designer Agent for new work
+- **USE** the current 5-step workflow: Planner → Pipeline Planner → Capability Planner → Coding Agent
+- **MIGRATION:** If existing subsystem specifications created by Designer Agent exist, migrate them to capability specifications following Step 2b format
+- **FUTURE:** Consider removing `designer_agent.py` after confirming no active dependencies
+
+**Migration Path (if needed):**
+```bash
+# Instead of (DEPRECATED):
+python tools/designer_agent.py create "subsystem_name"
+
+# Use (CURRENT):
+# Step 1: Define objective
+python tools/planner_agent.py create "objective_name"
+
+# Step 2a: Create pipeline plan
+python tools/pipeline_planner_agent.py create "objective_name"
+
+# Step 2b: Create capability plan for each step
+python tools/capability_planner_agent.py create "capability_name"
+```
+
+---
+
+## Complete Agent Workflow Summary
+
+### Full 5-Step Workflow with Agents
+
+```
+┌─────────────────────────────────────────────────────┐
+│ Step 1: Define Objective                           │
+│ Agent: Planner Agent                                │
+│ Output: docs/roadmaps/<objective>.md                │
+│ Manual Discussion → Approval Required               │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 2a: Overarching Plan (Pipeline-Level)         │
+│ Agent: Pipeline Planner Agent                       │
+│ Output: docs/roadmaps/<objective>_pipeline_plan.md  │
+│ Manual Discussion → Approval Required               │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 2b: Capability Plan (Step-Level)              │
+│ Agent: Capability Planner Agent                     │
+│ Output: docs/specifications/<capability>.yaml       │
+│ Manual Discussion → Approval Required               │
+│ Repeat for EACH capability in pipeline             │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 3: Decompose into Development Elements        │
+│ Agent: Coding Agent                                 │
+│ Output: Development elements (console)              │
+│ Review and adjust decomposition                     │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 4: Create Codex Tasks                         │
+│ Agent: Coding Agent                                 │
+│ Output: Codex task specifications (console)         │
+│ For each development element from Step 3            │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 5: Execute PR (Implementation)                │
+│ Agents: Testing Agent, Documentation Agent          │
+│ - Implement code per Codex task                    │
+│ - Run tests (Testing Agent)                        │
+│ - Generate docs (Documentation Agent)              │
+│ - Pass all quality gates                           │
+│ - Create PR for review                             │
+└─────────────────────────────────────────────────────┘
+```
+
+### Agent Command Reference
+
+**Planning Phase (Steps 1–2):**
+```bash
+# Step 1: Define Objective
+python tools/planner_agent.py create "objective_name"
+python tools/planner_agent.py list
+
+# Step 2a: Create Pipeline Plan
+python tools/pipeline_planner_agent.py create "objective_name" --objective-ref "objective_name.md"
+python tools/pipeline_planner_agent.py list
+
+# Step 2b: Create Capability Plan (repeat for each capability)
+python tools/capability_planner_agent.py create "capability_name" --pipeline-ref "objective_pipeline_plan.md"
+python tools/capability_planner_agent.py list
+python tools/capability_planner_agent.py validate docs/specifications/capability_name.yaml
+```
+
+**Implementation Phase (Steps 3–5):**
+```bash
+# Step 3: Decompose Capability
+python tools/coding_agent.py decompose capability_name
+
+# Step 4: Create Codex Task
+python tools/coding_agent.py codex-task capability_name element_id
+
+# Step 5: Validation and Testing
+python tools/coding_agent.py validate
+python tools/coding_agent.py check
+python tools/testing_agent.py run
+python tools/testing_agent.py run --spec capability_name
+python tools/testing_agent.py infer capability_name
+python tools/testing_agent.py logs
+
+# Step 5: Documentation
+python tools/documentation_agent.py script-card job_id --spec capability_name
+python tools/documentation_agent.py business-desc job_id --spec capability_name
+python tools/documentation_agent.py glossary capability_name
+python tools/documentation_agent.py validate
+```
+
+---
+
 ## See Also
 
 - `docs/workflows/WORKFLOW_5_STEPS.md` — Complete 5-step workflow documentation

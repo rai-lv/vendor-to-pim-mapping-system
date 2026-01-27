@@ -141,7 +141,7 @@ def create_planning_document(phase_name: str, description: str = "", overwrite: 
         print(f"\nNext steps:")
         print(f"1. Edit the document to fill in all TODO sections")
         print(f"2. Review objectives and constraints with stakeholders")
-        print(f"3. Once approved, trigger the Designer Agent to create specifications")
+        print(f"3. Once approved, proceed to Step 2a (Pipeline Planner Agent)")
         return 0
     except Exception as e:
         print(f"Error: Failed to create planning document: {e}", file=sys.stderr)

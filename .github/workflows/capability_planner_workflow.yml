@@ -1,0 +1,178 @@
+name: Capability Planner Agent Workflow (Step 2b)
+
+on:
+  workflow_dispatch:
+    inputs:
+      capability_name:
+        description: 'Capability name (e.g., "data_validation")'
+        required: true
+        type: string
+      pipeline_plan_file:
+        description: 'Pipeline plan filename (e.g., "vendor_onboarding_pipeline_plan.md")'
+        required: true
+        type: string
+      overwrite:
+        description: 'Overwrite existing capability specification if it exists'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  validate_prerequisites:
+    name: Validate Step 2a Prerequisites
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Validate Step 2a pipeline plan exists
+        run: |
+          PIPELINE_FILE="docs/roadmaps/${{ inputs.pipeline_plan_file }}"
+          
+          if [ ! -f "$PIPELINE_FILE" ]; then
+            echo "❌ ERROR: Step 2a pipeline plan not found: $PIPELINE_FILE"
+            echo ""
+            echo "You must complete Step 2a (Pipeline Plan) before Step 2b"
+            echo "Run: Actions → Pipeline Planner Agent Workflow → Run workflow"
+            exit 1
+          fi
+          
+          echo "✓ Step 2a pipeline plan found: $PIPELINE_FILE"
+      
+      - name: Check for required sections in pipeline plan
+        run: |
+          PIPELINE_FILE="docs/roadmaps/${{ inputs.pipeline_plan_file }}"
+          EXIT_CODE=0
+          
+          echo "Validating Step 2a pipeline plan structure..."
+          
+          if ! grep -q "## Processing Sequence" "$PIPELINE_FILE"; then
+            echo "❌ Missing 'Processing Sequence' section"
+            EXIT_CODE=1
+          fi
+          
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ Step 2a pipeline plan is incomplete"
+            echo "Please complete all required sections before proceeding to Step 2b"
+            exit 1
+          fi
+          
+          echo "✓ Step 2a pipeline plan is properly structured"
+      
+      - name: Approval gate reminder
+        run: |
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+          echo "⚠️  MANUAL APPROVAL CHECKPOINT"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "Before proceeding, confirm that:"
+          echo "  ✓ Step 2a pipeline plan has been reviewed by stakeholders"
+          echo "  ✓ All stakeholders have approved the pipeline plan"
+          echo "  ✓ The pipeline plan is complete and locked"
+          echo ""
+          echo "If these conditions are NOT met, cancel this workflow"
+          echo "and complete the Step 2a approval process first."
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+  
+  create_capability_spec:
+    name: Create Capability Specification
+    runs-on: ubuntu-latest
+    needs: validate_prerequisites
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Create capability specification
+        run: |
+          if [ "${{ inputs.overwrite }}" = "true" ]; then
+            python tools/capability_planner_agent.py create "${{ inputs.capability_name }}" \
+              --pipeline-ref "${{ inputs.pipeline_plan_file }}" \
+              --overwrite
+          else
+            python tools/capability_planner_agent.py create "${{ inputs.capability_name }}" \
+              --pipeline-ref "${{ inputs.pipeline_plan_file }}"
+          fi
+      
+      - name: Validate capability specification structure
+        run: |
+          SPEC_FILE="docs/specifications/${{ inputs.capability_name }}_capability.yaml"
+          
+          echo "Validating capability specification structure..."
+          
+          python -c "
+          import yaml
+          import sys
+          
+          with open('$SPEC_FILE') as f:
+              spec = yaml.safe_load(f)
+          
+          required_fields = ['objective', 'inputs', 'outputs', 'acceptance_criteria']
+          missing = [field for field in required_fields if field not in spec]
+          
+          if missing:
+              print(f'⚠️  Missing required fields: {missing}')
+              print('Please add these fields manually')
+          else:
+              print('✓ Capability specification has required fields')
+          "
+      
+      - name: Commit capability specification
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/specifications/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add capability specification: ${{ inputs.capability_name }} (Step 2b)"
+            git push
+          fi
+      
+      - name: Next steps
+        run: |
+          echo "✓ Capability specification created successfully!"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
+          echo "STEP 2b COMPLETE: Capability Specification Created"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "📋 MANUAL REVIEW REQUIRED:"
+          echo "   This is a MANDATORY checkpoint in the 5-step workflow"
+          echo ""
+          echo "Required actions before proceeding to Step 3:"
+          echo "1. ✏️  Edit: docs/specifications/${{ inputs.capability_name }}_capability.yaml"
+          echo "2. 📝 Fill in all TODO sections with:"
+          echo "   - Clear objective statement"
+          echo "   - Inputs/outputs (by MEANING, not S3 paths)"
+          echo "   - Business rules and logic"
+          echo "   - Testable acceptance criteria"
+          echo "   - Explicit boundaries (what NOT to do)"
+          echo "3. 👥 Review with stakeholders (Tech Lead, QA Lead)"
+          echo "4. ✅ Obtain explicit approval from all stakeholders"
+          echo "5. 🔒 Lock the document (mark as approved in commit message)"
+          echo ""
+          echo "⚠️  DO NOT PROCEED to Step 3 without stakeholder approval"
+          echo ""
+          echo "If you have MORE capabilities in the pipeline:"
+          echo "→ Repeat Step 2b for each capability"
+          echo "→ Actions → Capability Planner Agent Workflow → Run workflow"
+          echo ""
+          echo "Once ALL capabilities are approved, proceed to Step 3:"
+          echo "→ Actions → Coding Agent Workflow → decompose"
+          echo ""
+          echo "════════════════════════════════════════════════════════"

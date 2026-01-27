@@ -35,6 +35,12 @@ on:
     branches:
       - main
   
+  # Also trigger on PRs to remind about documentation
+  pull_request:
+    paths:
+      - 'jobs/**/*.py'
+      - 'jobs/**/*.yaml'
+  
   # Triggered when planning or specifications are approved
   workflow_run:
     workflows: ["Planner Agent Workflow", "Designer Agent Workflow"]
@@ -123,8 +129,31 @@ jobs:
       - name: Auto-validate on push
         if: github.event_name == 'push'
         run: |
+          echo "════════════════════════════════════════════════════════"
           echo "Code or specifications updated, validating documentation..."
+          echo "════════════════════════════════════════════════════════"
           python tools/documentation_agent.py validate
+          echo ""
+          echo "✓ Documentation validation complete"
+      
+      - name: Reminder on PR
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "════════════════════════════════════════════════════════"
+          echo "⚠️  DOCUMENTATION REMINDER"
+          echo "════════════════════════════════════════════════════════"
+          echo ""
+          echo "Code changes detected. Please ensure documentation is updated:"
+          echo ""
+          echo "Required documentation for new/modified jobs:"
+          echo "  □ Job manifest (job_manifest.yaml)"
+          echo "  □ Script card (docs/script_cards/<job_id>.md)"
+          echo "  □ Business description (docs/business_job_descriptions/<job_id>.md)"
+          echo ""
+          echo "To generate documentation automatically:"
+          echo "  → Actions → Documentation Agent Workflow → Run workflow"
+          echo ""
+          echo "════════════════════════════════════════════════════════"
       
       - name: Commit documentation changes
         if: github.event_name == 'workflow_dispatch' && (inputs.action == 'create_script_card' || inputs.action == 'create_business_desc')

@@ -124,7 +124,7 @@ This repository supports **three complementary workflow approaches**. Teams can 
 2. **Plan Approach** — Break down into capabilities/steps
 3. **Write Code** — Manual implementation
 4. **Document** — Create/update manifests, script cards, business descriptions
-5. **Validate** — Follow validation requirements in `docs/standards/`
+5. **Validate** — Run `python tools/validate_repo_docs.py --all`
 
 **When to use**: Small changes, quick iterations, exploratory development
 
@@ -250,7 +250,15 @@ There are **two different** business-facing documentation types with **distinct 
 
 ### Standards Validation (CI Gate)
 
-Every PR **must pass** automated validation. See `docs/standards/` for validation requirements and the validation tool documentation.
+Every PR **must pass** automated validation:
+
+```bash
+python tools/validate_repo_docs.py --all
+```
+
+This runs automatically via `.github/workflows/validate_standards.yml`. A PR must not be merged if validation fails.
+
+For detailed specification requirements, see the relevant spec in `docs/standards/`.
 
 ---
 
@@ -285,21 +293,21 @@ These rules apply to **all workflows** (manual, Codex, agent):
 2. Create `jobs/<job_group>/<job_id>/job_manifest.yaml` (follow `docs/standards/job_manifest_spec.md`)
 3. Optionally create business description: `docs/business_job_descriptions/<job_id>.md`
 4. Optionally create script card: `docs/script_cards/<job_id>.md`
-5. Run validation per standards requirements
+5. Run validation: `python tools/validate_repo_docs.py --all`
 
 ### Updating Documentation
 
 1. Check the relevant spec in `docs/standards/`
 2. Update the document per spec requirements
 3. Add shared terms to `docs/glossary.md` (never duplicate in individual docs)
-4. Run validation per standards requirements
+4. Run validation: `python tools/validate_repo_docs.py --all`
 
 ### Updating a Job Manifest
 
 1. Review the script's actual parameters, inputs, outputs, and side effects
 2. Update `job_manifest.yaml` with evidence-based content
 3. Follow requirements in `docs/standards/job_manifest_spec.md`
-4. Run validation per standards requirements
+4. Run validation: `python tools/validate_repo_docs.py --all`
 
 ---
 
@@ -307,7 +315,7 @@ These rules apply to **all workflows** (manual, Codex, agent):
 
 1. **Read before writing**: Always read this document before making structural changes
 2. **Follow the standards**: Check `docs/standards/` for the spec relevant to what you're creating/updating
-3. **Validate early**: Follow validation requirements in `docs/standards/` as soon as you make changes
+3. **Validate early**: Run `python tools/validate_repo_docs.py --all` as soon as you make changes
 4. **Don't duplicate**: Use `docs/glossary.md` for shared definitions
 5. **Evidence-based**: Derive manifests and documentation from actual code, not assumptions
 6. **Respect boundaries**: Business descriptions and script cards have different scopes — don't mix them
@@ -323,7 +331,7 @@ If you're unsure about:
 - **5-step workflow details**: See `docs/workflows/WORKFLOW_5_STEPS.md`
 - **Documentation format**: Check the relevant spec in `docs/standards/`
 - **Shared terminology**: Check `docs/glossary.md`
-- **Validation rules**: See `docs/standards/` for validation requirements
+- **Validation**: Run `python tools/validate_repo_docs.py --all` and read its output
 
 ---
 

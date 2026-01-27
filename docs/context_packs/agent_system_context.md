@@ -1,49 +1,91 @@
-# Agent System Context — AI-supported Development Workflow
+# Agent System Context — AI-Assisted Development Workflow
+
+**Version:** 1.3.1 (Aligned with Development Approach)
 
 ## Overview
-This document defines and describes the roles, responsibilities, workflows, and outputs of the agents embedded in the development workflow for the `vendor-to-pim-mapping-system` repository. It ensures alignment between the agent-based approach, the broader system context (defined in `system_context.md`), and repository-wide standards.
 
-The agent workflows are structured to enable alignment with the 5-step development process outlined in `docs/workflows/WORKFLOW_5_STEPS.md`.
+This document defines the roles, responsibilities, workflows, and outputs of the agents that support the development workflow for the `vendor-to-pim-mapping-system` repository. It implements the **agent-assisted** model defined in [`development_approach.md`](development_approach.md), ensuring alignment with the repository's core principles:
+
+- **Human-Agent Collaboration**: Agents assist, humans decide
+- **Iterative Sequential Workflows**: Agents draft, humans refine and approve
+- **Balance of Automation and Oversight**: Manual checkpoints between stages
+- **Governance Hierarchy**: Human inputs > Standards > Automated outputs
+
+This document details how agents implement the **5 agent functions** described in [`development_approach.md`](development_approach.md) (Planning, Specification, Implementation, Validation, Documentation) through concrete agent tools and workflows.
+
+**Related Context:**
+- **[Development Approach](development_approach.md)** — Core principles and governance framework
+- **[System Context](system_context.md)** — Repository structure and workflows
+- **[5-Step Workflow](../workflows/WORKFLOW_5_STEPS.md)** — Complete development process
 
 ---
 
 ## Objectives of the Agent System
-The agent system is designed to:
-- Streamline the development workflow through automation where feasible.
-- Maintain manual oversight during critical planning phases (Steps 1–2b).
-- Enforce repository standards via automated quality gates.
-- Dynamically maintain documentation artifacts as tasks evolve.
-- Provide modular, self-contained scripts for executing specific roles in the workflow.
+
+The agent system implements the principles from [`development_approach.md`](development_approach.md):
+
+1. **Human-Agent Collaboration**: Agents create drafts and automate mechanical tasks; humans provide feedback, make decisions, and validate outputs
+2. **Iterative Workflows**: Agents iterate on outputs based on human guidance within each step
+3. **Automation with Oversight**: Agents enforce standards and automate well-defined tasks while preserving manual checkpoints
+4. **Governance Alignment**: All agent outputs align with the truth hierarchy (Human inputs > Standards > Automation)
+5. **Modular Support**: Agents provide focused support for specific workflow functions (Planning, Specification, Implementation, Validation, Documentation)
+
+**Key Design Principles:**
+- **Agents assist, they do not decide**: All critical decisions require human approval
+- **Evidence-based outputs**: Agent plans reference existing code and mark unknowns explicitly
+- **Standards enforcement**: Automated validation ensures compliance with repository standards
+- **Documentation as code**: Agents maintain planning artifacts alongside implementation
 
 ---
 
 ## Workflow Context: Steps 1–2 (Planning Phase)
 
-The planning phase of the development workflow consists of **three sequential steps** with strict dependency requirements:
+The planning phase implements the sequential development process from [`development_approach.md`](development_approach.md) with **agent-assisted** planning:
 
 ```
-Step 1: Define Objective (Planner Agent)
+Step 1: Define Objective (Planning Function)
    ↓ [Manual discussion and approval required]
-Step 2a: Overarching Plan / Pipeline-Level (Pipeline Planner Agent)
+Step 2a: Overarching Plan / Pipeline-Level (Planning Function)
    ↓ [Manual discussion and approval required]
-Step 2b: Capability Plan / Step-Level (Capability Planner Agent)
+Step 2b: Capability Plan / Step-Level (Specification Function)
    ↓ [Manual discussion and approval required]
-Step 3: Decompose into Development Elements
+Step 3: Decompose into Development Elements (Implementation Function)
 ```
 
-**Critical Rules:**
-1. **Sequential Execution:** Each step must be completed and approved before proceeding to the next.
-2. **Manual Discussion Required:** Each planning step output requires human review, discussion, and explicit approval.
-3. **No Assumptions:** All unknowns must be explicitly marked; assumptions are not permitted.
-4. **Evidence-Based:** Plans must reference existing code/jobs where applicable and mark unknowns explicitly.
+**Critical Rules** (from development_approach.md § Core Principles):
+1. **Sequential Execution:** Each step must be completed and approved before proceeding to the next
+2. **Manual Discussion Required:** Each planning step output requires human review, discussion, and explicit approval
+3. **No Assumptions:** All unknowns must be explicitly marked; assumptions are not permitted
+4. **Evidence-Based:** Plans must reference existing code/jobs where applicable and mark unknowns explicitly
+5. **Human Oversight:** Agents draft and refine; humans validate and approve
 
 ---
 
-## Agent Roles — Planning Agents (Steps 1–2)
+## Agent Function Mapping
+
+The repository implements the **5 agent functions** from [`development_approach.md`](development_approach.md) through concrete agent tools:
+
+| Agent Function (development_approach.md) | Agent Tools | Workflow Steps | Outputs |
+|------------------------------------------|-------------|----------------|---------|
+| **Planning Function** | Planner Agent<br/>Pipeline Planner Agent | Steps 1, 2a | Objective definitions<br/>Pipeline plans |
+| **Specification Function** | Capability Planner Agent | Step 2b | Capability specifications |
+| **Implementation Function** | Coding Agent | Steps 3, 4 | Decomposition plans<br/>Codex tasks |
+| **Validation Function** | Testing Agent | Step 5 | Test results<br/>Validation reports |
+| **Documentation Function** | Documentation Agent | Step 5 | Updated documentation |
+
+Each agent operates under **human oversight**, producing drafts that humans review, refine, and approve before progression to the next step.
+
+---
+
+## Agent Tools — Planning Function (Steps 1–2a)
+
+These agents implement the **Planning Function** from [`development_approach.md`](development_approach.md), assisting humans in refining objectives and producing pipeline plans through iterative collaboration.
 
 ### 1. Planner Agent (Step 1: Define Objective)
 
-**Role:** Define the business objective with explicit boundaries, testable success criteria, and risk assessment.
+**Function:** Planning Function (assists in refining objectives)
+
+**Role:** Create structured objective definitions through collaborative human-agent interaction
 
 **Script Location:** `tools/planner_agent.py`
 
@@ -51,7 +93,35 @@ Step 3: Decompose into Development Elements
 
 #### Purpose and Responsibilities
 
-The Planner Agent is responsible for creating structured objective definitions that answer:
+The Planner Agent **assists humans** in creating structured objective definitions by:
+- Providing templates and structured prompts for objective definition
+- Helping articulate specific, measurable goals and expected outcomes
+- Facilitating identification of boundaries and constraints
+- Highlighting unknowns and risks that require human decision-making
+
+**Agent Role**: Draft creator and facilitator  
+**Human Role**: Decision maker and approver
+
+The Planner Agent supports **manual discussion** between stakeholders, ensuring consensus on objectives before any design or implementation work begins.
+
+#### Collaboration Model
+
+1. **Agent Creates Initial Draft**: Structured template based on human input
+2. **Human Reviews and Refines**: Stakeholders discuss and provide feedback
+3. **Agent Updates Draft**: Incorporates human decisions and clarifications
+4. **Iterate**: Repeat steps 2-3 until stakeholders are satisfied
+5. **Human Approves**: Explicit approval to proceed to Step 2a
+
+This implements the **iterative sequential workflow** principle from [`development_approach.md`](development_approach.md).
+
+#### Objective Definition Questions
+
+The agent helps humans answer these critical questions:
+- **What must be achieved?** Specific, measurable goals and expected outcomes.
+- **What is out-of-scope?** Explicit boundaries preventing scope creep.
+- **How do we know we succeeded?** Testable functional and quality criteria.
+- **What are the constraints?** Technical, business, time, and resource limitations.
+- **What are the risks?** Known risks, unknowns, and open questions requiring resolution.
 - **What must be achieved?** Specific, measurable goals and expected outcomes.
 - **What is out-of-scope?** Explicit boundaries preventing scope creep.
 - **How do we know we succeeded?** Testable functional and quality criteria.
@@ -226,7 +296,9 @@ Implement an automated pipeline for onboarding new vendors into the PIM system..
 
 ### 2. Pipeline Planner Agent (Step 2a: Overarching Plan / Pipeline-Level)
 
-**Role:** Design the end-to-end pipeline plan showing processing sequence, decision points, and conceptual artifacts.
+**Function:** Planning Function (assists in producing pipeline plans)
+
+**Role:** Collaborate with humans to design end-to-end pipeline architecture
 
 **Script Location:** `tools/pipeline_planner_agent.py`
 
@@ -234,16 +306,38 @@ Implement an automated pipeline for onboarding new vendors into the PIM system..
 
 #### Purpose and Responsibilities
 
-The Pipeline Planner Agent creates the **overarching pipeline plan** that defines:
-- **Processing Sequence:** Ordered list of capabilities/steps (first → last).
-- **Decision Points:** Conditional logic and fallback paths.
-- **Conceptual Artifacts:** Data artifacts exchanged between steps (by meaning, NOT storage details).
-- **Existing Job Mapping:** Which existing jobs (if any) cover which pipeline steps.
-- **Unknowns:** Explicitly marked unknowns and open decisions.
+The Pipeline Planner Agent **assists humans** in creating the **overarching pipeline plan** by:
+- Providing structured templates for pipeline architecture documentation
+- Helping articulate processing sequences and decision points
+- Facilitating identification of conceptual artifacts and data flows
+- Mapping new capabilities to existing jobs where applicable
+- Highlighting unknowns that require human decisions
 
-**Critical Rule:** Pipeline plans define **"what" and "sequence"**, NOT **"how"** each step works. Implementation details are deferred to Step 2b (Capability Plans).
+**Agent Role**: Draft creator and architectural facilitator  
+**Human Role**: Architect and decision maker
 
-The Pipeline Planner Agent facilitates **manual discussion** to ensure consensus on the pipeline architecture before detailed capability specifications are created.
+The Pipeline Planner Agent supports **manual discussion** to ensure consensus on pipeline architecture before detailed capability specifications (Step 2b) are created.
+
+#### Collaboration Model
+
+1. **Agent Creates Initial Pipeline Draft**: Based on approved Step 1 objective
+2. **Human Reviews Architecture**: Stakeholders discuss processing flow and decision points
+3. **Agent Refines Plan**: Incorporates human architectural decisions
+4. **Iterate**: Repeat until stakeholders approve the pipeline structure
+5. **Human Approves**: Explicit approval to proceed to Step 2b
+
+This implements the **balance of automation and oversight** principle from [`development_approach.md`](development_approach.md).
+
+#### Pipeline Plan Scope
+
+The agent helps define **"what" and "sequence"**, NOT **"how"** each step works:
+- **Processing Sequence:** Ordered list of capabilities/steps (first → last)
+- **Decision Points:** Conditional logic and fallback paths
+- **Conceptual Artifacts:** Data artifacts exchanged between steps (by meaning, NOT storage details)
+- **Existing Job Mapping:** Which existing jobs (if any) cover which pipeline steps
+- **Unknowns:** Explicitly marked unknowns and open decisions
+
+**Critical Rule**: Implementation details are deferred to Step 2b (Capability Plans).
 
 #### Inputs
 
@@ -501,9 +595,15 @@ python tools/pipeline_planner_agent.py create "vendor_onboarding" \
 
 ---
 
+## Agent Tools — Specification Function (Step 2b)
+
+This agent implements the **Specification Function** from [`development_approach.md`](development_approach.md), helping break down capabilities into detailed building plans and actionable steps through human-agent collaboration.
+
 ### 3. Capability Planner Agent (Step 2b: Capability Plan / Step-Level)
 
-**Role:** Create detailed capability specifications for individual pipeline steps, defining inputs, outputs, business rules, and acceptance criteria.
+**Function:** Specification Function (helps break down capabilities into building plans)
+
+**Role:** Collaborate with humans to create detailed capability specifications
 
 **Script Location:** `tools/capability_planner_agent.py`
 
@@ -511,16 +611,38 @@ python tools/pipeline_planner_agent.py create "vendor_onboarding" \
 
 #### Purpose and Responsibilities
 
-The Capability Planner Agent creates **detailed capability specifications** for ONE capability/step from the approved pipeline plan. It defines:
-- **Inputs/Outputs:** By MEANING (conceptual), NOT storage details (S3 paths, formats).
-- **Business Rules and Logic:** Rules that must be enforced by this capability.
-- **Acceptance Criteria:** Testable functional and quality criteria.
-- **Boundaries:** Explicitly state what this capability does and does NOT do.
-- **Dependencies:** Upstream capabilities (data producers), downstream consumers, external systems.
+The Capability Planner Agent **assists humans** in creating **detailed capability specifications** by:
+- Providing structured templates for capability documentation
+- Helping articulate inputs/outputs by meaning (not implementation)
+- Facilitating identification of business rules and acceptance criteria
+- Clarifying capability boundaries and dependencies
+- Highlighting unknowns requiring human decisions
 
-**Critical Rule:** Capability plans define inputs/outputs by **meaning** (what the data represents), NOT by implementation details (S3 locations, file formats, schemas). Storage details are deferred to Step 3-5 (implementation).
+**Agent Role**: Draft creator and specification facilitator  
+**Human Role**: Business expert and decision maker
 
-The Capability Planner Agent facilitates **manual discussion** to ensure consensus on each capability's scope, logic, and boundaries before decomposition and implementation.
+The Capability Planner Agent supports **manual discussion** to ensure consensus on each capability's scope, logic, and boundaries before decomposition and implementation (Steps 3-4).
+
+#### Collaboration Model
+
+1. **Agent Creates Initial Specification**: Based on approved Step 2a pipeline plan
+2. **Human Reviews and Refines**: Stakeholders discuss business rules and boundaries
+3. **Agent Updates Specification**: Incorporates human decisions on logic and criteria
+4. **Iterate**: Repeat until stakeholders approve the capability specification
+5. **Human Approves**: Explicit approval to proceed to Step 3 (Decomposition)
+
+This implements the **manual oversight and checkpoints** principle from [`development_approach.md`](development_approach.md).
+
+#### Capability Specification Scope
+
+The agent helps define specifications for ONE capability/step:
+- **Inputs/Outputs:** By MEANING (conceptual), NOT storage details (S3 paths, formats)
+- **Business Rules and Logic:** Rules that must be enforced by this capability
+- **Acceptance Criteria:** Testable functional and quality criteria
+- **Boundaries:** Explicitly state what this capability does and does NOT do
+- **Dependencies:** Upstream capabilities (data producers), downstream consumers, external systems
+
+**Critical Rule:** Capability plans define inputs/outputs by **meaning** (what the data represents), NOT by implementation details. Storage details are deferred to Steps 3-5.
 
 #### Inputs
 
@@ -862,11 +984,15 @@ Once all required capability plans (Step 2b) are approved:
 
 ---
 
-## Agent Roles — Implementation Agents (Steps 3–5)
+## Agent Tools — Implementation Function (Steps 3–4)
+
+This agent implements the **Implementation Function** from [`development_approach.md`](development_approach.md), supporting the execution of tasks aligned with building plans through decomposition and task specification.
 
 ### 4. Coding Agent (Steps 3–4: Decompose and Create Codex Tasks)
 
-**Role:** Decompose approved capability plans into PR-sized development elements and generate Codex task specifications with quality gates.
+**Function:** Implementation Function (supports execution of tasks aligned with building plans)
+
+**Role:** Assist humans in decomposing capability plans into PR-sized elements and generating Codex task specifications
 
 **Script Location:** `tools/coding_agent.py`
 
@@ -874,11 +1000,32 @@ Once all required capability plans (Step 2b) are approved:
 
 #### Purpose and Responsibilities
 
-The Coding Agent bridges the gap between planning (Steps 1–2) and implementation (Step 5) by:
-- **Step 3: Decompose Capability** — Breaking down approved capability plans into small, PR-sized development elements
+The Coding Agent **assists humans** in bridging planning and implementation by:
+- **Step 3: Decompose Capability** — Helping break down approved capability plans into small, PR-sized development elements
 - **Step 4: Create Codex Tasks** — Generating detailed Codex task specifications with standards references, file restrictions, and quality gates
 
-**Critical Rules:**
+**Agent Role**: Decomposition assistant and task specification generator  
+**Human Role**: Developer and reviewer (validates decomposition and task specifications)
+
+#### Collaboration Model
+
+**Step 3 (Decomposition):**
+1. **Agent Proposes Decomposition**: Breaks capability into PR-sized elements
+2. **Human Reviews Elements**: Validates scope, dependencies, and sizing
+3. **Agent Refines**: Adjusts based on human feedback
+4. **Human Approves**: Confirms decomposition approach
+
+**Step 4 (Task Specification):**
+1. **Agent Generates Codex Task**: Creates task spec for one element
+2. **Human Reviews Task**: Validates standards references and acceptance criteria
+3. **Agent Updates**: Incorporates human clarifications
+4. **Human Approves**: Task is ready for Step 5 (PR execution)
+
+This implements the **balance of automation and oversight** principle from [`development_approach.md`](development_approach.md).
+
+#### Quality Requirements
+
+**Critical Rules** (enforcing repository standards):
 - Each development element must be completable in ONE pull request
 - File changes must be explicitly restricted (allowed file list)
 - All tasks must reference relevant repository standards
@@ -1138,9 +1285,15 @@ python tools/coding_agent.py check
 
 ---
 
+## Agent Tools — Validation Function (Step 5)
+
+This agent implements the **Validation Function** from [`development_approach.md`](development_approach.md), ensuring outputs meet predefined success criteria and include appropriate validation artifacts.
+
 ### 5. Testing Agent (Validation and Testing)
 
-**Role:** Validate code contributions through automated testing, syntax checking, and specification-based test inference.
+**Function:** Validation Function (ensures outputs meet success criteria)
+
+**Role:** Automate code quality validation and specification-based testing
 
 **Script Location:** `tools/testing_agent.py`
 
@@ -1148,18 +1301,33 @@ python tools/coding_agent.py check
 
 #### Purpose and Responsibilities
 
-The Testing Agent ensures code quality and adherence to specifications by:
-- Running repository-wide validation tests
-- Checking Python and YAML syntax
+The Testing Agent **automates validation** while supporting human decision-making by:
+- Running repository-wide validation tests automatically
+- Checking Python and YAML syntax for compliance
 - Inferring test requirements from capability specifications
-- Generating test logs for audit and review
-- Providing pre-commit and CI validation
+- Generating test logs for human audit and review
+- Providing pre-commit and CI validation gates
 
-**Critical Rules:**
-- All tests must pass before PR merge
-- Test failures must be logged with timestamps
-- Specification-based tests are derived from acceptance criteria
-- Validation includes standards compliance
+**Agent Role**: Automated validator and test executor  
+**Human Role**: Reviewer (interprets test results and makes merge decisions)
+
+#### Automation Model
+
+This agent operates with **high automation** as it enforces well-defined standards:
+1. **Agent Runs Tests**: Automatically executes validation suite
+2. **Agent Reports Results**: Provides clear pass/fail status and detailed logs
+3. **Human Reviews**: Interprets failures and decides on remediation
+4. **Agent Re-validates**: Re-runs after fixes are applied
+
+This implements the **alignment with success criteria** principle from [`development_approach.md`](development_approach.md).
+
+#### Quality Gates (Standards Enforcement)
+
+**Critical Rules** (enforcing governance hierarchy):
+- All tests must pass before PR merge (automated enforcement)
+- Test failures must be logged with timestamps (audit trail)
+- Specification-based tests are derived from acceptance criteria (traceability)
+- Validation includes standards compliance (truth hierarchy enforcement)
 
 #### Inputs
 
@@ -1346,9 +1514,15 @@ Summary: 3 passed, 0 failed
 
 ---
 
+## Agent Tools — Documentation Function (Step 5 and Ongoing)
+
+This agent implements the **Documentation Function** from [`development_approach.md`](development_approach.md), automating documentation tasks while addressing broader repository needs.
+
 ### 6. Documentation Agent (Documentation Maintenance)
 
-**Role:** Generate and maintain project documentation including script cards, business descriptions, and glossary updates.
+**Function:** Documentation Function (automates documentation while addressing repository needs)
+
+**Role:** Assist humans in maintaining documentation aligned with code and specifications
 
 **Script Location:** `tools/documentation_agent.py`
 
@@ -1356,7 +1530,28 @@ Summary: 3 passed, 0 failed
 
 #### Purpose and Responsibilities
 
-The Documentation Agent ensures documentation stays aligned with code by:
+The Documentation Agent **assists humans** in keeping documentation synchronized with code by:
+- Generating draft script cards (operational reference for jobs)
+- Creating draft business job descriptions (business context and purpose)
+- Suggesting glossary terms from specifications
+- Highlighting documentation gaps or inconsistencies
+
+**Agent Role**: Documentation draft generator and maintenance assistant  
+**Human Role**: Documentation reviewer and approver (validates accuracy and completeness)
+
+#### Collaboration Model
+
+1. **Agent Analyzes Code**: Scans job scripts and manifests for documentation triggers
+2. **Agent Generates Drafts**: Creates initial documentation based on code structure
+3. **Human Reviews Drafts**: Validates technical accuracy and business meaning
+4. **Agent Updates**: Incorporates human corrections and clarifications
+5. **Human Approves**: Documentation is ready for commit
+
+This implements the **automation with oversight** principle from [`development_approach.md`](development_approach.md).
+
+#### Documentation Alignment
+
+The agent ensures documentation **stays aligned with code** by:
 - Generating script cards (operational reference for jobs)
 - Creating business job descriptions (business context and purpose)
 - Suggesting glossary terms from specifications

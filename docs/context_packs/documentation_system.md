@@ -1,6 +1,6 @@
 # Documentation System Metadata
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** 2026-01-27  
 **Purpose:** Centralized metadata catalog of all repository documentation, establishing objectives, roles, and scope for each document.
 
@@ -8,13 +8,15 @@
 
 ## Overview
 
-This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an agent-driven development workflow. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an **agent-assisted** development workflow. The documentation follows a clear governance hierarchy (human inputs > standards > automation) and artifact authority hierarchy (code → manifests → standards → descriptions → script cards), using normative specifications to ensure consistency and compliance.
+
+**Foundational Reference:** All documentation aligns with [`development_approach.md`](development_approach.md), which establishes core principles, governance hierarchy, and the agent collaboration model.
 
 ### Documentation Organization
 
 The documentation is organized into **5 functional layers**:
 
-1. **Context Layer** (4 files) — Foundation documents establishing repository structure, workflows, and principles
+1. **Context Layer** (5 files) — Foundation documents establishing principles, governance, repository structure, workflows, and physical mapping
 2. **Process Layer** (3 files) — Workflow guides and agent setup instructions
 3. **Governance Layer** (6 files) — Normative specifications that control structure and compliance
 4. **Planning & Implementation Layer** (2 files) — Guides for creating planning and specification documents
@@ -22,65 +24,199 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
+## Governance Alignment
+
+Per [`development_approach.md`](development_approach.md), all documentation follows these core principles:
+
+### 1. Human-Agent Collaboration
+- Context Layer documents define how agents **assist** humans (not replace them)
+- Agent System Context details collaboration models and iterative workflows
+- All agent outputs require human review and approval
+
+### 2. Governance and Truth Hierarchy
+
+**Governance Hierarchy** (decision-making authority):
+1. **Human-defined inputs** and validated objectives (captured in roadmaps and specifications)
+2. **Standards and criteria** (enforced via `docs/standards/` and `tools/validate_repo_docs.py`)
+3. **Automated outputs** (agent-generated drafts, subordinate to human decisions)
+
+**Artifact Truth Hierarchy** (for code documentation conflicts):
+1. **Code** (`jobs/*/glue_script.py`) — Runtime behavior
+2. **Manifests** (`jobs/*/job_manifest.yaml`) — Interface and I/O
+3. **Standards** (`docs/standards/`) — Structure and validation rules
+4. **Business Descriptions** — Business intent
+5. **Script Cards** — Operational reference
+
+### 3. Agent Function Mapping
+
+The 5 agent functions from [`development_approach.md`](development_approach.md) are implemented through concrete tools:
+
+| Agent Function | Agent Tools | Documentation Ownership |
+|----------------|-------------|------------------------|
+| **Planning** | Planner Agent, Pipeline Planner Agent | `docs/roadmaps/` (Steps 1, 2a) |
+| **Specification** | Capability Planner Agent | `docs/specifications/` (Step 2b) |
+| **Implementation** | Coding Agent | `docs/codex-tasks/` (Steps 3-4) |
+| **Validation** | Testing Agent | `logs/tests_logs/` (Step 5) |
+| **Documentation** | Documentation Agent | `docs/business_job_descriptions/`, `docs/script_cards/` (Step 5) |
+
+### 4. Manual Oversight Checkpoints
+
+Documentation artifacts capture manual approvals at each stage:
+- **Step 1 → Step 2a**: Objective approved (in `docs/roadmaps/<objective>.md`)
+- **Step 2a → Step 2b**: Pipeline plan approved (in `docs/roadmaps/<objective>_pipeline_plan.md`)
+- **Step 2b → Step 3**: Capability specification approved (in `docs/specifications/<capability>.yaml`)
+- **Step 4 → Step 5**: Codex task approved (in `docs/codex-tasks/<task>.md`)
+- **Step 5 → Merge**: PR approved (GitHub PR process)
+
+---
+
 ## Documentation Inventory
 
 ### Context Layer (Foundation)
 
-#### 1. System Context (`docs/context_packs/system_context.md`)
+The Context Layer establishes the foundational principles, governance model, and structural organization for the entire repository. All other documentation layers build upon these foundation documents.
 
-**Objective:** Establish the single source of truth for repository organization, structure, authority hierarchy, and development workflows.
+#### 1. Development Approach (`docs/context_packs/development_approach.md`)
 
-**Role:** Master context document that defines the repository's purpose, non-negotiable rules, and comprehensive workflow options (manual, Codex-assisted, and agent-driven).
+**Objective:** Define core development principles, governance hierarchy, and the sequential development process.
+
+**Role:** **Primary foundation document** that establishes the "why" and "how" of the repository's development methodology. All other Context Layer documents implement the principles defined here.
+
+**Agent Function:** None (foundational reference for all agents)
+
+**Scope:**
+- 6 core principles (human-agent collaboration, iterative workflows, automation with oversight, manual checkpoints, governance hierarchy, alignment with success criteria)
+- Governance and truth hierarchy (human inputs > standards > automation)
+- 5 agent functions (Planning, Specification, Implementation, Validation, Documentation)
+- Sequential 5-step development process overview
+  - Step 1: Define Objective
+  - Step 2a: Overarching Plan (Pipeline-Level)
+  - Step 2b: Capability Plans (Step-Level)
+  - Step 3: Break Down Into Development Elements
+  - Step 4: Create Codex Tasks
+  - Step 5: Code Creation and Validation
+- Cross-references to implementation documents (system_context, agent_system_context, standards, workflows)
+
+**Governance Role:** Defines the governance framework that all other documents must align with.
+
+---
+
+#### 2. System Context (`docs/context_packs/system_context.md`)
+
+**Objective:** Establish the single source of truth for repository organization, structure, artifact truth hierarchy, and workflow implementation.
+
+**Role:** Master context document that implements the principles from `development_approach.md` through concrete repository structures, workflows, and standards.
+
+**Agent Function:** Referenced by all agents for repository structure and workflow implementation
 
 **Scope:**
 - Repository objective and structure (`jobs/`, `docs/`, `tools/` directories)
-- Three complementary development workflows
-- Truth source hierarchy (code > manifests > standards > business descriptions > script cards)
+- Three complementary development workflows (manual, Codex-assisted, agent-assisted)
+- Artifact truth hierarchy (code > manifests > standards > business descriptions > script cards)
+- Relationship to governance hierarchy (artifact truth is complementary to governance truth)
 - Critical rules for manifest format (`${NAME}` placeholder style), code changes, and documentation
-- Technology stack (AWS Glue, PySpark, boto3, Make.com, NocoDB)
+- Technology stack (AWS Glue, PySpark, boto3, Make.com)
 - Common tasks (adding new jobs, updating documentation, updating manifests)
 - Best practices and when-in-doubt guidance
 
+**Version:** 1.3.1 (Aligned with Development Approach)
+
+**Changes from v1.3:**
+- Renamed "Truth Sources" to "Artifact Truth Sources" for clarity
+- Updated terminology from "agent-driven" to "agent-assisted"
+- Added cross-references to development_approach.md throughout
+- Added governance note explaining relationship between hierarchies
+
 ---
 
-#### 2. Agent System Context (`docs/context_packs/agent_system_context.md`)
+#### 3. Agent System Context (`docs/context_packs/agent_system_context.md`)
 
-**Objective:** Provide detailed agent-specific workflows, responsibilities, and system implementation details.
+**Objective:** Provide detailed agent-specific workflows, responsibilities, and collaboration models.
 
-**Role:** Supporting reference document for `system_context.md` that explains how agents operate within the repository and implement the agent-driven development workflow (v1.3).
+**Role:** Implementation document for `development_approach.md` that details how the 5 agent functions are implemented through concrete agent tools and workflows.
+
+**Agent Function:** Referenced by all agents for role definitions and collaboration patterns
 
 **Scope:**
-- Agent roles and responsibilities (Planner, Pipeline Planner, Capability Planner, Coding, Testing, Documentation)
-- Agent workflows and execution details
+- Agent collaboration models (agent drafts, human reviews, iterative refinement, approval gates)
+- 5 agent functions mapped to 6 agent tools
+  - Planning Function: Planner Agent, Pipeline Planner Agent
+  - Specification Function: Capability Planner Agent
+  - Implementation Function: Coding Agent
+  - Validation Function: Testing Agent
+  - Documentation Function: Documentation Agent
+- Detailed workflows for each agent (inputs, outputs, collaboration model, quality requirements)
 - Agent integration with the 5-step development process
-- Agent context and coordination mechanisms
+- Manual oversight checkpoints between planning steps
 
----
+**Version:** 1.3.1 (Aligned with Development Approach)
 
-#### 3. Development Approach (`docs/context_packs/development_approach.md`)
-
-**Objective:** Define core development principles and the sequential development process.
-
-**Role:** Establishes foundational principles (human-agent collaboration, iterative workflows, governance hierarchy) and explains the "why" and "how" of the repository's development methodology.
-
-**Scope:**
-- Core principles (human-agent collaboration, sequential workflows, balance of automation and oversight)
-- Sequential 5-step development process overview (Steps 1-5)
-- Agent context and role definitions
-- References to where specifics live (standards, governance, agent charters)
+**Changes from v1.3:**
+- Added overview referencing development_approach.md as foundation
+- Added "Agent Function Mapping" table showing tools → functions
+- Updated all 6 agent sections with collaboration models
+- Clarified agent-assisted model (agents assist, humans decide)
 
 ---
 
 #### 4. GitHub Element Map (`docs/context_packs/github_element_map.md`)
 
-**Objective:** Map GitHub repository structure to conceptual documentation elements.
+**Objective:** Map GitHub repository structure to conceptual documentation elements and governance mechanisms.
 
-**Role:** Integration guide between GitHub organization and documentation system; provides visual representation of repository organization.
+**Role:** Integration guide between GitHub organization, documentation system, and governance enforcement; provides visual representation of repository organization.
+
+**Agent Function:** Referenced for understanding physical file locations and governance checkpoints
 
 **Scope:**
-- Repository folder structure with annotations
+- Complete repository folder structure with governance annotations
 - Mapping of conceptual elements to physical locations
-- Visual guide for navigating the repository structure
+  - Workflows to files (Steps 1-5 → specific directories)
+  - Agent functions to tools (5 functions → 6 agent scripts)
+  - Truth hierarchy to sources (governance + artifact hierarchies)
+- Documentation layers mapping (5 layers to directory structure)
+- Governance enforcement mechanisms
+  - Manual checkpoints (approval gates between steps)
+  - Automated quality gates (CI workflows and validation scripts)
+- Integration points (GitHub Actions workflow triggers)
+- Navigation guide for different audiences (developers, agents/Copilot, documentation)
+
+**Version:** 1.1 (Aligned with Development Approach)
+
+**Changes from v1.0:**
+- Completely rebuilt to reflect current repository structure
+- Added governance and workflow annotations
+- Added conceptual mappings (workflows, agent functions, truth hierarchy)
+- Added governance enforcement section and integration points
+
+---
+
+#### 5. Documentation System (`docs/context_packs/documentation_system.md`)
+
+**Objective:** Provide centralized metadata catalog of all repository documentation.
+
+**Role:** THIS DOCUMENT — Documentation inventory establishing objectives, roles, and scope for each of the 31 documentation files; maps documents to governance principles.
+
+**Agent Function:** Referenced for understanding documentation structure and agent ownership
+
+**Scope:**
+- Documentation organization (5 functional layers)
+- Governance alignment section (principles, hierarchies, agent function mapping, checkpoints)
+- Complete inventory of all 31 documentation files with:
+  - Objective (what the document aims to achieve)
+  - Role (how it fits in the system)
+  - Scope (what it covers)
+  - Agent function ownership (which agents use/maintain it)
+  - Version and change tracking
+- Analysis section (strengths, observations, recommendations)
+
+**Version:** 1.1 (Updated with Governance Alignment)
+
+**Changes from v1.0:**
+- Updated Context Layer from 4 to 5 files (added this document to inventory)
+- Added "Governance Alignment" section mapping docs to development_approach.md
+- Updated all Context Layer descriptions with versions and alignment changes
+- Added agent function ownership to document descriptions
+- Updated overview to reference development_approach.md as foundation
 
 ---
 
@@ -716,4 +852,20 @@ The documentation system is comprehensive, well-organized, and follows a coheren
 
 ## Version History
 
-- **v1.0 (2026-01-27):** Initial metadata consolidation; comprehensive inventory of all 31 markdown files; no documents proposed for removal.
+- **v1.1 (2026-01-27):** Context Layer alignment with development_approach.md
+  - Updated Context Layer from 4 to 5 files (added documentation_system.md to inventory)
+  - Added "Governance Alignment" section mapping all documentation to development_approach.md principles
+  - Updated all Context Layer document descriptions with:
+    - Version numbers and alignment status
+    - Agent function ownership
+    - Cross-references to development_approach.md
+    - Detailed change logs from previous versions
+  - Clarified terminology throughout (agent-driven → agent-assisted)
+  - Added governance hierarchy and artifact truth hierarchy mappings
+  - Added agent function mapping table
+  - Added manual oversight checkpoint documentation
+
+- **v1.0 (2026-01-27):** Initial metadata consolidation
+  - Comprehensive inventory of all 31 markdown files
+  - No documents proposed for removal
+  - Established 5-layer organization structure

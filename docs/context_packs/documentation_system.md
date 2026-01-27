@@ -8,7 +8,7 @@
 
 ## Overview
 
-This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an **agent-assisted** development workflow with **mandatory human oversight**. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+This repository contains **32 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an **agent-assisted** development workflow with **mandatory human oversight**. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
 
 **Key Governance Principle:** This documentation system reflects the core principle from `development_approach.md` that **agents are collaborators, not autonomous actors**. All agent-generated outputs require human review and approval before becoming authoritative.
 
@@ -18,7 +18,7 @@ The documentation is organized into **5 functional layers**:
 
 1. **Context Layer** (4 files) — Foundation documents establishing repository structure, workflows, and principles
 2. **Process Layer** (3 files) — Workflow guides and agent setup instructions
-3. **Governance Layer** (6 files) — Normative specifications that control structure and compliance
+3. **Governance Layer** (7 files) — Normative specifications that control structure and compliance
 4. **Planning & Implementation Layer** (2 files) — Guides for creating planning and specification documents
 5. **Artifact Layer** (16 files) — Job-specific documentation, catalogs, GitHub integration, and operational guides
 
@@ -253,6 +253,25 @@ The documentation is organized into **5 functional layers**:
 - Consistency rules
 
 **Note:** This file appears to be sparse or placeholder content and may need further development.
+
+---
+
+#### 14. Validation Standard (`docs/standards/validation_standard.md`)
+
+**Objective:** Define validation requirements, tools, and processes for repository documentation and code.
+
+**Role:** Normative specification for validation tooling, CI/CD integration, and compliance verification.
+
+**Scope:**
+- Validation tool location and usage (`tools/validate_repo_docs.py`)
+- CI/CD integration (`.github/workflows/validate_standards.yml`)
+- Validation scope (manifest, business descriptions, script cards, artifacts catalog, job inventory compliance)
+- Pass criteria and requirements for PRs
+- Common validation workflows (adding jobs, updating documentation, updating manifests)
+- Troubleshooting guidance for validation failures
+- References to related standards
+
+**Note:** Created as part of conceptual-layer purity implementation to centralize validation rules that were previously duplicated in `system_context.md`.
 
 ---
 

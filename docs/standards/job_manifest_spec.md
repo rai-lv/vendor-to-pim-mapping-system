@@ -268,6 +268,35 @@ Rules:
 - `bucket` MUST NOT include `s3://`.
 - `key_pattern` MUST NOT include `s3://`.
 
+### 6.4 Normalized prefix placeholders (MUST)
+
+Problem:
+Some Glue scripts accept a prefix parameter that may or may not end with `/`, and then normalize it internally
+(e.g., via `ensure_prefix_uri(...)` or equivalent). If a manifest uses `${prefix}${vendor_name}_...` without
+making the normalization explicit, any automation that substitutes the raw parameter value can generate wrong keys.
+
+Rule (MUST):
+If the script normalizes a prefix-like parameter `X` (example: `preprocessed_input_key`, `bmecat_output_prefix`,
+`prepared_output_prefix`, `prepared_input_key`), then the manifest MUST use the normalized placeholder form
+`${X_norm}` inside `key_pattern`.
+
+Definition (MUST):
+`${X_norm}` means: “the value of parameter `X` after normalization to an S3 *prefix* with exactly one trailing `/`”.
+This is a manifest-level convention; `${X_norm}` does not need to appear in `parameters`.
+
+Examples (MUST):
+- Correct:
+  - `${preprocessed_input_key_norm}${vendor_name}_vendor_products.json`
+  - `${bmecat_output_prefix_norm}${vendor_name}_vendor_products.json`
+- Not allowed (ambiguous when caller passes a prefix without `/`):
+  - `${preprocessed_input_key}${vendor_name}_vendor_products.json`
+  - `${bmecat_output_prefix}${vendor_name}_vendor_products.json`
+
+Notes:
+- If a job does NOT normalize the prefix in code, then either:
+  a) update the code to normalize (preferred), OR
+  b) set `key_pattern` to `TBD` and explain missing evidence in `notes` (do not guess).
+
 ---
 
 ## 7) Sourcing rules (MUST; to keep manifests evidence-based)
@@ -338,7 +367,7 @@ inputs:
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
-    key_pattern: ${output_prefix}${vendor_name}_something.ndjson
+    key_pattern: ${output_prefix_norm}${vendor_name}_something.ndjson
     format: ndjson
     required: true
 

@@ -74,6 +74,7 @@ Top-level keys and whether they are required:
 
 | Key | Required | Type | Purpose |
 |---|---:|---|---|
+| `schema_version` | recommended | string | Manifest schema version (e.g., `1.0`) |
 | `job_id` | yes | string | Identifier for this job (must match folder `<job_id>`) |
 | `glue_job_name` | yes (Glue scope) | string or `TBD` | Deployed Glue job name (deployment identity) |
 | `runtime` | yes | enum | Execution runtime type |
@@ -108,6 +109,16 @@ Top-level keys and whether they are required:
 - `nodejs`
 - `other`
 - `TBD`
+
+#### 5.2.1 Derivation guidance for new jobs
+
+When creating a new manifest:
+- `pyspark`: Use when the job runs PySpark code (typically uses `glueContext`, `spark`, or `SparkSession` and processes data via Spark DataFrames/RDDs).
+- `python_shell`: Use when the job is a Glue Python Shell job (limited to Python libraries, no Spark context, typically specified in job configuration).
+- `python`: Use for standalone Python scripts that do not run in Glue context (e.g., containerized or Lambda-based).
+- `nodejs`: Use for Node.js-based jobs.
+- `other`: Use for jobs in other runtimes (e.g., Java, Scala, or shell scripts).
+- `TBD`: Use only when evidence is insufficient to classify the runtime. In this case, explain in `notes` what evidence is missing (e.g., "No deployment config found; script uses both Python and Spark patterns without clear context").
 
 ### 5.3 `parameters`
 
@@ -148,6 +159,23 @@ Decision rules (MUST):
 
 4) If the script does not provide enough evidence to classify `json` vs `ndjson`, `format` MUST be `TBD` (do not guess),
    and the `notes` section MUST explain what evidence is missing.
+
+#### 5.4.0.2 Handling other runtimes (Python, Node.js, etc.)
+
+For non-Spark runtimes (e.g., `python`, `nodejs`, `other`), apply similar format classification principles:
+
+**Python (non-Spark) examples:**
+- If the job uses Pandas `DataFrame.to_json(..., orient='records', lines=True)`, `format` MUST be `ndjson`.
+- If the job uses Pandas `DataFrame.to_json(..., orient='records', lines=False)` or `json.dump/json.dumps`, `format` MUST be `json`.
+- If the job uses Pandas `DataFrame.to_csv(...)`, `format` MUST be `csv`.
+
+**Node.js examples:**
+- If the job writes using `fs.writeFileSync(path, JSON.stringify(obj))`, `format` MUST be `json`.
+- If the job writes line-by-line JSON using streams or libraries like `ndjson`, `format` MUST be `ndjson`.
+
+**General rule:**
+- Determine `format` based on the actual library calls and I/O patterns in the code.
+- If ambiguous, set `format` to `TBD` and explain in `notes`.
 
 Ordering rule:
 - List order MUST be stable and meaningful (do not reorder between updates unless the interface truly changed).
@@ -205,7 +233,7 @@ Allowed `format` enum for `config_files[]`:
 To keep parsing uniform:
 - New manifests MUST use `bucket` + `key_pattern` everywhere.
 - Legacy keys `s3_bucket` / `s3_key_pattern` MUST NOT be used in new manifests.
-- If legacy keys exist in older manifests, a migration should replace them with `bucket` / `key_pattern`.
+- **Migration from legacy fields:** If older manifests use `s3_key_pattern` or `s3_bucket`, replace them with `key_pattern` and `bucket` respectively. This ensures consistency across all S3 references and simplifies automation parsing.
 
 ### 5.6 `side_effects`
 
@@ -237,10 +265,15 @@ Rules:
 
 Minimum requirement if present:
 - Provide at least one explicit explanation line for each `TBD` field.
-- Explanations must state why the value is unknown and what evidence source was checked.
+- Explanations MUST state:
+  1. **Why** the value is unknown (e.g., "deployment config not found", "script does not demonstrate this behavior")
+  2. **What evidence source was checked** (e.g., "inspected glue_script.py lines 50-100", "reviewed AWS Glue console job definition")
+  3. **What action is needed** to resolve the TBD (e.g., "need to confirm with team lead", "requires actual deployment config file", "needs testing in staging environment")
+- Avoid vague explanations like "unknown" or "needs investigation" without specifics.
 
 Recommended pattern:
 - Include a single line marker like `TBD_EXPLANATIONS:` and then list each field explanation.
+- Example: `"side_effects.overwrites_outputs: TBD — Script does not show explicit overwrite logic (checked lines 120-150 in glue_script.py). Need to test job in staging to observe actual behavior."`
 
 ---
 
@@ -253,9 +286,10 @@ Note: Other documents (e.g., business descriptions) may show placeholders as <ve
 
 Rules:
 - Placeholder names are case-sensitive.
+- Placeholder names MUST begin with an uppercase letter (e.g., `${Vendor_name}`, `${INPUT_BUCKET}`, `${Timestamp}`).
 - Placeholders MUST NOT contain spaces.
 - Bucket placeholders are allowed (e.g., `${INPUT_BUCKET}`).
-- Key placeholders are allowed (e.g., `${vendor_name}`, `${timestamp}`).
+- Key placeholders are allowed (e.g., `${Vendor_name}`, `${Timestamp}`).
 
 ### 6.2 Stability requirement
 
@@ -284,13 +318,18 @@ Definition (MUST):
 `${X_norm}` means: “the value of parameter `X` after normalization to an S3 *prefix* with exactly one trailing `/`”.
 This is a manifest-level convention; `${X_norm}` does not need to appear in `parameters`.
 
+
+When this rule applies:
+- Use `${X_norm}` only when the script contains evidence of prefix normalization logic (e.g., code that ensures trailing `/`).
+- If no normalization is evident, use the raw placeholder (e.g., `${Preprocessed_input_key}`) or set to `TBD` if ambiguous.
+
 Examples (MUST):
 - Correct:
-  - `${preprocessed_input_key_norm}${vendor_name}_vendor_products.json`
-  - `${bmecat_output_prefix_norm}${vendor_name}_vendor_products.json`
+  - `${Preprocessed_input_key_norm}${Vendor_name}_vendor_products.json`
+  - `${Bmecat_output_prefix_norm}${Vendor_name}_vendor_products.json`
 - Not allowed (ambiguous when caller passes a prefix without `/`):
-  - `${preprocessed_input_key}${vendor_name}_vendor_products.json`
-  - `${bmecat_output_prefix}${vendor_name}_vendor_products.json`
+  - `${Preprocessed_input_key}${Vendor_name}_vendor_products.json`
+  - `${Bmecat_output_prefix}${Vendor_name}_vendor_products.json`
 
 Notes:
 - If a job does NOT normalize the prefix in code, then either:
@@ -320,6 +359,30 @@ This manifest spec applies only to AWS Glue jobs represented by the `jobs/<job_g
 - `docs/job_inventory.md` is compiled from manifests and artifact catalog links; it must not invent interface facts.
 - Business descriptions remain the place for intent/context; manifests remain the place for interface facts.
 
+### 8.1 Integration and review process with related documents
+
+To ensure consistency across documentation:
+
+**1. Cross-validation with job inventory:**
+- After creating or updating a manifest, verify that the job appears correctly in `docs/job_inventory.md`.
+- Check that key fields (`runtime`, `parameters`, `inputs`, `outputs`) are consistently represented.
+- If automation has not yet updated the inventory, manually verify the manifest will generate correct inventory entries.
+
+**2. Alignment with business job descriptions:**
+- Each manifest should have a corresponding business description at `docs/business_job_descriptions/<job_id>.md`.
+- Review the business description to ensure:
+  - The manifest's `inputs` and `outputs` match the business flow described.
+  - Parameter names referenced in business descriptions align with the manifest's `parameters` list.
+  - Any constraints or side effects mentioned in business descriptions are reflected in the manifest.
+- If discrepancies exist, update the business description or manifest (or both) to restore consistency.
+
+**3. Verification process:**
+- When completing a new manifest, perform a three-way check:
+  1. Manifest fields are derived from `glue_script.py` (evidence-based).
+  2. Manifest aligns with `docs/job_inventory.md` (automation compatibility).
+  3. Manifest aligns with `docs/business_job_descriptions/<job_id>.md` (business intent).
+- Document any unresolved conflicts in the manifest's `notes` section.
+
 ---
 
 ## 9) Compliance checklist (PASS/FAIL)
@@ -338,18 +401,30 @@ A manifest is compliant if:
 - `required` flags are `true|false|TBD`
 - `format` values follow the allowed enums (or `TBD`)
 
+**Optional fields validation**
+- if `entrypoint` is present, it must be a valid filename (typically `glue_script.py`)
+- if `config_files` is present, each item must have required fields: `bucket`, `key_pattern`, `required`
+- if `schema_version` is present, it should follow semantic versioning (e.g., `1.0`, `1.1`)
+
+**Placeholder rules**
+- placeholder names begin with an uppercase letter
+- placeholders use `${NAME}` format (case-sensitive, no spaces)
+- normalized prefix placeholders use `${X_norm}` when script contains normalization logic
+
 **Uniform S3 fields**
 - all S3 references use `bucket` + `key_pattern`
 - legacy `s3_bucket/s3_key_pattern` are not used in new manifests
 
 **TBD discipline**
 - if any `TBD` appears anywhere, `notes` exists and contains explicit explanations for each TBD field
+- each TBD explanation must state: why unknown, what evidence was checked, and what action is needed
 
 ---
 
 ## 10) Minimal template
 
 ```yaml
+schema_version: "1.0"
 job_id: <folder_job_id>
 glue_job_name: <glue_job_name_or_TBD>
 runtime: <pyspark|python_shell|python|nodejs|other|TBD>
@@ -361,19 +436,19 @@ parameters:
 
 inputs:
   - bucket: ${INPUT_BUCKET}
-    key_pattern: ${some_input_key}
+    key_pattern: ${Some_input_key}
     format: xml
     required: true
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
-    key_pattern: ${output_prefix_norm}${vendor_name}_something.ndjson
+    key_pattern: ${Output_prefix_norm}${Vendor_name}_something.ndjson
     format: ndjson
     required: true
 
 config_files:
   - bucket: ${INPUT_BUCKET}
-    key_pattern: configuration-files/..._${vendor_name}.json
+    key_pattern: configuration-files/..._${Vendor_name}.json
     format: json
     required: true
     repo_path: TBD
@@ -390,5 +465,6 @@ logging_and_receipt:
 
 notes:
   - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — <reason>."
-  - "side_effects.overwrites_outputs: TBD — <reason>."
+  - "glue_job_name: TBD — Not yet deployed to AWS Glue (checked deployment scripts in /deploy directory). Needs deployment config from DevOps team."
+  - "side_effects.overwrites_outputs: TBD — Script does not show explicit overwrite logic (checked lines 120-150 in glue_script.py). Need to test job in staging to observe actual behavior."
+  - "config_files[0].repo_path: TBD — Config file exists in S3 but not mirrored in repository. Team to decide if repo mirror is needed."

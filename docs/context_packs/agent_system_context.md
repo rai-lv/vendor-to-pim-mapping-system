@@ -64,7 +64,8 @@ This agent system operates under strict governance principles aligned with `deve
 | **Step 2b** | Capability Planner proposes specification | ✅ Explicit approval | Captured in `docs/specifications/<capability>.yaml` |
 | **Step 3** | Coding Agent proposes decomposition | ✅ Review and approval | Reviewed before task creation |
 | **Step 4** | Coding Agent proposes Codex tasks | ✅ Review and approval | Reviewed before PR creation |
-| **Step 5** | Testing/Documentation Agents propose results | ✅ Review before merge | PR review process |
+| **Step 5** | Coding Agent creates PR | ✅ Review before merge | PR review process |
+| **Step 6** | Testing/Documentation Agents propose results | ✅ Review before merge | PR review process |
 
 ---
 
@@ -87,7 +88,7 @@ Step 4: Create Codex Tasks (Coding Agent)
    ↓
 Step 5: Code Creation (PR Process)
    ↓
-Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agents)
+Step 6: Validate → Document (Testing/Documentation Agents)
 ```
 
 ### Mapping to Development Approach 5-Step Process
@@ -97,7 +98,7 @@ This operational 6-step model maps to `development_approach.md` as follows:
 - **Step 1** (Define Objective) = **DA Step 1** (Define the Objective)
 - **Steps 2a + 2b** (Overarching + Capability Plans) = **DA Steps 2-3** (Plan the Pipeline + Break Down Into Capability Plans)
 - **Steps 3-5** (Decompose + Codex + PR) = **DA Step 4** (Execute Development Tasks) — operational decomposition of execution
-- **Step 6** (Validate + Document + Deploy) = **DA Step 5** (Validate, Test, and Document)
+- **Step 6** (Validate + Document) = **DA Step 5** (Validate, Test, and Document)
 
 **Note**: Development Approach Step 2 is split into operational sub-steps 2a (pipeline-level) and 2b (capability-level) for agent-assisted workflows to enforce proper approval gates at each planning layer.
 
@@ -267,10 +268,22 @@ Agent-assisted workflows are **one of three supported approaches** in the reposi
 3. **Agent-Assisted Workflow** - Agents support planning and execution (this document)
 
 All three approaches must:
-- Follow the same 6-step operational model
+- Map to the same Development Approach (5 steps) defined in `development_approach.md`
 - Comply with repository standards defined in `docs/standards/`
 - Use validation procedures in `docs/standards/validation_standard.md`
-- Map to the 5-step Development Approach in `development_approach.md`
+- Each approach may have its own operational step breakdown (e.g., agent-assisted uses 6 steps, manual uses 5 steps, Codex-assisted uses 9 steps as documented in `system_context.md`)
+
+### Document Hierarchy and Conflict Resolution
+
+When conflicts arise between documents, the following hierarchy applies:
+
+1. **development_approach.md** - Foundational governance principles (locked truth, highest authority)
+2. **system_context.md** - Repository operational setup (subordinate to development_approach.md)
+3. **This document** - Agent-specific implementation details (subordinate to both above)
+4. **docs/standards/** - Technical standards for documentation formats and validation
+5. **Code and job manifests** - Runtime truth for actual implementation
+
+**Conflict Resolution Rule**: In case of disagreement, defer to the document higher in this hierarchy. For runtime behavior, code always takes precedence over documentation.
 
 ### Relationship to Other Documentation
 

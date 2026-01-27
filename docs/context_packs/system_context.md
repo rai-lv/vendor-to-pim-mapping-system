@@ -57,9 +57,11 @@ jobs/<job_group>/<job_id>/
 ```
 docs/
   ├── context_packs/
-  │   ├── system_context.md           # THIS FILE — Master context document
+  │   ├── system_context.md           # THIS FILE — Repository operational setup guide
+  │   ├── development_approach.md     # 🔒 LOCKED TRUTH — Foundational governance principles
   │   ├── agent_system_context.md     # Agent-specific workflows and roles (v1.3)
-  │   └── github_element_map.md       # GitHub integration patterns
+  │   ├── github_element_map.md       # GitHub integration and governance hierarchy mapping
+  │   └── documentation_system.md     # Documentation inventory and metadata catalog
   ├── workflows/
   │   ├── WORKFLOW_5_STEPS.md         # Complete 5-step development process
   │   ├── WORKFLOW_DIAGRAM.md         # Visual workflow overview

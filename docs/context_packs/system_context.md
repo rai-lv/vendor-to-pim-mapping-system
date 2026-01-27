@@ -6,13 +6,15 @@
 
 ## Purpose
 
-This document is the **single source of truth** for the `vendor-to-pim-mapping-system` monorepo's:
+This document is the **single source of truth for repository operational setup** within the governance framework established by [`development_approach.md`](development_approach.md). It defines:
 - Repository structure and organization
-- Authoritative sources (truth hierarchy)
-- Development workflows (manual, Codex-assisted, and agent-assisted)
+- Authoritative sources (truth hierarchy for resolving conflicts between artifacts)
+- Operational implementation of development workflows (manual, Codex-assisted, and agent-assisted)
 - Non-negotiable rules and quality standards
 - Technology stack and capabilities
 - Common tasks and best practices
+
+**Note**: For overarching workflow philosophy and governance principles, see [`development_approach.md`](development_approach.md). This document operationalizes those principles.
 
 This document supports **three complementary development approaches**:
 1. **Manual development** with ChatGPT planning
@@ -94,11 +96,11 @@ When conflicts arise, this hierarchy determines which source is authoritative:
 
 1. **Code Truth**: `jobs/<job_group>/<job_id>/glue_script.py` is authoritative for **runtime behavior**
 2. **Interface Truth**: `jobs/<job_group>/<job_id>/job_manifest.yaml` is authoritative for **parameters, S3 inputs/outputs, side effects, and run receipts**
-3. **Standards Truth**: Files under `docs/standards/` **override everything else** for naming, structure, and validation rules
+3. **Standards Truth**: Files under `docs/standards/` **override everything else for documentation formats, naming conventions, and validation rules**; runtime truth remains with code
 4. **Business Description Truth**: `docs/business_job_descriptions/<job_id>.md` is authoritative for **business intent** (why), business logic, and boundaries
 5. **Script Card Truth**: `docs/script_cards/<job_id>.md` is authoritative for **operational interface** and observable behavior
 
-**Rule**: If a Codex task, manifest, script card, or any other document conflicts with a standard, **the standard wins**.
+**Rule**: If a Codex task, manifest, script card, or any other document conflicts with a standard **regarding documentation structure or format**, **the standard wins**. For runtime behavior, code always takes precedence.
 
 ---
 
@@ -167,6 +169,12 @@ Step 5: Code Creation (PR Process)
    ↓
 Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agents)
 ```
+
+**Mapping to Development Approach 5-Step Process:**
+- **Step 1** (above) = Development Approach **Step 1** (Define the Objective)
+- **Steps 2a + 2b** (above) = Development Approach **Steps 2-3** (Plan the Pipeline + Break Down Into Capability Plans)
+- **Steps 3-5** (above) = Development Approach **Step 4** (Execute Development Tasks) — operational decomposition
+- **Step 6** (above) = Development Approach **Step 5** (Validate, Test, and Document)
 
 **When to use**: Large pipelines, complex features, systematic development requiring consistency
 

@@ -1,0 +1,103 @@
+name: Coding Agent Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - list_tasks
+          - validate
+          - check_practices
+          - generate_codex_task
+      spec_name:
+        description: 'Specification name (required for list_tasks and generate_codex_task)'
+        required: false
+        type: string
+      task_id:
+        description: 'Task ID (required for generate_codex_task)'
+        required: false
+        type: string
+  
+  # Triggered when specifications are approved (updated in main)
+  push:
+    paths:
+      - 'docs/specifications/*.yaml'
+    branches:
+      - main
+
+jobs:
+  coding_agent:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: List coding tasks
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'list_tasks'
+        run: |
+          if [ -z "${{ inputs.spec_name }}" ]; then
+            echo "Error: spec_name is required for list_tasks action"
+            exit 1
+          fi
+          python tools/coding_agent.py tasks "${{ inputs.spec_name }}"
+      
+      - name: Validate repository
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'validate'
+        run: python tools/coding_agent.py validate
+      
+      - name: Check best practices
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'check_practices'
+        run: python tools/coding_agent.py check
+      
+      - name: Generate Codex task
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'generate_codex_task'
+        run: |
+          if [ -z "${{ inputs.spec_name }}" ] || [ -z "${{ inputs.task_id }}" ]; then
+            echo "Error: spec_name and task_id are required for generate_codex_task action"
+            exit 1
+          fi
+          python tools/coding_agent.py codex-task "${{ inputs.spec_name }}" "${{ inputs.task_id }}"
+      
+      - name: Auto-validate on specification changes
+        if: github.event_name == 'push'
+        run: |
+          echo "Specification updated, running validation..."
+          python tools/coding_agent.py validate
+      
+      - name: List updated specifications
+        if: github.event_name == 'push'
+        run: |
+          echo ""
+          echo "Updated specifications:"
+          git diff --name-only HEAD~1 HEAD | grep 'docs/specifications/' || echo "None"
+          echo ""
+          echo "To start coding:"
+          echo "1. Review the specification changes"
+          echo "2. Use 'Coding Agent Workflow' to list tasks"
+          echo "3. Create Codex tasks for implementation"
+      
+      - name: Summary
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo ""
+          echo "Coding Agent Action Complete: ${{ inputs.action }}"
+          echo ""
+          echo "Remember:"
+          echo "- Follow DRY (Don't Repeat Yourself) principle"
+          echo "- Follow SOLID principles"
+          echo "- Run validation before committing"
+          echo "- Update documentation as you code"

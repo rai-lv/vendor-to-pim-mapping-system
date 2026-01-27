@@ -1,0 +1,73 @@
+name: Planner Agent Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase_name:
+        description: 'Planning phase name (e.g., "Q1 2026 Features")'
+        required: true
+        type: string
+      description:
+        description: 'Brief description of the planning objective'
+        required: false
+        type: string
+      overwrite:
+        description: 'Overwrite existing planning document if it exists'
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  create_planning_document:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Create planning document
+        id: create_plan
+        run: |
+          if [ "${{ inputs.overwrite }}" = "true" ]; then
+            python tools/planner_agent.py create "${{ inputs.phase_name }}" \
+              --description "${{ inputs.description }}" \
+              --overwrite
+          else
+            python tools/planner_agent.py create "${{ inputs.phase_name }}" \
+              --description "${{ inputs.description }}"
+          fi
+      
+      - name: Commit planning document
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/roadmaps/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add planning document: ${{ inputs.phase_name }}"
+            git push
+          fi
+      
+      - name: List all planning documents
+        run: python tools/planner_agent.py list
+      
+      - name: Next steps
+        run: |
+          echo "✓ Planning document created successfully!"
+          echo ""
+          echo "Next steps:"
+          echo "1. Edit the planning document in docs/roadmaps/"
+          echo "2. Fill in all TODO sections"
+          echo "3. Review with stakeholders"
+          echo "4. Once approved, trigger the Designer Agent workflow to create specifications"

@@ -1,14 +1,16 @@
 # Documentation System Metadata
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Last Updated:** 2026-01-27  
-**Purpose:** Centralized metadata catalog of all repository documentation, establishing objectives, roles, and scope for each document.
+**Purpose:** Centralized metadata catalog of all repository documentation, establishing objectives, roles, and scope for each document. Aligned with locked truth principles in `development_approach.md`.
 
 ---
 
 ## Overview
 
-This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an agent-driven development workflow. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an **agent-assisted** development workflow with **mandatory human oversight**. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+
+**Key Governance Principle:** This documentation system reflects the core principle from `development_approach.md` that **agents are collaborators, not autonomous actors**. All agent-generated outputs require human review and approval before becoming authoritative.
 
 ### Documentation Organization
 
@@ -30,7 +32,7 @@ The documentation is organized into **5 functional layers**:
 
 **Objective:** Establish the single source of truth for repository organization, structure, authority hierarchy, and development workflows.
 
-**Role:** Master context document that defines the repository's purpose, non-negotiable rules, and comprehensive workflow options (manual, Codex-assisted, and agent-driven).
+**Role:** Master context document that defines the repository's purpose, non-negotiable rules, and comprehensive workflow options (manual, Codex-assisted, and agent-assisted with human oversight).
 
 **Scope:**
 - Repository objective and structure (`jobs/`, `docs/`, `tools/` directories)
@@ -45,42 +47,47 @@ The documentation is organized into **5 functional layers**:
 
 #### 2. Agent System Context (`docs/context_packs/agent_system_context.md`)
 
-**Objective:** Provide detailed agent-specific workflows, responsibilities, and system implementation details.
+**Objective:** Provide detailed agent-specific workflows, responsibilities, and governance mechanisms ensuring human oversight.
 
-**Role:** Supporting reference document for `system_context.md` that explains how agents operate within the repository and implement the agent-driven development workflow (v1.3).
+**Role:** Supporting reference document for `system_context.md` that explains how agents **assist humans** within the repository and support the agent-assisted development workflow (v1.3) with mandatory human approval gates.
 
 **Scope:**
-- Agent roles and responsibilities (Planner, Pipeline Planner, Capability Planner, Coding, Testing, Documentation)
-- Agent workflows and execution details
+- Agent roles and responsibilities as **assistants** (Planner, Pipeline Planner, Capability Planner, Coding, Testing, Documentation)
+- Agent workflows with **human oversight and approval requirements**
 - Agent integration with the 5-step development process
-- Agent context and coordination mechanisms
+- Governance principles: human-agent collaboration, manual checkpoints, approval gates
 
 ---
 
 #### 3. Development Approach (`docs/context_packs/development_approach.md`)
 
-**Objective:** Define core development principles and the sequential development process.
+**Objective:** Define core development principles and the sequential development process. **This is the locked truth document that establishes foundational governance.**
 
-**Role:** Establishes foundational principles (human-agent collaboration, iterative workflows, governance hierarchy) and explains the "why" and "how" of the repository's development methodology.
+**Role:** **Foundational governance document** that establishes principles (human-agent collaboration, iterative workflows, governance hierarchy) and explains the "why" and "how" of the repository's development methodology. **All other documents must align with this locked truth.**
 
 **Scope:**
-- Core principles (human-agent collaboration, sequential workflows, balance of automation and oversight)
+- Core principles (agents as collaborators not autonomous actors, sequential workflows, balance of automation and human oversight)
 - Sequential 5-step development process overview (Steps 1-5)
-- Agent context and role definitions
+- Agent context emphasizing assistance role
+- Mandatory manual oversight and checkpoints
+- Governance hierarchy: human inputs > standards > automated outputs
 - References to where specifics live (standards, governance, agent charters)
 
 ---
 
 #### 4. GitHub Element Map (`docs/context_packs/github_element_map.md`)
 
-**Objective:** Map GitHub repository structure to conceptual documentation elements.
+**Objective:** Map GitHub repository structure to conceptual documentation elements and governance hierarchy.
 
-**Role:** Integration guide between GitHub organization and documentation system; provides visual representation of repository organization.
+**Role:** Integration guide between GitHub organization and documentation system; provides visual representation of repository organization **with governance hierarchy annotations**.
 
 **Scope:**
-- Repository folder structure with annotations
+- Repository folder structure with governance layer annotations
 - Mapping of conceptual elements to physical locations
-- Visual guide for navigating the repository structure
+- 5-level governance hierarchy (human inputs > standards > code truth > documentation > automated outputs)
+- Human approval artifact locations
+- Agent-generated vs. human-defined content distinctions
+- Navigation guide for different user types
 
 ---
 
@@ -491,7 +498,7 @@ The documentation is organized into **5 functional layers**:
 
 #### 27. Workflows Implementation Summary (`.github/workflows/IMPLEMENTATION_SUMMARY.md`)
 
-**Objective:** Provide summary of GitHub Actions workflow enhancements for agent-driven development.
+**Objective:** Provide summary of GitHub Actions workflow enhancements for agent-assisted development with human oversight.
 
 **Role:** Technical summary of workflow implementation decisions and architecture.
 
@@ -621,10 +628,11 @@ The documentation is organized into **5 functional layers**:
    - Automated validation enforcement via CI
    - Compliance checklists for each standard
 
-5. **Agent-Driven Development Support**
-   - Extensive agent documentation (system context, setup guide, workflow integration)
-   - Agent roles and responsibilities clearly defined
-   - GitHub Actions workflow integration
+5. **Agent-Assisted Development Support**
+   - Extensive agent documentation with human oversight emphasis (system context, setup guide, workflow integration)
+   - Agent roles and responsibilities clearly defined as assistants, not autonomous actors
+   - Mandatory human approval gates documented
+   - GitHub Actions workflow integration with human review checkpoints
 
 ### Observations & Opportunities
 
@@ -716,4 +724,5 @@ The documentation system is comprehensive, well-organized, and follows a coheren
 
 ## Version History
 
+- **v1.1 (2026-01-27):** Aligned with `development_approach.md` locked truth principles; emphasized human oversight, agent assistance role, and governance hierarchy throughout document descriptions.
 - **v1.0 (2026-01-27):** Initial metadata consolidation; comprehensive inventory of all 31 markdown files; no documents proposed for removal.

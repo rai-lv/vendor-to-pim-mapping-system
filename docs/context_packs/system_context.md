@@ -181,7 +181,7 @@ Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agent
 **Agent Tools**:
 - **Planner Agent** (`tools/planner_agent.py`) — Assists in creating `docs/roadmaps/<objective>.md` with human approval
 - **Pipeline Planner Agent** (`tools/pipeline_planner_agent.py`) — Assists in creating `docs/roadmaps/<objective>_pipeline_plan.md` with human approval
-- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Assists in creating `docs/specifications/<capability>_capability.yaml` with human approval
+- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Assists in creating `docs/specifications/<capability>.yaml` with human approval
 - **Coding Agent** (`tools/coding_agent.py`) — Assists with decomposition and Codex task generation
 - **Testing/Documentation/Deployment Agents** — Assist with quality gates and deployment processes, subject to human review
 

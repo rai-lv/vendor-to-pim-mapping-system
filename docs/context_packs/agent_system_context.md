@@ -584,7 +584,7 @@ The Capability Planner Agent **facilitates and supports** manual discussion to e
 
 #### Outputs
 
-**Primary Output:** Capability specification document at `docs/specifications/<capability_name>_capability.yaml`
+**Primary Output:** Capability specification document at `docs/specifications/<capability_name>.yaml`
 
 The capability specification must include:
 1. **Capability Name and Description:** Clear, concise capability name and purpose.
@@ -669,7 +669,7 @@ python tools/capability_planner_agent.py create "capability_name" \
 python tools/capability_planner_agent.py create "data_validation" \
   --pipeline-ref "vendor_onboarding_pipeline_plan.md"
 
-# Output: docs/specifications/data_validation_capability.yaml created
+# Output: docs/specifications/data_validation.yaml created
 ```
 
 **Expected Output Structure:**
@@ -937,7 +937,7 @@ The Coding Agent **assists** in bridging the gap between planning (Steps 1–2) 
 **Primary Input (Step 3):** Approved Step 2b capability specification
 
 **Required Reference:**
-- File: `docs/specifications/<capability_name>_capability.yaml` (from Step 2b)
+- File: `docs/specifications/<capability_name>.yaml` (from Step 2b)
 
 **Primary Input (Step 4):** Development element definition from Step 3
 
@@ -1425,7 +1425,7 @@ The Documentation Agent **assists humans** in ensuring documentation stays align
 - Optional: Capability specification reference
 
 **For Glossary Suggestions:**
-- Capability specification (`docs/specifications/<name>_capability.yaml`)
+- Capability specification (`docs/specifications/<name>.yaml`)
 
 #### Outputs
 

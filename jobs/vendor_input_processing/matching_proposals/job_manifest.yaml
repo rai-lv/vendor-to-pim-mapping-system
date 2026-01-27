@@ -13,9 +13,9 @@ parameters:
 
 inputs:
   - bucket: ${INPUT_BUCKET}
-    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products*
-    format: TBD
-    required: false
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
@@ -39,7 +39,6 @@ logging_and_receipt:
 
 notes:
   - "TBD_EXPLANATIONS:"
-  - "inputs[0].format: TBD — script attempts spark.read.json with and without multiLine and also supports files without extension; format could be ndjson or JSON depending on upstream output."
   - "logging_and_receipt.run_receipt_bucket: TBD — no run receipt S3 write is present in glue_script.py; bucket not applicable but spec requires explanation."
   - "logging_and_receipt.run_receipt_key_pattern: TBD — no run receipt S3 write is present in glue_script.py; key pattern not applicable but spec requires explanation."
   - "logging_and_receipt.counters_observed: TBD — script logs to stdout but does not persist a receipt with a defined counters schema."

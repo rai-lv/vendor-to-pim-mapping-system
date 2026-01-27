@@ -62,9 +62,11 @@ This agent system operates under strict governance principles aligned with `deve
 
 ---
 
-## Workflow Context: Steps 1–2 (Planning Phase)
+## Workflow Context: Agent-Assisted Operational Model
 
-The planning phase of the development workflow consists of **three sequential steps** with strict dependency requirements:
+The agent-assisted workflow follows a **6-step operational model** as defined in `system_context.md`, which maps to the 5-step Development Approach defined in `development_approach.md`:
+
+### Agent-Assisted 6-Step Operational Flow
 
 ```
 Step 1: Define Objective (Planner Agent)
@@ -73,8 +75,25 @@ Step 2a: Overarching Plan / Pipeline-Level (Pipeline Planner Agent)
    ↓ [Manual discussion and approval required]
 Step 2b: Capability Plan / Step-Level (Capability Planner Agent)
    ↓ [Manual discussion and approval required]
-Step 3: Decompose into Development Elements
+Step 3: Decompose into Development Elements (Coding Agent)
+   ↓
+Step 4: Create Codex Tasks (Coding Agent)
+   ↓
+Step 5: Code Creation (PR Process)
+   ↓
+Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agents)
 ```
+
+### Mapping to Development Approach 5-Step Process
+
+This operational 6-step model maps to `development_approach.md` as follows:
+
+- **Step 1** (Define Objective) = **DA Step 1** (Define the Objective)
+- **Steps 2a + 2b** (Overarching + Capability Plans) = **DA Steps 2-3** (Plan the Pipeline + Break Down Into Capability Plans)
+- **Steps 3-5** (Decompose + Codex + PR) = **DA Step 4** (Execute Development Tasks) — operational decomposition of execution
+- **Step 6** (Validate + Document + Deploy) = **DA Step 5** (Validate, Test, and Document)
+
+**Note**: Development Approach Step 2 is split into operational sub-steps 2a (pipeline-level) and 2b (capability-level) for agent-assisted workflows to enforce proper approval gates at each planning layer.
 
 **Critical Rules:**
 1. **Sequential Execution:** Each step must be completed and approved before proceeding to the next.
@@ -84,7 +103,7 @@ Step 3: Decompose into Development Elements
 
 ---
 
-## Agent Roles — Planning Agents (Steps 1–2)
+## Agent Roles — Planning Agents (Steps 1, 2a, 2b)
 
 ### 1. Planner Agent (Step 1: Define Objective)
 
@@ -859,9 +878,11 @@ unknowns:
 
 ---
 
-## Summary: Planning Phase Workflow (Steps 1–2)
+## Summary: Agent-Assisted Planning Workflow (Steps 1, 2a, 2b)
 
 The planning phase ensures **no code is written until consensus is achieved** on objectives, pipeline architecture, and capability specifications. This prevents rework, scope creep, and implementation misalignment.
+
+This corresponds to **Development Approach Steps 1-3** (Define Objective, Plan Pipeline, Break Down Capabilities), operationalized with explicit sub-steps and approval gates for agent-assisted workflows.
 
 ### Workflow Sequence
 
@@ -870,12 +891,14 @@ The planning phase ensures **no code is written until consensus is achieved** on
 │ Step 1: Define Objective (Planner Agent)           │
 │ Output: docs/roadmaps/<objective>.md                │
 │ Manual Discussion → Approval Required               │
+│ Maps to: DA Step 1                                  │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │ Step 2a: Pipeline Plan (Pipeline Planner Agent)    │
 │ Output: docs/roadmaps/<objective>_pipeline_plan.md  │
 │ Manual Discussion → Approval Required               │
+│ Maps to: DA Step 2 (pipeline-level)                │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -883,11 +906,12 @@ The planning phase ensures **no code is written until consensus is achieved** on
 │ Output: docs/specifications/<capability>.yaml       │
 │ Manual Discussion → Approval Required               │
 │ Repeat for EACH capability in pipeline plan        │
+│ Maps to: DA Step 3 (capability-level)              │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
 │ Step 3: Decompose into Development Elements        │
-│ (Coding Agent - outside scope of this document)    │
+│ (Coding Agent - part of DA Step 4 execution)       │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -1696,7 +1720,9 @@ python tools/capability_planner_agent.py create "capability_name"
 
 ## Complete Agent Workflow Summary
 
-### Full 5-Step Workflow with Agents
+### Agent-Assisted 6-Step Operational Workflow
+
+This follows the canonical 6-step operational model defined in `system_context.md`, which maps to the Development Approach 5-step process:
 
 ```
 ┌─────────────────────────────────────────────────────┐
@@ -1704,6 +1730,7 @@ python tools/capability_planner_agent.py create "capability_name"
 │ Agent: Planner Agent                                │
 │ Output: docs/roadmaps/<objective>.md                │
 │ Manual Discussion → Approval Required               │
+│ [DA Step 1]                                         │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -1711,6 +1738,7 @@ python tools/capability_planner_agent.py create "capability_name"
 │ Agent: Pipeline Planner Agent                       │
 │ Output: docs/roadmaps/<objective>_pipeline_plan.md  │
 │ Manual Discussion → Approval Required               │
+│ [DA Step 2 - pipeline-level]                       │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -1719,6 +1747,7 @@ python tools/capability_planner_agent.py create "capability_name"
 │ Output: docs/specifications/<capability>.yaml       │
 │ Manual Discussion → Approval Required               │
 │ Repeat for EACH capability in pipeline             │
+│ [DA Step 3 - capability-level]                     │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -1726,6 +1755,7 @@ python tools/capability_planner_agent.py create "capability_name"
 │ Agent: Coding Agent                                 │
 │ Output: Development elements (console)              │
 │ Review and adjust decomposition                     │
+│ [DA Step 4 - execution phase begins]               │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
@@ -1733,22 +1763,34 @@ python tools/capability_planner_agent.py create "capability_name"
 │ Agent: Coding Agent                                 │
 │ Output: Codex task specifications (console)         │
 │ For each development element from Step 3            │
+│ [DA Step 4 - task decomposition]                   │
 └─────────────────────────────────────────────────────┘
                         ↓
 ┌─────────────────────────────────────────────────────┐
-│ Step 5: Execute PR (Implementation)                │
+│ Step 5: Code Creation (PR Process)                 │
+│ Agent: Coding Agent (via Codex)                    │
+│ Output: Pull request with implementation            │
+│ Quality gates enforced                              │
+│ [DA Step 4 - implementation]                       │
+└─────────────────────────────────────────────────────┘
+                        ↓
+┌─────────────────────────────────────────────────────┐
+│ Step 6: Validate → Document → Deploy               │
 │ Agents: Testing Agent, Documentation Agent          │
-│ - Implement code per Codex task                    │
+│ - Run validation per validation_standard.md        │
 │ - Run tests (Testing Agent)                        │
 │ - Generate docs (Documentation Agent)              │
-│ - Pass all quality gates                           │
-│ - Create PR for review                             │
+│ - PR review and merge                              │
+│ - Deploy to production                             │
+│ [DA Step 5 - validation and documentation]         │
 └─────────────────────────────────────────────────────┘
 ```
 
+**Note**: This 6-step operational model is the canonical workflow for agent-assisted development. See `system_context.md` for the complete mapping to Development Approach's 5-step philosophical model.
+
 ### Agent Command Reference
 
-**Planning Phase (Steps 1–2):**
+**Planning Phase (Steps 1, 2a, 2b):**
 ```bash
 # Step 1: Define Objective
 python tools/planner_agent.py create "objective_name"

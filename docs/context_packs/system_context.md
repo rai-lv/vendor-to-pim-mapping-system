@@ -1,6 +1,6 @@
 # System Context — AI-Supported Data Automation Monorepo
 
-**Version:** 1.3.1 (Aligned with Development Approach)
+**Version:** 1.3 (Integrated — Manual, Codex, and Agent Workflows)
 
 ---
 
@@ -8,18 +8,16 @@
 
 This document is the **single source of truth** for the `vendor-to-pim-mapping-system` monorepo's:
 - Repository structure and organization
-- Authoritative sources (artifact truth hierarchy)
-- Development workflows (manual, Codex-assisted, and agent-assisted)
+- Authoritative sources (truth hierarchy)
+- Development workflows (manual, Codex-assisted, and agent-driven)
 - Non-negotiable rules and quality standards
 - Technology stack and capabilities
 - Common tasks and best practices
 
-**Foundation Reference**: This document implements the principles and workflows defined in [`development_approach.md`](development_approach.md), which establishes the core development philosophy, governance hierarchy, and agent collaboration model.
-
 This document supports **three complementary development approaches**:
 1. **Manual development** with ChatGPT planning
 2. **Codex-assisted development** with structured task definitions
-3. **Agent-assisted development** with automated planning support and human oversight (v1.3)
+3. **Agent-driven development** with automated planning and execution (v1.3)
 
 For detailed agent roles and workflows, see: [`agent_system_context.md`](agent_system_context.md)
 
@@ -90,11 +88,9 @@ tools/
 
 ---
 
-## Artifact Truth Sources (Authority Hierarchy)
+## Truth Sources (Authority Hierarchy)
 
-This hierarchy determines which source is authoritative **for code artifacts and their documentation**. This complements the governance hierarchy defined in [`development_approach.md`](development_approach.md) (Human inputs > Standards > Automation).
-
-When conflicts arise between artifact documentation, this hierarchy applies:
+When conflicts arise, this hierarchy determines which source is authoritative:
 
 1. **Code Truth**: `jobs/<job_group>/<job_id>/glue_script.py` is authoritative for **runtime behavior**
 2. **Interface Truth**: `jobs/<job_group>/<job_id>/job_manifest.yaml` is authoritative for **parameters, S3 inputs/outputs, side effects, and run receipts**
@@ -103,8 +99,6 @@ When conflicts arise between artifact documentation, this hierarchy applies:
 5. **Script Card Truth**: `docs/script_cards/<job_id>.md` is authoritative for **operational interface** and observable behavior
 
 **Rule**: If a Codex task, manifest, script card, or any other document conflicts with a standard, **the standard wins**.
-
-**Governance Note**: This artifact hierarchy operates within the broader governance framework where human-defined objectives and validated standards always take precedence over automated outputs (see [`development_approach.md`](development_approach.md) § Governance and Truth Hierarchy).
 
 ---
 
@@ -118,7 +112,7 @@ This repository supports **three complementary workflow approaches**. Teams can 
 |----------|----------|-----------|----------|
 | **Manual** | ChatGPT discussions | Manual coding | Small changes, prototypes, exploratory work |
 | **Codex-Assisted** | Manual planning + structured Codex tasks | Codex generates code from tasks | Standard features, well-defined changes |
-| **Agent-Assisted** | Agent-drafted plans + human oversight | Automated execution with approval gates | Large pipelines, systematic development |
+| **Agent-Driven** | Automated agent planning | Automated execution | Large pipelines, systematic development |
 
 ### 1. Manual Development Workflow (ChatGPT-Assisted)
 
@@ -154,48 +148,40 @@ This repository supports **three complementary workflow approaches**. Teams can 
 
 ---
 
-### 3. Agent-Assisted Development Workflow (v1.3)
+### 3. Agent-Driven Development Workflow (v1.3)
 
-**Automated planning support with human oversight and agent specialists:**
-
-This workflow implements the sequential development process defined in [`development_approach.md`](development_approach.md) with **agent-assisted** planning and execution. Agents support human decision-making through iterative drafts, automation of well-defined tasks, and structured collaboration.
+**Automated planning and execution with agent specialists:**
 
 ```
-Step 1: Define Objective (Planning Function - Planner Agent)
+Step 1: Define Objective (Planner Agent)
    ↓ [Manual discussion and approval required]
-Step 2a: Overarching Plan / Pipeline-Level (Planning Function - Pipeline Planner Agent)
+Step 2a: Overarching Plan / Pipeline-Level (Pipeline Planner Agent)
    ↓ [Manual discussion and approval required]
-Step 2b: Capability Plan / Step-Level (Specification Function - Capability Planner Agent)
+Step 2b: Capability Plan / Step-Level (Capability Planner Agent)
    ↓ [Manual discussion and approval required]
-Step 3: Decompose into Development Elements (Implementation Function - Coding Agent)
+Step 3: Decompose into Development Elements (Coding Agent)
    ↓
-Step 4: Create Codex Tasks (Implementation Function - Coding Agent)
+Step 4: Create Codex Tasks (Coding Agent)
    ↓
 Step 5: Code Creation (PR Process)
    ↓
-Step 6: Validate → Document → Deploy (Validation/Documentation Functions)
+Step 6: Validate → Document → Deploy (Testing/Documentation/Deployment Agents)
 ```
 
 **When to use**: Large pipelines, complex features, systematic development requiring consistency
 
-**Agent Tools** (implementing the 5 agent functions from development_approach.md):
-- **Planner Agent** (`tools/planner_agent.py`) — Planning Function: Creates `docs/roadmaps/<objective>.md`
-- **Pipeline Planner Agent** (`tools/pipeline_planner_agent.py`) — Planning Function: Creates `docs/roadmaps/<objective>_pipeline_plan.md`
-- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Specification Function: Creates `docs/specifications/<capability>_capability.yaml`
-- **Coding Agent** (`tools/coding_agent.py`) — Implementation Function: Decomposition and Codex task generation
-- **Testing/Documentation Agents** — Validation/Documentation Functions: Automated quality gates
+**Agent Tools**:
+- **Planner Agent** (`tools/planner_agent.py`) — Creates `docs/roadmaps/<objective>.md`
+- **Pipeline Planner Agent** (`tools/pipeline_planner_agent.py`) — Creates `docs/roadmaps/<objective>_pipeline_plan.md`
+- **Capability Planner Agent** (`tools/capability_planner_agent.py`) — Creates `docs/specifications/<capability>_capability.yaml`
+- **Coding Agent** (`tools/coding_agent.py`) — Decomposition and Codex task generation
+- **Testing/Documentation/Deployment Agents** — Automated quality gates and deployment
 
 **Key Features**:
-- Agent-assisted planning with human oversight (not autonomous)
-- Iterative collaboration: agents draft, humans refine and approve
-- Manual approval gates at each planning step (enforcing governance hierarchy)
+- Automated planning artifact generation
+- Manual approval gates at each planning step
 - Explicit unknowns and boundaries
 - Evidence-based plans referencing existing code
-
-**Governance Model**: Aligns with the governance hierarchy from [`development_approach.md`](development_approach.md):
-1. Human-defined objectives and validated decisions take precedence
-2. Standards and criteria are enforced across all agent outputs
-3. Agent outputs remain subordinate to human-defined rules and validations
 
 **For complete agent workflow details, see**: [`docs/context_packs/agent_system_context.md`](agent_system_context.md) and [`docs/workflows/WORKFLOW_5_STEPS.md`](../workflows/WORKFLOW_5_STEPS.md)
 
@@ -329,7 +315,6 @@ These rules apply to **all workflows** (manual, Codex, agent):
 ## When in Doubt
 
 If you're unsure about:
-- **Foundational principles**: Refer to [`development_approach.md`](development_approach.md) for core philosophy and governance
 - **Repository structure**: Refer to this document
 - **Agent workflows**: See `docs/context_packs/agent_system_context.md`
 - **5-step workflow details**: See `docs/workflows/WORKFLOW_5_STEPS.md`
@@ -341,19 +326,13 @@ If you're unsure about:
 
 ## Related Documentation
 
-**Foundational Principles**:
-- **[Development Approach](development_approach.md)** — Core development philosophy, governance hierarchy, and agent collaboration model
-
-**Agent System**:
 - **[Agent System Context](agent_system_context.md)** — Detailed agent roles, responsibilities, and workflows (v1.3)
 - **[5-Step Workflow](../workflows/WORKFLOW_5_STEPS.md)** — Complete development process guide
 - **[Agent Setup Guide](../workflows/AGENTS_SETUP.md)** — Agent installation and usage
-
-**Standards and Specifications**:
 - **[Standards Directory](../standards/)** — Specifications for all documentation types
 - **[Glossary](../glossary.md)** — Shared terminology and definitions
 
 ---
 
 **Last Updated**: 2026-01-27  
-**Version**: 1.3 (Integrated — Manual, Codex, and Agent-Assisted Workflows)
+**Version**: 1.3 (Integrated — Manual, Codex, and Agent Workflows)

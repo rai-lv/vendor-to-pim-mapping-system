@@ -1,0 +1,44 @@
+job_id: matching_proposals
+glue_job_name: ${JOB_NAME}
+runtime: pyspark
+entrypoint: glue_script.py
+
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - prepared_input_key
+  - prepared_output_prefix
+
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${prepared_input_key}/canonicalCategoryMapping/${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals.json
+    format: json
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix}/${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    format: json
+    required: true
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+
+notes:
+  - "TBD_EXPLANATIONS:"
+  - "logging_and_receipt.run_receipt_bucket: TBD — no run receipt S3 write is present in glue_script.py; bucket not applicable but spec requires explanation."
+  - "logging_and_receipt.run_receipt_key_pattern: TBD — no run receipt S3 write is present in glue_script.py; key pattern not applicable but spec requires explanation."
+  - "logging_and_receipt.counters_observed: TBD — script logs to stdout but does not persist a receipt with a defined counters schema."

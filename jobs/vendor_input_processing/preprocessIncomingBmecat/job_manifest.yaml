@@ -1,0 +1,70 @@
+job_id: preprocessIncomingBmecat
+glue_job_name: ${JOB_NAME}
+runtime: python_shell
+entrypoint: glue_script.py
+
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - bmecat_input_key
+  - bmecat_output_prefix
+
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${bmecat_input_key}
+    format: xml
+    required: true
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_products.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_features.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_mimes.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_relations.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_product_prices.json
+    format: ndjson
+    required: false
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${bmecat_output_prefix}${vendor_name}_vendor_categories.json
+    format: ndjson
+    required: false
+
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
+    format: json
+    required: true
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+
+notes:
+  - "TBD_EXPLANATIONS:"
+  - "logging_and_receipt.run_receipt_bucket: TBD — no run receipt S3 write is present in glue_script.py; bucket not applicable but spec requires explanation."
+  - "logging_and_receipt.run_receipt_key_pattern: TBD — no run receipt S3 write is present in glue_script.py; key pattern not applicable but spec requires explanation."
+  - "logging_and_receipt.counters_observed: TBD — script logs summary counts but does not persist a receipt with a defined counters schema."

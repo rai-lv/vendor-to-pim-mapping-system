@@ -24,6 +24,8 @@ Six specialized agents have been implemented to automate the 5-step development 
 5. **Testing Agent** - Automated validation and testing
 6. **Documentation Agent** - Documentation generation and maintenance
 
+**Note:** The repository also contains a legacy `designer_agent.py` script that predates the current 5-step workflow. New development should use the Pipeline Planner Agent (Step 2a) and Capability Planner Agent (Step 2b) instead.
+
 Each agent consists of:
 - A Python script in `tools/` directory
 - A GitHub Actions workflow in `.github/workflows/` (where applicable)
@@ -140,7 +142,7 @@ python tools/documentation_agent.py validate
 
 ### Automatic Triggers
 
-1. **Designer Agent**
+1. **Pipeline Planner Agent / Capability Planner Agent**
    - Triggered when planning documents are updated in `docs/roadmaps/`
    - Provides notification to create specifications
 
@@ -174,12 +176,12 @@ All agents can be manually triggered via GitHub Actions:
 .
 ├── .github/
 │   └── workflows/
-│       ├── planner_workflow.yml          # Planner automation
-│       ├── designer_workflow.yml         # Designer automation
-│       ├── coding_workflow.yml           # Coding assistance
+│       ├── planner_workflow.yml          # Planner automation (Step 1)
+│       ├── designer_workflow.yml         # Pipeline/Capability Planner automation (Steps 2a & 2b)
+│       ├── coding_workflow.yml           # Coding assistance (Steps 3 & 4)
 │       ├── testing_workflow.yml          # Testing automation
 │       ├── documentation_workflow.yml    # Documentation automation
-│       └── validate_standards.yml        # Existing validation
+│       └── validate_standards.yml        # Standards validation
 │
 ├── tools/
 │   ├── planner_agent.py                  # Step 1: Define Objective
@@ -318,10 +320,6 @@ See `WORKFLOW_5_STEPS.md` for complete details. Summary:
 
 ```
 Step 1: Define Objective (Planner Agent)
-   ↓
-2. Design (Designer Agent)
-   ↓
-3. Implement (Coding Agent)
    ↓
 Step 2a: Pipeline Plan (Pipeline Planner Agent)
    ↓

@@ -3,7 +3,7 @@
 ## Overview
 This document defines and describes the roles, responsibilities, workflows, and outputs of the agents embedded in the development workflow for the `vendor-to-pim-mapping-system` repository. It ensures alignment between the agent-based approach, the broader system context (defined in `system_context.md`), and repository-wide standards.
 
-The agent workflows are structured to enable alignment with the 5-step development process outlined in `WORKFLOW_5_STEPS.md`.
+The agent workflows are structured to enable alignment with the 5-step development process outlined in `docs/workflows/WORKFLOW_5_STEPS.md`.
 
 ---
 
@@ -864,7 +864,7 @@ Once all required capability plans (Step 2b) are approved:
 
 ## See Also
 
-- `WORKFLOW_5_STEPS.md` — Complete 5-step workflow documentation
+- `docs/workflows/WORKFLOW_5_STEPS.md` — Complete 5-step workflow documentation
 - `docs/context_packs/system_context.md` — Repository context and structure
-- `AGENTS_SETUP.md` — Agent installation and usage guide
+- `docs/workflows/AGENTS_SETUP.md` — Agent installation and usage guide
 - `docs/standards/` — Repository standards and specifications

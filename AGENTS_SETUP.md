@@ -2,78 +2,97 @@
 
 This document provides a comprehensive guide to the automated workflow agents implemented in this repository.
 
+## ⚠️ Important: Use the 5-Step Workflow
+
+This repository follows a **5-step development workflow** with two required planning layers before any code changes. See `WORKFLOW_5_STEPS.md` for complete details.
+
+**Quick Reference:**
+1. **Define Objective** (Planner Agent)
+2. **Overarching Plan / Pipeline-Level** (Pipeline Planner Agent)  
+3. **Capability Plan / Step-Level** (Capability Planner Agent)
+4. **Decompose into Elements** (Coding Agent - decompose)
+5. **Create Codex Tasks** (Coding Agent - codex-task)
+
 ## Overview
 
-Five specialized agents have been implemented to automate the development lifecycle:
+Six specialized agents have been implemented to automate the 5-step development workflow:
 
-1. **Planner Agent** - High-level planning and objectives
-2. **Designer Agent** - Subsystem specifications and design
-3. **Coding Agent** - Code implementation assistance
-4. **Testing Agent** - Automated validation and testing
-5. **Documentation Agent** - Documentation generation and maintenance
+1. **Planner Agent** - Step 1: Define objectives with testable success criteria
+2. **Pipeline Planner Agent** - Step 2a: Create overarching pipeline plans
+3. **Capability Planner Agent** - Step 2b: Create detailed capability specifications
+4. **Coding Agent** - Steps 3 & 4: Decompose and create Codex tasks
+5. **Testing Agent** - Automated validation and testing
+6. **Documentation Agent** - Documentation generation and maintenance
 
 Each agent consists of:
 - A Python script in `tools/` directory
-- A GitHub Actions workflow in `.github/workflows/`
+- A GitHub Actions workflow in `.github/workflows/` (where applicable)
 - Dedicated output directories
 
-## Quick Start
+## Quick Start (5-Step Workflow)
 
-### 1. Planning Phase
+### Step 1: Define Objective
 
-**Create a planning document:**
-
-Via CLI:
-```bash
-python tools/planner_agent.py create "Q1 2026 Features" \
-  --description "Plan Q1 feature development"
-```
-
-Via GitHub Actions:
-1. Go to: Actions → Planner Agent Workflow
-2. Click "Run workflow"
-3. Enter phase name and description
-4. Click "Run workflow"
-
-**Output:** `docs/roadmaps/q1_2026_features.md`
-
-### 2. Design Phase
-
-**Create a subsystem specification:**
+**Agent:** Planner Agent  
+**Purpose:** Define what must be achieved with explicit boundaries and testable criteria
 
 Via CLI:
 ```bash
-python tools/designer_agent.py create "vendor_ingestion_pipeline" \
-  --planning-phase "Q1 2026 Features"
+python tools/planner_agent.py create "vendor_onboarding" \
+  --description "Implement vendor onboarding pipeline"
 ```
 
-Via GitHub Actions:
-1. Go to: Actions → Designer Agent Workflow
-2. Click "Run workflow"
-3. Enter subsystem name and planning phase
-4. Click "Run workflow"
+**Output:** `docs/roadmaps/vendor_onboarding.md`
 
-**Output:** `docs/specifications/vendor_ingestion_pipeline.yaml`
+### Step 2a: Overarching Plan (Pipeline-Level)
 
-### 3. Coding Phase
+**Agent:** Pipeline Planner Agent  
+**Purpose:** Create end-to-end pipeline plan with processing sequence and decision points
 
-**List coding tasks:**
-
+Via CLI:
 ```bash
-python tools/coding_agent.py tasks vendor_ingestion_pipeline
+python tools/pipeline_planner_agent.py create "vendor_onboarding" \
+  --objective-ref "vendor_onboarding.md"
 ```
 
-**Generate Codex task outline:**
+**Output:** `docs/roadmaps/vendor_onboarding_pipeline_plan.md`
 
+### Step 2b: Capability Plan (Step-Level)
+
+**Agent:** Capability Planner Agent  
+**Purpose:** Specify ONE capability from pipeline plan in detail
+
+Via CLI:
 ```bash
-python tools/coding_agent.py codex-task vendor_ingestion_pipeline 1
+python tools/capability_planner_agent.py create "data_ingestion" \
+  --pipeline-ref "vendor_onboarding_pipeline_plan.md"
 ```
 
-**Validate code:**
+**Output:** `docs/specifications/data_ingestion_capability.yaml`
 
+### Step 3: Decompose into Development Elements
+
+**Agent:** Coding Agent  
+**Purpose:** Break capability into PR-sized elements
+
+Via CLI:
 ```bash
-python tools/coding_agent.py validate
+python tools/coding_agent.py decompose data_ingestion_capability
 ```
+
+**Output:** Console output with suggested elements
+
+### Step 4: Create Codex Tasks
+
+**Agent:** Coding Agent  
+**Purpose:** Generate Codex task for each element
+
+Via CLI:
+```bash
+python tools/coding_agent.py codex-task data_ingestion_capability 1
+```
+
+**Output:** Console output with Codex task details
 
 ### 4. Testing Phase
 
@@ -163,17 +182,18 @@ All agents can be manually triggered via GitHub Actions:
 │       └── validate_standards.yml        # Existing validation
 │
 ├── tools/
-│   ├── planner_agent.py                  # Planning automation
-│   ├── designer_agent.py                 # Design automation
-│   ├── coding_agent.py                   # Coding assistance
+│   ├── planner_agent.py                  # Step 1: Define Objective
+│   ├── pipeline_planner_agent.py         # Step 2a: Pipeline Plan
+│   ├── capability_planner_agent.py       # Step 2b: Capability Plan
+│   ├── coding_agent.py                   # Steps 3 & 4: Decompose + Codex
 │   ├── testing_agent.py                  # Testing automation
 │   ├── documentation_agent.py            # Documentation automation
-│   └── validate_repo_docs.py             # Existing validation
+│   └── validate_repo_docs.py             # Standards validation
 │
 ├── docs/
-│   ├── roadmaps/                         # Planning documents
+│   ├── roadmaps/                         # Step 1 & 2a outputs
 │   │   └── README.md                     # Roadmaps guide
-│   ├── specifications/                   # Design specifications
+│   ├── specifications/                   # Step 2b outputs
 │   │   └── README.md                     # Specifications guide
 │   ├── script_cards/                     # Operational docs
 │   ├── business_job_descriptions/        # Business docs
@@ -185,47 +205,82 @@ All agents can be manually triggered via GitHub Actions:
 │   └── tests_logs/                       # Test execution logs
 │       └── README.md                     # Logs guide
 │
-└── jobs/                                 # Job implementations
+└── jobs/                                 # Job implementations (Step 5)
 ```
 
 ## Agent Details
 
-### Planner Agent
+### Planner Agent (Step 1)
 
-**Purpose:** Create high-level planning documents
+**Purpose:** Define objectives with testable success criteria and explicit boundaries
 
 **Commands:**
-- `create <phase_name>` - Create planning document
-- `list` - List all planning documents
+- `create <objective_name>` - Create objective definition
+- `list` - List all objectives
 
 **Workflow:** `.github/workflows/planner_workflow.yml`
 
-**Outputs:** `docs/roadmaps/<phase_name>.md`
+**Outputs:** `docs/roadmaps/<objective_name>.md`
 
-### Designer Agent
+**Key Features:**
+- Testable success criteria
+- Explicit out-of-scope boundaries
+- Risk assessment and unknowns
 
-**Purpose:** Create subsystem specifications
+### Pipeline Planner Agent (Step 2a)
 
-**Commands:**
-- `create <subsystem>` - Create specification
-- `list` - List all specifications
-- `validate <file>` - Validate specification
-
-**Workflow:** `.github/workflows/designer_workflow.yml`
-
-**Outputs:** `docs/specifications/<subsystem>.yaml`
-
-### Coding Agent
-
-**Purpose:** Assist with code implementation
+**Purpose:** Create end-to-end pipeline plans with processing sequence
 
 **Commands:**
-- `tasks <spec>` - List coding tasks
+- `create <objective_name>` - Create pipeline plan
+- `list` - List all pipeline plans
+
+**Workflow:** Not yet implemented (manual for now)
+
+**Outputs:** `docs/roadmaps/<objective_name>_pipeline_plan.md`
+
+**Key Features:**
+- Processing sequence (first → last)
+- Decision points and fallback paths
+- Conceptual artifacts (by meaning, not storage)
+- Existing job mapping
+- Explicit unknowns
+
+### Capability Planner Agent (Step 2b)
+
+**Purpose:** Create detailed capability specifications for pipeline steps
+
+**Commands:**
+- `create <capability_name>` - Create capability plan
+- `list` - List all capability plans
+- `validate <file>` - Validate capability plan
+
+**Workflow:** Not yet implemented (manual for now)
+
+**Outputs:** `docs/specifications/<capability_name>_capability.yaml`
+
+**Key Features:**
+- Inputs/outputs by meaning (not storage)
+- Business rules and acceptance criteria
+- Explicit boundaries (what it does/doesn't do)
+- Dependencies mapping
+
+### Coding Agent (Steps 3 & 4)
+
+**Purpose:** Decompose capabilities and create Codex tasks
+
+**Commands:**
+- `decompose <capability>` - Step 3: Break into PR-sized elements
+- `codex-task <capability> <element_id>` - Step 4: Generate Codex task
 - `validate` - Run repository validation
 - `check` - Check best practices
-- `codex-task <spec> <task_id>` - Generate Codex task outline
 
 **Workflow:** `.github/workflows/coding_workflow.yml`
+
+**Key Features:**
+- Step 3: Decomposition into PR-sized elements
+- Step 4: Codex tasks with standards references, TARGET_SCRIPT, file restrictions
+- Quality gates enforcement
 
 ### Testing Agent
 
@@ -257,54 +312,57 @@ All agents can be manually triggered via GitHub Actions:
 
 ## Development Workflow
 
-### Standard Flow
+### 5-Step Workflow (Required)
+
+See `WORKFLOW_5_STEPS.md` for complete details. Summary:
 
 ```
-1. Plan (Planner Agent)
+Step 1: Define Objective (Planner Agent)
    ↓
 2. Design (Designer Agent)
    ↓
 3. Implement (Coding Agent)
    ↓
-4. Test (Testing Agent)
+Step 2a: Pipeline Plan (Pipeline Planner Agent)
    ↓
-5. Document (Documentation Agent)
+Step 2b: Capability Plan (Capability Planner Agent)
+   ↓
+Step 3: Decompose (Coding Agent - decompose)
+   ↓
+Step 4: Codex Task (Coding Agent - codex-task)
+   ↓
+Step 5: Code Creation (PR process)
+   ↓
+Testing (Testing Agent - automatic)
+   ↓
+Documentation (Documentation Agent)
 ```
 
-### Iteration Flow
-
-```
-Code Changes
-   ↓
-Testing Agent (automatic on PR)
-   ↓
-Review Results
-   ↓
-Fix Issues
-   ↓
-Merge (automatic testing + logging)
-   ↓
-Documentation Agent (reminder)
-```
+**Key Rule:** Steps 2a and 2b MUST be completed and approved before any code changes.
 
 ## Best Practices
 
-1. **Start with Planning**
-   - Always create a planning document first
-   - Define clear objectives and constraints
-   - Get stakeholder approval before proceeding
+1. **Follow the 5-Step Workflow**
+   - Always complete Steps 1, 2a, 2b before coding
+   - Get approval at each planning step
+   - Do not skip steps or make assumptions
 
-2. **Detailed Specifications**
-   - Break down plans into focused subsystems
-   - Define clear I/O contracts
-   - Create specific, testable tasks
+2. **Two Planning Layers Required**
+   - Step 2a: Pipeline-level (overarching plan)
+   - Step 2b: Capability-level (detailed spec)
+   - Both must be agreed upon before decomposition
 
-3. **Validate Frequently**
-   - Run validation after each change
-   - Check test results before merging
-   - Review documentation for completeness
+3. **Explicit Boundaries**
+   - At every step, state what IS and is NOT included
+   - Mark unknowns explicitly - do not assume
+   - Defer storage details until implementation
 
-4. **Use Automation**
+4. **Testable Criteria**
+   - Define success criteria that can be objectively tested
+   - Create acceptance criteria verifiable from repo contents
+   - Include quality gates at every step
+
+5. **Use Automation**
    - Leverage GitHub Actions for consistency
    - Let agents handle boilerplate
    - Focus human effort on logic and decisions

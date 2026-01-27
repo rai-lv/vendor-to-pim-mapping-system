@@ -918,12 +918,12 @@ The Coding Agent bridges the gap between planning (Steps 1–2) and implementati
 
 **Step 3 Command:**
 ```bash
-python tools/coding_agent.py decompose <capability_name>
+python tools/coding_agent.py decompose data_validation_capability
 ```
 
 **Step 4 Command:**
 ```bash
-python tools/coding_agent.py codex-task <capability_name> <element_id>
+python tools/coding_agent.py codex-task data_validation_capability 1
 ```
 
 **Additional Commands:**
@@ -1195,10 +1195,10 @@ The Testing Agent ensures code quality and adherence to specifications by:
 python tools/testing_agent.py run
 
 # Run tests for specific specification
-python tools/testing_agent.py run --spec <capability_name>
+python tools/testing_agent.py run --spec data_validation_capability
 
 # Infer test requirements from specification
-python tools/testing_agent.py infer <capability_name>
+python tools/testing_agent.py infer data_validation_capability
 
 # List test logs
 python tools/testing_agent.py logs
@@ -1405,13 +1405,13 @@ The Documentation Agent ensures documentation stays aligned with code by:
 **Commands:**
 ```bash
 # Create script card for a job
-python tools/documentation_agent.py script-card <job_id> --spec <capability_name>
+python tools/documentation_agent.py script-card validate_vendor_data --spec data_validation_capability
 
 # Create business description for a job
-python tools/documentation_agent.py business-desc <job_id> --spec <capability_name>
+python tools/documentation_agent.py business-desc validate_vendor_data --spec data_validation_capability
 
 # Suggest glossary terms from specification
-python tools/documentation_agent.py glossary <capability_name>
+python tools/documentation_agent.py glossary data_validation_capability
 
 # Validate all documentation
 python tools/documentation_agent.py validate

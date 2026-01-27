@@ -46,18 +46,14 @@ This approach focuses on iterative planning, collaboration between users and age
 ---
 
 ## Agent Context
-
 The sequential development process described in this document is **agent-assisted** at each stage. Agents support specific functions within the workflow:
-
 - **Planning Function**: Assists in refining objectives and producing pipeline plans.
 - **Specification Function**: Helps break down capabilities into building plans and actionable steps.
 - **Implementation Function**: Supports the execution of tasks aligned with building plans.
 - **Validation Function**: Ensures outputs meet predefined success criteria and include appropriate validation artifacts.
 - **Documentation Function**: Automates documentation tasks while addressing broader repository needs.
 
-Agents operate under human oversight, iterating on drafts, automating well-defined tasks, and providing structured support across the workflow.
-
-**Implementation Details**: Concrete agent tools, workflows, and collaboration models are documented in [`agent_system_context.md`](agent_system_context.md). Agent installation and usage instructions are in [`../workflows/AGENTS_SETUP.md`](../workflows/AGENTS_SETUP.md).
+Agents operate under human oversight, iterating on drafts, automating well-defined tasks, and providing structured support across the workflow. Role-specific responsibilities are documented in the Agent Role Charter (if present).
 
 ---
 
@@ -83,88 +79,50 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 ---
 
 ### **Step 2: Plan the Pipeline**
-
 The **pipeline plan** breaks the high-level objective into a series of **capabilities** necessary to achieve the goal. Agents assist by creating structured drafts for collaboration.
 
-This step is divided into two sub-steps:
-- **Step 2a: Overarching Plan** — High-level pipeline architecture and processing sequence
-- **Step 2b: Capability Plans** — Detailed specifications for each capability
-
-#### Step 2a: Overarching Plan (Pipeline-Level)
-
-**What Happens:**
+#### What Happens:
 - The Planning function collaborates with the user and agents to create a high-level plan:
   - Identify **key capabilities** or components (e.g., "process incoming XML files", "map assortment data").
   - Define the **order of tasks** and dependencies for each capability.
   - Highlight risks or decision points.
 
-**Output:**
+#### Output:
 - A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
 
-**Approval Gate:** Manual approval required before proceeding to Step 2b.
+---
 
-#### Step 2b: Capability Plans (Step-Level)
+### **Step 3: Break Down Into Capability Plans**
+Agents assist in creating a **building plan**, which includes success criteria and structured steps.
 
-**What Happens:**
+#### What Happens:
 - The Specification function, working with users and agent drafts, refines each pipeline step into:
   - What the capability does (purpose, scope).
   - Key inputs, outputs, and transformations.
-  - Business rules and acceptance criteria.
-
-**Output:**
-- Capability specification documents (`docs/specifications/<capability>.yaml`).
-
-**Approval Gate:** Manual approval required for each capability before proceeding to Step 3.
-
----
-
-### **Step 3: Break Down Into Development Elements**
-
-Agents assist in decomposing capability plans into small, PR-sized development elements.
-
-#### What Happens:
-- The Implementation function helps break down each approved capability into:
-  - Small development elements (completable in one PR).
-  - Explicit file restrictions and acceptance criteria.
-  - Dependencies between elements.
+  - Steps for implementation, included in a **Development Step Document**.
 
 #### Output:
-- Development elements list (console output or document).
+- A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
 
 ---
 
-### **Step 4: Create Codex Tasks**
-
-Agents generate detailed Codex task specifications with quality gates.
-
+### **Step 4: Execute Development Tasks**
 #### What Happens:
-- The Implementation function creates task specifications for each development element:
-  - Standards compliance requirements.
-  - Explicit file restrictions.
-  - Quality gates and testing strategy.
-
-#### Output:
-- Codex task specifications (`docs/codex-tasks/<task>.md`).
-
----
-
-### **Step 5: Code Creation and Validation**
-
-Tasks are implemented, reviewed, iterated on, and integrated collaboratively.
-
-#### What Happens:
-- Code is created (manually or via Codex) based on task specifications.
-- Validation function ensures outputs meet success criteria:
-  - Automated testing and syntax validation.
-  - Standards compliance checks.
-  - Specification-based testing.
-- Documentation function updates necessary artifacts:
-  - Business job descriptions.
-  - Script cards.
-  - Glossary terms.
+- Tasks are implemented, reviewed, iterated on, and integrated collaboratively.
+- Agents assist by automating repetitive tasks and enforcing consistency.
 
 #### Output:
 - Completed changes merged into the repository with traceability to the initial capability plan.
+
+---
+
+### **Step 5: Validate, Test, and Document**
+#### What Happens:
+- Validate outputs against success criteria.
+- Capture validation artifacts.
+- Update necessary documentation to ensure clarity and completeness.
+
+#### Output:
 - Validated deliverables aligned with success criteria.
 - Updated documentation covering changes and outcomes.
 
@@ -172,28 +130,8 @@ Tasks are implemented, reviewed, iterated on, and integrated collaboratively.
 
 ## Where Specifics Live
 
-This document defines guiding principles, while the following documents define specific requirements and implementation:
-
-**Implementation Documents:**
-- **[Agent System Context](agent_system_context.md)**: Detailed agent roles, responsibilities, workflows, and collaboration models
-- **[System Context](system_context.md)**: Repository structure, workflow options, truth hierarchy, and common tasks
-- **[GitHub Element Map](github_element_map.md)**: Physical structure mapping and governance enforcement mechanisms
-
-**Standards and Specifications:**
-- **Repository Standards** (`docs/standards/`): Templates, naming conventions, metadata formats
-- **Validation Standard** (`tools/validate_repo_docs.py`): Validation rules and pass criteria
-- **Governance Rules**: Change control policies, breaking-change requirements
-
-**Workflow Guides:**
-- **[5-Step Workflow](../workflows/WORKFLOW_5_STEPS.md)**: Complete step-by-step development process
-- **[Agent Setup Guide](../workflows/AGENTS_SETUP.md)**: Agent installation and usage instructions
-- **[Workflow Diagrams](../workflows/WORKFLOW_DIAGRAM.md)**: Visual workflow representations
-
----
-
-## Related Documentation
-
-- **[System Context](system_context.md)** — Repository structure and workflow implementation
-- **[Agent System Context](agent_system_context.md)** — Agent roles and detailed workflows
-- **[GitHub Element Map](github_element_map.md)** — Physical structure and governance mapping
-- **[Documentation System](documentation_system.md)** — Documentation catalog and metadata
+This document defines guiding principles, while the following standards define specific requirements:
+- **Repository Standards**: Templates, naming conventions, metadata formats.
+- **Validation Standard**: Validation rules and pass criteria.
+- **Governance Rules**: Change control policies, breaking-change requirements.
+- **Agent Role Charter**: Definitions of agent responsibilities and functions.

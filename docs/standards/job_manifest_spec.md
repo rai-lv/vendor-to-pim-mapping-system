@@ -114,7 +114,7 @@ Top-level keys and whether they are required:
 
 When creating a new manifest:
 - `pyspark`: Use when the job runs PySpark code (typically uses `glueContext`, `spark`, or `SparkSession` and processes data via Spark DataFrames/RDDs).
-- `python_shell`: Use when the job is a Glue Python Shell job (limited to Python libraries, no Spark context, typically specified in job configuration).
+- `python_shell`: Use when the job is a Glue Python Shell job (job type configured as `pythonshell` in AWS Glue, limited to Python libraries without Spark context).
 - `python`: Use for standalone Python scripts that do not run in Glue context (e.g., containerized or Lambda-based).
 - `nodejs`: Use for Node.js-based jobs.
 - `other`: Use for jobs in other runtimes (e.g., Java, Scala, or shell scripts).
@@ -286,7 +286,9 @@ Note: Other documents (e.g., business descriptions) may show placeholders as <ve
 
 Rules:
 - Placeholder names are case-sensitive.
-- Placeholder names MUST begin with an uppercase letter (e.g., `${Vendor_name}`, `${INPUT_BUCKET}`, `${Timestamp}`).
+- Placeholder names MUST begin with an uppercase letter.
+  - Both UPPER_CASE (e.g., `${INPUT_BUCKET}`, `${TIMESTAMP}`) and PascalCase (e.g., `${Vendor_name}`, `${Timestamp}`) are allowed.
+  - Choose a consistent style within your manifest.
 - Placeholders MUST NOT contain spaces.
 - Bucket placeholders are allowed (e.g., `${INPUT_BUCKET}`).
 - Key placeholders are allowed (e.g., `${Vendor_name}`, `${Timestamp}`).
@@ -402,7 +404,7 @@ A manifest is compliant if:
 - `format` values follow the allowed enums (or `TBD`)
 
 **Optional fields validation**
-- if `entrypoint` is present, it must be a valid filename (typically `glue_script.py`)
+- if `entrypoint` is present, it must be a valid filename (typically `glue_script.py` or other `.py` files within the job folder)
 - if `config_files` is present, each item must have required fields: `bucket`, `key_pattern`, `required`
 - if `schema_version` is present, it should follow semantic versioning (e.g., `1.0`, `1.1`)
 
@@ -465,6 +467,6 @@ logging_and_receipt:
 
 notes:
   - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — Not yet deployed to AWS Glue (checked deployment scripts in /deploy directory). Needs deployment config from DevOps team."
-  - "side_effects.overwrites_outputs: TBD — Script does not show explicit overwrite logic (checked lines 120-150 in glue_script.py). Need to test job in staging to observe actual behavior."
+  - "glue_job_name: TBD — Not yet deployed to AWS Glue (checked deployment scripts). Needs deployment config from DevOps team."
+  - "side_effects.overwrites_outputs: TBD — Script does not show explicit overwrite logic (checked relevant sections in glue_script.py). Need to test job in staging to observe actual behavior."
   - "config_files[0].repo_path: TBD — Config file exists in S3 but not mirrored in repository. Team to decide if repo mirror is needed."

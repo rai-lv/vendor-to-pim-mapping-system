@@ -79,7 +79,7 @@ Step 3: Decompose into Development Elements
 **Critical Rules:**
 1. **Sequential Execution:** Each step must be completed and approved before proceeding to the next.
 2. **Manual Discussion Required:** Each planning step output requires human review, discussion, and explicit approval.
-3. **No Assumptions:** All unknowns must be explicitly marked; assumptions are not permitted.
+3. **Explicit Unknowns and Assumptions:** All unknowns must be explicitly marked as TBD; assumptions must be explicitly labeled and require human approval before being used as planning inputs.
 4. **Evidence-Based:** Plans must reference existing code/jobs where applicable and mark unknowns explicitly.
 
 ---
@@ -329,7 +329,7 @@ The pipeline plan must include:
 5. **Unknowns and Open Decisions:**
    - Explicitly mark unknowns (TBD items)
    - Document open decisions requiring stakeholder input
-   - NO assumptions presented as facts
+   - Explicitly label any assumptions and flag them for human approval
 
 #### Workflow Integration
 
@@ -895,7 +895,7 @@ The planning phase ensures **no code is written until consensus is achieved** on
 
 1. **Sequential Execution:** Each step must complete and receive approval before the next begins.
 2. **Manual Oversight:** AI agents assist but humans make final decisions at each checkpoint.
-3. **Evidence-Based Planning:** Reference existing jobs, mark unknowns explicitly, no assumptions.
+3. **Evidence-Based Planning:** Reference existing jobs, mark unknowns explicitly as TBD, label assumptions explicitly for human approval.
 4. **Explicit Boundaries:** At every level, clearly define what IS and is NOT included.
 5. **Defer Implementation Details:** Storage paths, formats, schemas come later in Steps 3-5.
 

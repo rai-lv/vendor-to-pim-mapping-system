@@ -1,0 +1,96 @@
+name: Designer Agent Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      subsystem_name:
+        description: 'Subsystem name (e.g., "vendor_ingestion_pipeline")'
+        required: true
+        type: string
+      planning_phase:
+        description: 'Planning phase reference (optional)'
+        required: false
+        type: string
+      overwrite:
+        description: 'Overwrite existing specification if it exists'
+        required: false
+        type: boolean
+        default: false
+  
+  # Can also be triggered when planning documents are updated
+  push:
+    paths:
+      - 'docs/roadmaps/*.md'
+    branches:
+      - main
+
+jobs:
+  create_specification:
+    runs-on: ubuntu-latest
+    # Only run automatically if the push event occurred (not for workflow_dispatch)
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Create specification (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ inputs.overwrite }}" = "true" ]; then
+            python tools/designer_agent.py create "${{ inputs.subsystem_name }}" \
+              --planning-phase "${{ inputs.planning_phase }}" \
+              --overwrite
+          else
+            python tools/designer_agent.py create "${{ inputs.subsystem_name }}" \
+              --planning-phase "${{ inputs.planning_phase }}"
+          fi
+      
+      - name: List specifications (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: python tools/designer_agent.py list
+      
+      - name: Commit specification (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/specifications/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add specification: ${{ inputs.subsystem_name }}"
+            git push
+          fi
+      
+      - name: Next steps (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "✓ Specification created successfully!"
+          echo ""
+          echo "Next steps:"
+          echo "1. Edit the specification in docs/specifications/"
+          echo "2. Fill in all TODO sections"
+          echo "3. Define clear objectives, constraints, and I/O contracts"
+          echo "4. Break down into specific coding tasks"
+          echo "5. Review and approve the specification"
+          echo "6. Once approved, use the Coding Agent to implement tasks"
+      
+      - name: Notification (automatic trigger)
+        if: github.event_name == 'push'
+        run: |
+          echo "ℹ Planning document updated in docs/roadmaps/"
+          echo "Consider creating or updating specifications via Designer Agent"
+          echo ""
+          echo "To create a specification:"
+          echo "  Go to Actions → Designer Agent Workflow → Run workflow"

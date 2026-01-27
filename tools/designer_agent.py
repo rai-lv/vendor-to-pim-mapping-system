@@ -166,7 +166,8 @@ def list_specifications() -> int:
         print("No specifications found (specifications directory does not exist).")
         return 0
     
-    specs = sorted(SPECIFICATIONS_DIR.glob("*.yaml"))
+    # Get all .yaml files except README
+    specs = sorted([p for p in SPECIFICATIONS_DIR.glob("*.yaml") if p.name != "README.yaml"])
     
     if not specs:
         print("No specifications found.")

@@ -1,0 +1,164 @@
+name: Documentation Agent Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options:
+          - create_script_card
+          - create_business_desc
+          - suggest_glossary
+          - validate
+      job_id:
+        description: 'Job ID (required for create_script_card and create_business_desc)'
+        required: false
+        type: string
+      spec_name:
+        description: 'Specification name (optional reference)'
+        required: false
+        type: string
+      overwrite:
+        description: 'Overwrite existing file if it exists'
+        required: false
+        type: boolean
+        default: false
+  
+  # Triggered when code is finalized (merged to main)
+  push:
+    paths:
+      - 'jobs/**/*.py'
+      - 'jobs/**/*.yaml'
+      - 'docs/specifications/*.yaml'
+    branches:
+      - main
+  
+  # Triggered when planning or specifications are approved
+  workflow_run:
+    workflows: ["Planner Agent Workflow", "Designer Agent Workflow"]
+    types:
+      - completed
+
+jobs:
+  documentation_agent:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Create script card
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'create_script_card'
+        run: |
+          if [ -z "${{ inputs.job_id }}" ]; then
+            echo "Error: job_id is required for create_script_card action"
+            exit 1
+          fi
+          
+          if [ "${{ inputs.overwrite }}" = "true" ]; then
+            if [ -n "${{ inputs.spec_name }}" ]; then
+              python tools/documentation_agent.py script-card "${{ inputs.job_id }}" \
+                --spec "${{ inputs.spec_name }}" --overwrite
+            else
+              python tools/documentation_agent.py script-card "${{ inputs.job_id }}" --overwrite
+            fi
+          else
+            if [ -n "${{ inputs.spec_name }}" ]; then
+              python tools/documentation_agent.py script-card "${{ inputs.job_id }}" \
+                --spec "${{ inputs.spec_name }}"
+            else
+              python tools/documentation_agent.py script-card "${{ inputs.job_id }}"
+            fi
+          fi
+      
+      - name: Create business description
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'create_business_desc'
+        run: |
+          if [ -z "${{ inputs.job_id }}" ]; then
+            echo "Error: job_id is required for create_business_desc action"
+            exit 1
+          fi
+          
+          if [ "${{ inputs.overwrite }}" = "true" ]; then
+            if [ -n "${{ inputs.spec_name }}" ]; then
+              python tools/documentation_agent.py business-desc "${{ inputs.job_id }}" \
+                --spec "${{ inputs.spec_name }}" --overwrite
+            else
+              python tools/documentation_agent.py business-desc "${{ inputs.job_id }}" --overwrite
+            fi
+          else
+            if [ -n "${{ inputs.spec_name }}" ]; then
+              python tools/documentation_agent.py business-desc "${{ inputs.job_id }}" \
+                --spec "${{ inputs.spec_name }}"
+            else
+              python tools/documentation_agent.py business-desc "${{ inputs.job_id }}"
+            fi
+          fi
+      
+      - name: Suggest glossary terms
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'suggest_glossary'
+        run: |
+          if [ -z "${{ inputs.spec_name }}" ]; then
+            echo "Error: spec_name is required for suggest_glossary action"
+            exit 1
+          fi
+          python tools/documentation_agent.py glossary "${{ inputs.spec_name }}"
+      
+      - name: Validate documentation
+        if: github.event_name == 'workflow_dispatch' && inputs.action == 'validate'
+        run: python tools/documentation_agent.py validate
+      
+      - name: Auto-validate on push
+        if: github.event_name == 'push'
+        run: |
+          echo "Code or specifications updated, validating documentation..."
+          python tools/documentation_agent.py validate
+      
+      - name: Commit documentation changes
+        if: github.event_name == 'workflow_dispatch' && (inputs.action == 'create_script_card' || inputs.action == 'create_business_desc')
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add docs/script_cards/ docs/business_job_descriptions/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Add documentation for ${{ inputs.job_id }}"
+            git push
+          fi
+      
+      - name: Reminder on workflow completion
+        if: github.event_name == 'workflow_run'
+        run: |
+          echo "Planning or design workflow completed."
+          echo ""
+          echo "Consider updating documentation:"
+          echo "1. Create or update script cards for affected jobs"
+          echo "2. Create or update business descriptions"
+          echo "3. Update glossary if new terms were introduced"
+          echo ""
+          echo "Use the Documentation Agent Workflow to automate these tasks."
+      
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "Documentation Agent Workflow Complete"
+          echo ""
+          echo "Remember:"
+          echo "- Script cards describe operational interface"
+          echo "- Business descriptions explain business intent"
+          echo "- Glossary terms should be shared across jobs"
+          echo "- Run validation before committing: python tools/documentation_agent.py validate"

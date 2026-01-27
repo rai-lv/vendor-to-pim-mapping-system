@@ -131,7 +131,8 @@ def list_planning_documents() -> int:
         print("No planning documents found (roadmaps directory does not exist).")
         return 0
     
-    planning_docs = sorted(ROADMAPS_DIR.glob("*.md"))
+    # Get all .md files except README.md
+    planning_docs = sorted([p for p in ROADMAPS_DIR.glob("*.md") if p.name != "README.md"])
     
     if not planning_docs:
         print("No planning documents found.")

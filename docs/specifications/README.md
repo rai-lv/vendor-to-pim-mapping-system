@@ -1,6 +1,17 @@
 # Specifications
 
-This directory contains subsystem specifications created by the Designer Agent. Each specification breaks down a high-level plan into actionable coding tasks.
+This directory contains capability specifications created during **Step 2b** of the 5-step development workflow.
+
+## Purpose
+
+Specifications define individual capabilities from the pipeline plan in detail. Each specification breaks down ONE capability/step into actionable implementation requirements with testable criteria.
+
+## When to Create Specifications
+
+Specifications are created during **Step 2b: Capability Plan** after:
+1. Step 1 objective definition is approved
+2. Step 2a pipeline plan is approved
+3. A specific capability from the pipeline plan needs detailed specification
 
 ## Specification Structure
 
@@ -76,47 +87,88 @@ notes: "Additional context"
 
 ### Via CLI:
 ```bash
-python tools/designer_agent.py create "subsystem_name" --planning-phase "Q1 2026"
+# Create capability specification (requires approved Step 2a pipeline plan)
+python tools/capability_planner_agent.py create "capability_name" \
+  --pipeline-ref "objective_name_pipeline_plan.md"
+
+# Output: docs/specifications/capability_name_capability.yaml
 ```
 
 ### Via GitHub Actions:
-1. Go to: Actions → Designer Agent Workflow → Run workflow
-2. Enter subsystem name and optional planning phase
+1. Go to: Actions → Capability Planner Agent Workflow → Run workflow
+2. Enter capability name and pipeline plan reference
 3. Click "Run workflow"
 
 ## Listing Specifications
 
 ```bash
-python tools/designer_agent.py list
+# List all capability specifications
+python tools/capability_planner_agent.py list
 ```
 
 ## Validating a Specification
 
 ```bash
-python tools/designer_agent.py validate docs/specifications/subsystem_name.yaml
+python tools/capability_planner_agent.py validate docs/specifications/capability_name_capability.yaml
 ```
 
 ## Workflow
 
-1. **Create**: Generate specification from planning document
-2. **Fill**: Complete all TODO sections
-3. **Review**: Validate structure and content
-4. **Approve**: Change status to "approved"
-5. **Implement**: Use Coding Agent to break down into tasks
-6. **Complete**: Update status to "implemented"
+1. **Create**: Generate specification from pipeline plan (Step 2a)
+2. **Fill**: Complete all sections with detailed requirements
+3. **Review**: Validate structure, content, and alignment with pipeline plan
+4. **Approve**: Get stakeholder consensus; change status to "approved"
+5. **Decompose**: Use Coding Agent to break into development elements (Step 3)
+6. **Implement**: Execute via Steps 4-5 of the workflow
+7. **Complete**: Update status to "implemented"
+
+## Workflow Integration
+
+Capability specifications are part of the **5-step development workflow**:
+
+```
+Step 2a: Pipeline Plan (approved)
+   ↓
+Step 2b: Capability Plan / Step-Level (Capability Planner Agent)
+   ↓ [Manual discussion and approval required]
+Step 3: Decompose into Development Elements (Coding Agent)
+   ↓
+Step 4: Create Codex Tasks (Coding Agent)
+   ↓
+Step 5: Code Creation (PR process)
+```
+
+**See:** `docs/workflows/WORKFLOW_5_STEPS.md` for complete workflow details
 
 ## Best Practices
 
-- Keep specifications focused on single subsystems
-- Define clear input/output contracts
-- Break down into small, testable tasks
-- Link to planning documents for context
-- Update status as work progresses
+- Focus each specification on ONE capability from the pipeline plan
+- Define inputs/outputs by **meaning**, not storage details (S3 paths come later)
+- State explicit boundaries: what this capability does and does NOT do
+- Break down into small, testable tasks suitable for individual PRs
+- Link to pipeline plan for context and upstream/downstream dependencies
+- Update status as work progresses through the workflow
 - Reference specifications in job manifests and documentation
+
+## Key Principles
+
+1. **One Capability per Specification:** Each specification covers exactly one pipeline step
+2. **Define by Meaning:** Inputs/outputs described conceptually, not by S3 location/format
+3. **Explicit Boundaries:** Clearly state what IS and is NOT included
+4. **Testable Criteria:** All acceptance criteria must be objectively verifiable
+5. **Evidence-Based:** Reference existing jobs and capabilities; mark gaps explicitly
 
 ## Status Values
 
-- **draft**: Initial creation, needs review
-- **approved**: Reviewed and ready for implementation
-- **implemented**: All coding tasks completed
+- **draft**: Initial creation, needs review and completion
+- **approved**: Reviewed, complete, and ready for decomposition (Step 3)
+- **implemented**: All coding tasks completed and deployed
 - **deprecated**: No longer in use
+
+## Related Documentation
+
+- **Complete Workflow:** `docs/workflows/WORKFLOW_5_STEPS.md`
+- **Agent System:** `docs/context_packs/agent_system_context.md`
+- **Agent Setup:** `docs/workflows/AGENTS_SETUP.md`
+- **Pipeline Plans:** `docs/roadmaps/` (Step 2a outputs)
+- **Repository Context:** `docs/context_packs/system_context.md`

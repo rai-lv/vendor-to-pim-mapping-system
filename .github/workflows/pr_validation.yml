@@ -1,0 +1,421 @@
+name: PR Validation and Quality Gates
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+jobs:
+  # Job 1: Validate syntax for Python and YAML files
+  syntax_validation:
+    name: Syntax Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Validate Python syntax
+        id: python_syntax
+        run: |
+          echo "Validating Python files..."
+          EXIT_CODE=0
+          
+          # Find all Python files
+          PYTHON_FILES=$(find . -name "*.py" -not -path "./.git/*" -not -path "./venv/*")
+          
+          if [ -z "$PYTHON_FILES" ]; then
+            echo "No Python files found"
+          else
+            for file in $PYTHON_FILES; do
+              echo "Checking: $file"
+              if ! python -m py_compile "$file" 2>&1; then
+                echo "❌ Syntax error in $file"
+                EXIT_CODE=1
+              else
+                echo "✓ $file"
+              fi
+            done
+          fi
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✓ All Python files passed syntax validation"
+          else
+            echo "❌ Python syntax validation failed"
+          fi
+          
+          exit $EXIT_CODE
+      
+      - name: Validate YAML syntax
+        id: yaml_syntax
+        run: |
+          echo "Validating YAML files..."
+          EXIT_CODE=0
+          
+          # Find all YAML files
+          YAML_FILES=$(find . -name "*.yaml" -o -name "*.yml" | grep -v ".git" | grep -v "venv")
+          
+          if [ -z "$YAML_FILES" ]; then
+            echo "No YAML files found"
+          else
+            for file in $YAML_FILES; do
+              echo "Checking: $file"
+              if ! python -c "import yaml; yaml.safe_load(open('$file'))" 2>&1; then
+                echo "❌ Syntax error in $file"
+                EXIT_CODE=1
+              else
+                echo "✓ $file"
+              fi
+            done
+          fi
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✓ All YAML files passed syntax validation"
+          else
+            echo "❌ YAML syntax validation failed"
+          fi
+          
+          exit $EXIT_CODE
+  
+  # Job 2: Standards compliance validation
+  standards_compliance:
+    name: Standards Compliance
+    runs-on: ubuntu-latest
+    needs: syntax_validation
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Run repository standards validation
+        run: |
+          echo "Running repository-wide standards validation..."
+          python tools/validate_repo_docs.py --all
+      
+      - name: Validate manifest placeholder style
+        run: |
+          echo "Checking for correct placeholder style in manifests..."
+          EXIT_CODE=0
+          
+          # Check for incorrect placeholder styles
+          if grep -r "<[a-zA-Z_]" jobs/ --include="*.yaml" | grep -v "http" | grep -v ".git"; then
+            echo "❌ Found incorrect placeholder style <name>. Use \${NAME} instead."
+            EXIT_CODE=1
+          fi
+          
+          if grep -r "{[a-zA-Z_]" jobs/ --include="*.yaml" | grep -v "\${" | grep -v ".git"; then
+            echo "❌ Found incorrect placeholder style {name}. Use \${NAME} instead."
+            EXIT_CODE=1
+          fi
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✓ All manifests use correct \${NAME} placeholder style"
+          fi
+          
+          exit $EXIT_CODE
+  
+  # Job 3: Validate planning artifacts (Steps 1-2b)
+  planning_validation:
+    name: Planning Artifacts Validation
+    runs-on: ubuntu-latest
+    needs: syntax_validation
+    if: |
+      contains(github.event.pull_request.changed_files, 'docs/roadmaps/') ||
+      contains(github.event.pull_request.changed_files, 'docs/specifications/')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Validate objective definitions (Step 1)
+        if: contains(github.event.pull_request.changed_files, 'docs/roadmaps/')
+        run: |
+          echo "Validating objective definitions..."
+          EXIT_CODE=0
+          
+          # Check for required sections in objective documents
+          for file in docs/roadmaps/*.md; do
+            if [ -f "$file" ] && [[ ! "$file" =~ _pipeline_plan\.md$ ]]; then
+              echo "Checking: $file"
+              
+              # Check for required sections
+              if ! grep -q "## Objective Statement" "$file"; then
+                echo "❌ Missing 'Objective Statement' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if ! grep -q "## Expected Outcomes" "$file"; then
+                echo "❌ Missing 'Expected Outcomes' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if ! grep -q "## Out-of-Scope" "$file"; then
+                echo "❌ Missing 'Out-of-Scope' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if ! grep -q "## Success Criteria" "$file"; then
+                echo "❌ Missing 'Success Criteria' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if [ $EXIT_CODE -eq 0 ]; then
+                echo "✓ $file has required sections"
+              fi
+            fi
+          done
+          
+          exit $EXIT_CODE
+      
+      - name: Validate pipeline plans (Step 2a)
+        if: contains(github.event.pull_request.changed_files, 'docs/roadmaps/')
+        run: |
+          echo "Validating pipeline plans..."
+          EXIT_CODE=0
+          
+          # Check for required sections in pipeline plan documents
+          for file in docs/roadmaps/*_pipeline_plan.md; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              
+              # Check for required sections
+              if ! grep -q "## Processing Sequence" "$file"; then
+                echo "❌ Missing 'Processing Sequence' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if ! grep -q "## Conceptual Artifacts" "$file" && ! grep -q "## Artifacts" "$file"; then
+                echo "❌ Missing 'Conceptual Artifacts' or 'Artifacts' section in $file"
+                EXIT_CODE=1
+              fi
+              
+              if [ $EXIT_CODE -eq 0 ]; then
+                echo "✓ $file has required sections"
+              fi
+            fi
+          done
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✓ All pipeline plans validated successfully"
+          fi
+          
+          exit $EXIT_CODE
+      
+      - name: Validate capability specifications (Step 2b)
+        if: contains(github.event.pull_request.changed_files, 'docs/specifications/')
+        run: |
+          echo "Validating capability specifications..."
+          EXIT_CODE=0
+          
+          # Validate YAML structure of capability specs
+          for file in docs/specifications/*_capability.yaml; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              
+              # Parse YAML and check for required fields
+              python -c "
+          import yaml
+          import sys
+          
+          with open('$file') as f:
+              spec = yaml.safe_load(f)
+          
+          required_fields = ['objective', 'inputs', 'outputs', 'acceptance_criteria']
+          missing = [field for field in required_fields if field not in spec]
+          
+          if missing:
+              print(f'❌ Missing required fields in $file: {missing}')
+              sys.exit(1)
+          else:
+              print(f'✓ $file has required fields')
+          " || EXIT_CODE=1
+            fi
+          done
+          
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "✓ All capability specifications validated successfully"
+          fi
+          
+          exit $EXIT_CODE
+  
+  # Job 4: Code quality gates
+  quality_gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [syntax_validation, standards_compliance]
+    if: |
+      contains(github.event.pull_request.changed_files, 'jobs/') ||
+      contains(github.event.pull_request.changed_files, 'tools/')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Check for TODO comments
+        run: |
+          echo "Checking for TODO comments in code changes..."
+          
+          TODO_COUNT=$(grep -r "TODO" jobs/ tools/ --include="*.py" | wc -l || true)
+          
+          if [ "$TODO_COUNT" -gt 0 ]; then
+            echo "⚠️  Found $TODO_COUNT TODO comments:"
+            grep -rn "TODO" jobs/ tools/ --include="*.py" || true
+            echo ""
+            echo "Please resolve TODOs before merging"
+          else
+            echo "✓ No TODO comments found"
+          fi
+      
+      - name: Check coding best practices
+        run: |
+          echo "Running best practices check..."
+          python tools/coding_agent.py check || echo "⚠️  Best practices check completed with warnings"
+  
+  # Job 5: Testing validation
+  testing_validation:
+    name: Testing Validation
+    runs-on: ubuntu-latest
+    needs: syntax_validation
+    if: |
+      contains(github.event.pull_request.changed_files, 'jobs/') ||
+      contains(github.event.pull_request.changed_files, 'docs/specifications/')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Run automated tests
+        run: |
+          echo "Running Testing Agent validation..."
+          python tools/testing_agent.py run --no-log
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: logs/tests_logs/*.log
+          retention-days: 7
+          if-no-files-found: ignore
+  
+  # Job 6: Documentation validation
+  documentation_validation:
+    name: Documentation Validation
+    runs-on: ubuntu-latest
+    needs: syntax_validation
+    if: |
+      contains(github.event.pull_request.changed_files, 'docs/script_cards/') ||
+      contains(github.event.pull_request.changed_files, 'docs/business_job_descriptions/') ||
+      contains(github.event.pull_request.changed_files, 'jobs/')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pyyaml
+      
+      - name: Validate documentation
+        run: |
+          echo "Running Documentation Agent validation..."
+          python tools/documentation_agent.py validate
+      
+      - name: Check for documentation updates on code changes
+        if: contains(github.event.pull_request.changed_files, 'jobs/')
+        run: |
+          echo "⚠️  Code changes detected in jobs/ directory"
+          echo "Please ensure corresponding documentation is updated:"
+          echo "  - Script cards (docs/script_cards/)"
+          echo "  - Business descriptions (docs/business_job_descriptions/)"
+          echo "  - Job manifests (job_manifest.yaml)"
+  
+  # Job 7: Final validation summary
+  validation_summary:
+    name: Validation Summary
+    runs-on: ubuntu-latest
+    needs: [syntax_validation, standards_compliance, quality_gates, testing_validation, documentation_validation]
+    if: always()
+    
+    steps:
+      - name: Check validation results
+        run: |
+          echo "=================================="
+          echo "PR Validation Summary"
+          echo "=================================="
+          echo ""
+          echo "All required validations have completed."
+          echo ""
+          echo "✓ Syntax Validation: ${{ needs.syntax_validation.result }}"
+          echo "✓ Standards Compliance: ${{ needs.standards_compliance.result }}"
+          echo "✓ Quality Gates: ${{ needs.quality_gates.result }}"
+          echo "✓ Testing Validation: ${{ needs.testing_validation.result }}"
+          echo "✓ Documentation Validation: ${{ needs.documentation_validation.result }}"
+          echo ""
+          
+          if [ "${{ needs.syntax_validation.result }}" != "success" ] || \
+             [ "${{ needs.standards_compliance.result }}" != "success" ]; then
+            echo "❌ Critical validations failed. PR cannot be merged."
+            exit 1
+          fi
+          
+          echo "✓ All critical validations passed!"
+          echo ""
+          echo "Review any warnings above before merging."

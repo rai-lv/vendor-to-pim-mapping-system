@@ -26,12 +26,14 @@ on:
     paths:
       - 'jobs/**/*.py'
       - 'jobs/**/*.yaml'
-      - 'docs/**/*.md'
+      - 'tools/**/*.py'
+      - 'docs/specifications/*.yaml'
   
   push:
     paths:
       - 'jobs/**/*.py'
       - 'jobs/**/*.yaml'
+      - 'tools/**/*.py'
     branches:
       - main
 
@@ -86,8 +88,12 @@ jobs:
       - name: Auto-test on PR
         if: github.event_name == 'pull_request'
         run: |
+          echo "════════════════════════════════════════════════════════"
           echo "Running tests on pull request..."
+          echo "════════════════════════════════════════════════════════"
           python tools/testing_agent.py run --no-log
+          echo ""
+          echo "✓ PR testing complete"
       
       - name: Auto-test on push to main
         if: github.event_name == 'push'

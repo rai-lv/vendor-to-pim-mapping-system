@@ -311,7 +311,7 @@ These rules apply to **all workflows** (manual, Codex, agent):
 4. **Don't duplicate**: Use `docs/glossary.md` for shared definitions
 5. **Evidence-based**: Derive manifests and documentation from actual code, not assumptions
 6. **Respect boundaries**: Business descriptions and script cards have different scopes — don't mix them
-7. **Check truth hierarchy**: When conflicts arise, standards win, then code/manifest, then documentation
+7. **Check truth hierarchy**: When conflicts arise about documentation format/structure, standards win; for runtime behavior, code wins; see Truth Sources section for complete hierarchy
 
 ---
 

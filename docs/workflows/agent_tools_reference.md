@@ -62,6 +62,32 @@ python tools/validate_repo_docs.py --all
 
 Assists in creating structured objective definitions with explicit boundaries, success criteria, and risk assessment.
 
+### Current Limitations ⚠️
+
+**Important:** The current Planner Agent implementation is a **template generator**, not an interactive discussion facilitator. 
+
+**What It Does:**
+- ✅ Generates structured document templates
+- ✅ Validates document completeness
+- ✅ Checks for required sections
+
+**What It Does NOT Do (Yet):**
+- ❌ Facilitate interactive discussion about your idea
+- ❌ Ask clarifying questions to understand context
+- ❌ Help think through implications and constraints
+- ❌ Iterate with you to refine vague concepts
+- ❌ Suggest unknowns or risks based on conversation
+- ❌ Assist in consensus-building between stakeholders
+
+**Current Workflow:**
+1. You provide objective name and brief description
+2. Agent generates template with TODO placeholders
+3. **You manually fill in all sections** (thinking, refinement, discussion happens manually)
+4. You iterate on the document yourself or with stakeholders
+
+**Documented Intent vs. Reality:**  
+The `development_approach.md` describes agents that "assist in refining objectives" and "facilitate discussion." The current implementation provides structure but **you must do the refinement work**. See `docs/AGENT_IMPLEMENTATION_GAP_ANALYSIS.md` for details on this gap and future plans.
+
 ### How This Supports the Development Approach
 
 Per `development_approach.md`, the objective describes what the system aims to achieve and provides context/direction for all subsequent planning. The Planner Agent specifically supports this intent by:

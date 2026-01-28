@@ -138,4 +138,3 @@ System Context must not contain:
 - tool command syntax, CLI manuals, or troubleshooting.
 
 Those belong in process / standards / ops layers as defined in the documentation catalog.
-```

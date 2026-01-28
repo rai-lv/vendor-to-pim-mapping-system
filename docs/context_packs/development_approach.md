@@ -45,15 +45,44 @@ This approach focuses on iterative planning, collaboration between users and age
 
 ---
 
-## Agent Context
-The sequential development process described in this document is **template-assisted** at each stage. Automated tools provide structured templates and validation to support human work:
-- **Planning Function**: Provides structured templates for objectives and pipeline plans with validation checks.
-- **Specification Function**: Generates templates for capability specifications with required sections.
-- **Implementation Function**: Creates task templates and enforces repository standards.
-- **Validation Function**: Automates standards compliance checking and format validation.
-- **Documentation Function**: Generates documentation templates and validates completeness.
+## Agents and Tools
 
-Tools operate under human oversight, generating structured templates for well-defined artifacts. Humans perform the actual thinking, refinement, discussion, and decision-making work. Role-specific responsibilities are documented in the Agent Role Charter (if present).
+### Agents
+
+Agents are **collaborative roles** that support humans during planning, implementation, validation, and documentation. Agents may:
+
+* propose drafts and alternatives,
+* surface unknowns, risks, and trade-offs,
+* improve clarity and completeness,
+* implement changes when asked.
+
+Agents are **not autonomous owners** of decisions. Progress between stages requires **explicit human approval**.
+
+### Tools
+
+Tools are **instruments** used by humans and agents. Tools are deterministic utilities that may:
+
+* generate scaffolding/skeletons when requested,
+* validate structure and conformance to repository standards,
+* check presence/consistency of required artifacts and links,
+* produce deterministic evidence outputs (e.g., validation reports).
+
+Tools must **not** invent requirements, change intent, or introduce new business logic. Tools enforce structure; humans and agents define meaning.
+
+### Scope rule
+
+This document defines **principles and workflow shape**. Concrete tool names, command syntax, templates, required fields, and enforcement mechanisms are defined in adjacent standards and workflow documents.
+
+---
+
+## Agent Context
+
+The development system is **human-led** and **agent-assisted**.
+
+* Agents support the workflow by drafting, reviewing, proposing improvements, and implementing changes when requested.
+* Tools support the workflow by enforcing standards, validating structure, and producing deterministic evidence outputs.
+* Work is refined iteratively **within** each stage until success criteria are satisfied.
+* Stage transitions occur only after explicit human approval, captured in an auditable form.
 
 ---
 
@@ -77,6 +106,9 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 #### Output:
 - A defined **objective document** (`docs/roadmaps/<objective>.md`).
 
+#### Roles:
+- Agents: refine intent, scope, and success criteria; surface unknowns.
+- Tools: validate artifact structure (if defined by standards).
 ---
 
 ### **Step 2: Plan the Pipeline**
@@ -92,6 +124,10 @@ The **pipeline plan** breaks the high-level objective into a series of **capabil
 #### Output:
 - A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
 
+#### Roles:
+- Agents: propose decomposition into major parts and ordering; identify decision points.
+- Tools: validate structure and completeness checks.
+ 
 ---
 
 ### **Step 3: Break Down Into Capability Plans**
@@ -107,6 +143,10 @@ Template tools provide structured specifications for capability documentation.
 #### Output:
 - A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
 
+#### Roles:
+- Agents: draft implementable capability definitions and acceptance criteria.
+- Tools: validate structure and required fields as defined by standards.
+ 
 ---
 
 ### **Step 4: Execute Development Tasks**
@@ -116,6 +156,10 @@ Template tools provide structured specifications for capability documentation.
 
 #### Output:
 - Completed changes merged into the repository with traceability to the initial capability plan.
+
+#### Roles:
+- Agents: implement changes and/or propose task breakdown; flag conflicts with approved intent.
+- Tools: run deterministic checks and validations; produce evidence.
 
 ---
 
@@ -129,6 +173,10 @@ Template tools provide structured specifications for capability documentation.
 #### Output:
 - Validated deliverables aligned with success criteria.
 - Updated documentation covering changes and outcomes.
+
+#### Roles:
+- Agents: review evidence against criteria; ensure documentation matches reality.
+- Tools: execute validation procedures and emit deterministic reports.
 
 ---
 

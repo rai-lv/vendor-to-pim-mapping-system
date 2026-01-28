@@ -60,14 +60,14 @@ Agents are **not autonomous owners** of decisions. Progress between stages requi
 
 ### Tools
 
-Tools are **deterministic instruments** used by humans and agents. Tools may:
+Tools are **instruments** used by humans and agents. Tools are deterministic utilities that may:
 
-* generate empty scaffolding/skeletons with required section headings when requested,
+* generate scaffolding/skeletons when requested,
 * validate structure and conformance to repository standards,
 * check presence/consistency of required artifacts and links,
 * produce deterministic evidence outputs (e.g., validation reports).
 
-Tools must **not** invent requirements, change intent, or introduce new business logic. Tools provide structure; humans define content and meaning.
+Tools must **not** invent requirements, change intent, or introduce new business logic. Tools enforce structure; humans and agents define meaning.
 
 ### Scope rule
 
@@ -79,17 +79,16 @@ This document defines **principles and workflow shape**. Concrete tool names, co
 
 The development system is **human-led** and **agent-assisted**.
 
-* Agents support the workflow by drafting, reviewing, proposing improvements, and implementing changes when directed by humans.
-* Tools support the workflow by providing empty scaffolding, enforcing standards, validating structure, and producing deterministic evidence outputs.
+* Agents support the workflow by drafting, reviewing, proposing improvements, and implementing changes when requested.
+* Tools support the workflow by enforcing standards, validating structure, and producing deterministic evidence outputs.
 * Work is refined iteratively **within** each stage until success criteria are satisfied.
 * Stage transitions occur only after explicit human approval, captured in an auditable form.
-* Agent outputs (proposals, drafts, reviews) require human validation before becoming authoritative.
 
 ---
 
 ## Sequential Development Process
 
-The development system follows a **structured, sequential workflow** divided into five steps. Each step builds on the previous one, ensuring gradual refinement from high-level objectives to implemented and validated solutions. Human efforts are **supported by scaffolding and validation tools** at each stage.
+The development system follows a **structured, sequential workflow** divided into five steps. Each step builds on the previous one, ensuring gradual refinement from high-level objectives to implemented and validated solutions. Human efforts are **supported by templates** at each stage.
 
 ---
 
@@ -99,8 +98,8 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 #### What Happens:
 - The **user defines the objective**, describing what they want to accomplish. For example:
   > "I have incoming vendor XML documents containing assortment information and want a system that allows me to update the products into my PIM system automatically."
-- The Planning function, **supported by templates**, helps structure this objective:
-  - Scaffolding tools generate document skeletons with required section headings (goals, boundaries, success criteria, constraints, risks).
+- The Planning function, **supported by template tools**, helps structure this objective:
+  - Template tools generate structured documents with required sections (goals, boundaries, success criteria, constraints, risks).
   - Users manually fill in the content, performing the actual refinement work.
   - Users ensure objectives are actionable, identify constraints, unknowns, and risks through their own analysis and stakeholder discussions.
 
@@ -108,16 +107,16 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 - A defined **objective document** (`docs/roadmaps/<objective>.md`).
 
 #### Roles:
-- Agents: propose refinements to intent, scope, and success criteria; surface unknowns for human consideration.
+- Agents: refine intent, scope, and success criteria; surface unknowns.
 - Tools: validate artifact structure (if defined by standards).
 ---
 
 ### **Step 2: Plan the Pipeline**
-The **pipeline plan** breaks the high-level objective into a series of **capabilities** necessary to achieve the goal. Scaffolding tools provide structure for collaboration.
+The **pipeline plan** breaks the high-level objective into a series of **capabilities** necessary to achieve the goal. Template tools provide structure for collaboration.
 
 #### What Happens:
-- The Planning function, supported by scaffolding tools, helps users create a high-level plan:
-  - Tools generate document skeletons for pipeline documentation (processing sequence, step descriptions, decision points).
+- The Planning function, supported by template tools, helps users create a high-level plan:
+  - Tools generate structured templates for pipeline documentation (processing sequence, step descriptions, decision points).
   - Users manually identify **key capabilities** or components (e.g., "process incoming XML files", "map assortment data").
   - Users manually define the **order of tasks** and dependencies for each capability.
   - Users manually highlight risks or decision points through analysis and discussion.
@@ -126,17 +125,17 @@ The **pipeline plan** breaks the high-level objective into a series of **capabil
 - A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
 
 #### Roles:
-- Agents: propose decomposition into major parts and ordering; identify decision points for human review.
+- Agents: propose decomposition into major parts and ordering; identify decision points.
 - Tools: validate structure and completeness checks.
  
 ---
 
 ### **Step 3: Break Down Into Capability Plans**
-Scaffolding tools provide structured specification skeletons for capability documentation.
+Template tools provide structured specifications for capability documentation.
 
 #### What Happens:
-- The Specification function, supported by scaffolding tools, helps users refine each pipeline step:
-  - Tools generate YAML specification skeletons with required sections.
+- The Specification function, supported by template tools, helps users refine each pipeline step:
+  - Tools generate YAML specification templates with required sections.
   - Users manually define what the capability does (purpose, scope).
   - Users manually specify key inputs, outputs, and transformations.
   - Users manually document steps for implementation in a **Development Step Document**.
@@ -145,7 +144,7 @@ Scaffolding tools provide structured specification skeletons for capability docu
 - A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
 
 #### Roles:
-- Agents: draft implementable capability definitions and acceptance criteria for human approval.
+- Agents: draft implementable capability definitions and acceptance criteria.
 - Tools: validate structure and required fields as defined by standards.
  
 ---
@@ -153,13 +152,13 @@ Scaffolding tools provide structured specification skeletons for capability docu
 ### **Step 4: Execute Development Tasks**
 #### What Happens:
 - Tasks are implemented, reviewed, iterated on, and integrated collaboratively.
-- Scaffolding tools assist by generating task skeletons and enforcing repository standards through validation.
+- Template tools assist by generating task templates and enforcing repository standards through validation.
 
 #### Output:
 - Completed changes merged into the repository with traceability to the initial capability plan.
 
 #### Roles:
-- Agents: implement changes as directed by humans and/or propose task breakdown for human approval; flag conflicts with approved intent.
+- Agents: implement changes and/or propose task breakdown; flag conflicts with approved intent.
 - Tools: run deterministic checks and validations; produce evidence.
 
 ---
@@ -176,7 +175,7 @@ Scaffolding tools provide structured specification skeletons for capability docu
 - Updated documentation covering changes and outcomes.
 
 #### Roles:
-- Agents: review evidence against criteria and propose findings; ensure documentation matches reality for human verification.
+- Agents: review evidence against criteria; ensure documentation matches reality.
 - Tools: execute validation procedures and emit deterministic reports.
 
 ---

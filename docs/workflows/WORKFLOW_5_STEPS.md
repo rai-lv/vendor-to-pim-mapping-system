@@ -20,71 +20,122 @@ Step 5: Code Creation (PR Process)
 
 ## Step 1: Define Objective
 
-**Agent:** Planner Agent (`tools/planner_agent.py`)  
+**Agent:** Interactive Planner Agent (`tools/interactive_planner_agent.py`)  
 **Output:** `docs/roadmaps/<objective_name>.md`  
 **Workflow:** Step 1 - Define Objective
 
 ### Purpose
-Define what must be achieved with explicit boundaries and testable success criteria.
+Define what must be achieved with explicit boundaries and testable success criteria through **interactive conversation and automated refinement**.
 
-### How to Achieve the Intent (Refinement Process)
+### How the Agent Achieves the Intent
 
-Per `development_approach.md`, the Planning function supports you in **refining the objective** and **ensuring it is actionable**. Here's the process:
+Per `development_approach.md`, the Planning function **supports you in refining the objective**, **ensuring it is actionable**, and **highlighting constraints, unknowns, and risks**. The Interactive Planner Agent automates this through conversational AI:
 
-#### 1. Generate Initial Template
-Use the Planner Agent tool to generate a structured template:
+#### 1. Start Interactive Discussion
 ```bash
-python tools/planner_agent.py create "<objective_name>" \
-  --description "<brief description>"
+python tools/interactive_planner_agent.py discuss "<objective_name>"
 ```
 
-#### 2. Manual Refinement Process (Required)
-
-**The tool only generates an empty template. YOU must perform the refinement work:**
-
-**A. Refine the Objective to be Actionable:**
-- Read your initial description (e.g., "I want to update products automatically")
-- Ask yourself: What SPECIFICALLY needs to happen?
-- Break down vague statements into concrete actions
-- Example refinement:
-  - Before: "Update products automatically"
-  - After: "Implement automated vendor onboarding pipeline that ingests XML files, validates against PIM schema, transforms data, and updates products via PIM API v2.1"
-
-**B. Ensure Context for Subsequent Steps:**
-- Document WHY this objective exists (business context)
-- Define WHAT success looks like (measurable outcomes)
-- Specify WHAT is out of scope (boundaries to prevent scope creep)
-
-**C. Identify Constraints, Unknowns, and Risks:**
-
-**Constraints** (conduct analysis and discussions):
-- Technical: What existing systems/APIs must you use? (e.g., "Must use PIM API v2.1")
-- Business: What are the deadlines, budgets, compliance requirements?
-- Resources: What team size, time allocation, infrastructure limits?
-
-**Unknowns** (mark explicitly as TBD):
-- What don't you know yet? (e.g., "TBD: Average file size - need baseline data")
-- What decisions haven't been made? (e.g., "OPEN QUESTION: Batch vs. real-time processing")
-
-**Risks** (think through potential issues):
-- What could go wrong? (e.g., "API rate limits could cause delays")
-- What's the impact and likelihood?
-- How would you mitigate?
-
-#### 3. Stakeholder Discussion
-- Share the refined objective with stakeholders
-- Facilitate discussion to reach consensus
-- Iterate based on feedback
-- Resolve disagreements on scope, constraints, priorities
-
-#### 4. Validation
-Validate the refined objective:
-```bash
-python tools/planner_agent.py validate docs/roadmaps/<objective_name>.md
+The agent conducts a conversation to understand your needs:
 ```
-This checks structure, but YOU ensure the CONTENT is actionable.
+Agent: "Let's define your objective. What are you trying to achieve?"
+You: "I want to automate vendor onboarding"
+Agent: "Can you be more specific? What exactly happens in vendor onboarding?"
+You: "Vendors send XML files with product catalogs, we need to update PIM"
+Agent: "Which PIM system and version? Any format requirements?"
+You: "PIM API v2.1, files must match our schema"
+Agent: "What's your current process? What problems are you solving?"
+```
 
-### Must Include
+#### 2. Automated Refinement
+
+**The agent automatically performs refinement through guided questions:**
+
+**A. Refining to be Actionable:**
+- Agent asks targeted questions to clarify vague statements
+- Agent helps break down general goals into specific requirements
+- Agent suggests concrete actions based on your answers
+- Example: "automate vendor onboarding" → "Implement XML ingestion pipeline with schema validation and PIM API integration"
+
+**B. Ensuring Context:**
+- Agent asks about business context and motivation
+- Agent helps define measurable success criteria
+- Agent prompts for out-of-scope boundaries
+- Agent ensures objective provides direction for subsequent steps
+
+**C. Identifying Constraints, Unknowns, and Risks:**
+
+**Constraints** (agent discovers through conversation):
+- "What technical systems must you integrate with?"
+- "Any deadlines or budget limitations?"
+- "Compliance or regulatory requirements?"
+- Agent documents all constraints automatically
+
+**Unknowns** (agent identifies gaps):
+- "What information are you missing?"
+- "What decisions haven't been made yet?"
+- Agent explicitly marks items as TBD or OPEN QUESTION
+- Example: "TBD: Average file size (need baseline data)"
+
+**Risks** (agent helps identify):
+- "What could go wrong with this approach?"
+- "What external dependencies concern you?"
+- Agent suggests common risks based on patterns
+- Agent captures impact, likelihood, mitigation for each risk
+
+#### 3. Automated Document Generation
+
+The agent generates a complete, refined objective document:
+```
+✓ Objective statement (refined from conversation)
+✓ Specific, measurable goals (extracted from discussion)
+✓ Expected outcomes (based on your requirements)
+✓ Out-of-scope boundaries (what you said ISN'T included)
+✓ Success criteria (functional + quality, testable)
+✓ Constraints (technical, business, resources)
+✓ Risk assessment (identified risks with mitigation)
+✓ Unknowns (explicitly marked TBD/OPEN QUESTION)
+✓ Dependencies (external factors identified)
+```
+
+#### 4. Iterative Refinement
+```bash
+python tools/interactive_planner_agent.py refine "<objective_name>"
+```
+
+The agent reviews and continues refinement:
+```
+Agent: "I've reviewed your objective. I notice you mentioned 3 vendors 
+        but didn't specify error handling. Should we address that?"
+You: "Yes, if validation fails, log errors and notify vendor"
+Agent: "Added. I also see no performance requirements. Any SLA needs?"
+You: "Process files within 30 minutes"
+Agent: "Got it. That's a constraint I'll add. Anything else?"
+```
+
+#### 5. Stakeholder Consensus Building
+```bash
+python tools/interactive_planner_agent.py facilitate "<objective_name>" \
+  --stakeholders "tech_lead,architect,product_owner"
+```
+
+The agent facilitates multi-party consensus:
+```
+Agent: "I've analyzed feedback from 3 stakeholders:
+       Tech Lead: Concerned about API rate limits (500 calls/hour)
+       Architect: Wants async processing for scalability
+       Product Owner: Requires 24hr SLA, not 30min
+       
+       These create conflicts. Let's resolve them:
+       - API limit allows ~12K calls/day
+       - 24hr SLA gives us flexibility
+       - Async processing recommended
+       
+       Proposed resolution: Async batch processing with 24hr SLA.
+       Does this work for everyone?"
+```
+
+### Must Include (Auto-Generated by Agent)
 - **What must be achieved:** Specific, measurable goals and expected outcomes
 - **Out-of-scope boundaries:** Explicitly state what is NOT included
 - **Success criteria:** Testable functional and quality criteria
@@ -92,7 +143,7 @@ This checks structure, but YOU ensure the CONTENT is actionable.
 - **Risk assessment:** Known risks, unknowns, open questions
 
 ### Key Point
-**The Planner Agent provides structure; YOU provide the thinking.** The refinement, analysis, discussion, and consensus-building are MANUAL human activities. The tool validates format, not quality.
+**The Interactive Planner Agent performs the refinement work WITH you.** Through conversation, it helps you think through implications, identifies gaps you might miss, suggests risks based on patterns, and produces a refined, actionable objective—automating the "assistance in refining" described in development_approach.md.
 
 ### Next Step
 Once approved by stakeholders → Proceed to **Step 2a**
@@ -101,68 +152,125 @@ Once approved by stakeholders → Proceed to **Step 2a**
 
 ## Step 2a: Overarching Plan (Pipeline-Level)
 
-**Agent:** Pipeline Planner Agent (`tools/pipeline_planner_agent.py`)  
+**Agent:** Interactive Pipeline Planner Agent (`tools/interactive_pipeline_planner_agent.py`)  
 **Output:** `docs/roadmaps/<objective_name>_pipeline_plan.md`  
 **Workflow:** Step 2a - Overarching Plan (Pipeline-Level)
 
 ### Purpose
-Create end-to-end pipeline plan showing the complete processing sequence.
+Create end-to-end pipeline plan showing the complete processing sequence through **interactive architectural discussion**.
 
-### How to Achieve the Intent (Planning Process)
+### How the Agent Achieves the Intent
 
-Per `development_approach.md`, you must **identify key capabilities**, **define order and dependencies**, and **highlight risks and decision points**. Here's the process:
+Per `development_approach.md`, you must **identify key capabilities**, **define order and dependencies**, and **highlight risks and decision points**. The Interactive Pipeline Planner Agent automates this through architectural conversation:
 
-####1. Generate Pipeline Template
+#### 1. Start Pipeline Design Session
 ```bash
-python tools/pipeline_planner_agent.py create \
+python tools/interactive_pipeline_planner_agent.py design \
   --objective docs/roadmaps/<objective_name>.md
 ```
 
-#### 2. Manual Planning Process (Required)
+The agent begins architectural discussion:
+```
+Agent: "I've analyzed your objective: automated vendor onboarding with XML files.
+        Let's design the end-to-end pipeline. What are the major processing steps?"
+You: "Receive files, validate them, transform data, update PIM"
+Agent: "Good start. Let's break that down:
+        1. File ingestion - where do files come from?
+        2. Schema validation - what schema?
+        3. Data transformation - what mapping rules?
+        4. PIM integration - which API?
+        Does this capture the flow?"
+```
 
-**The tool only generates structure. YOU must do the architectural planning:**
+#### 2. Automated Capability Identification
 
-**A. Identify Key Capabilities:**
-- Review your objective document
-- Break down the objective into discrete processing steps
-- Think: What are the major chunks of work?
-- Example from "vendor onboarding":
-  - Step 1: XML Ingestion (read files from source)
-  - Step 2: Schema Validation (check against PIM schema)
-  - Step 3: Data Transformation (map vendor format to PIM format)
-  - Step 4: PIM API Integration (update products)
-  - Step 5: Error Handling (log failures, notify vendors)
+**The agent helps identify capabilities through guided analysis:**
 
-**B. Define Order and Dependencies:**
-- Sequence the steps: What must happen first?
-- Identify data flow: What does each step consume/produce?
-- Define dependencies: Which steps depend on others?
-- Document decision points: Where does logic branch?
-  - Example: "If schema validation fails → error handling path (no PIM update)"
+**A. Discovering Processing Steps:**
+- Agent analyzes objective to suggest initial capabilities
+- Agent asks: "What happens first? Then what?"
+- Agent prompts: "Any validation or error checking needed?"
+- Agent suggests common patterns based on similar pipelines
+- Example suggestions:
+  ```
+  Agent: "For vendor onboarding, I typically see:
+         - Ingestion (S3, SFTP, API)
+         - Validation (schema, business rules)
+         - Transformation (mapping, enrichment)
+         - Integration (API calls, database updates)
+         - Monitoring (logging, alerts)
+         Does this match your needs?"
+  ```
 
-**C. Highlight Risks and Decision Points:**
-- **Decision Points** (where logic branches):
-  - What conditions trigger different paths?
-  - What are the alternative flows?
-- **Risks** (what could go wrong):
-  - Where could the pipeline fail?
-  - What external dependencies exist?
-- **Unknowns** (what needs investigation):
-  - Mark with TBD or OPEN QUESTION
-  - Example: "TBD: Retry logic for PIM API failures"
+**B. Defining Order and Dependencies:**
+- Agent asks: "Can any steps run in parallel?"
+- Agent identifies: "Step 3 depends on Step 2 output. Correct?"
+- Agent maps data flow: "What does each step produce for the next?"
+- Agent creates sequence diagram automatically
 
-#### 3. Architecture Discussion
-- Review with technical lead and architect
-- Discuss trade-offs (batch vs. streaming, sync vs. async, etc.)
-- Validate against objective constraints
-- Adjust based on feedback
+**C. Decision Point Discovery:**
+- Agent asks: "What happens if validation fails?"
+- Agent prompts: "Any conditional logic or branching?"
+- Agent documents decision trees
+- Example:
+  ```
+  Agent: "If schema validation fails, you have options:
+         A) Stop pipeline, notify vendor
+         B) Log error, continue with valid records
+         C) Queue for manual review
+         Which approach?"
+  ```
 
-#### 4. Existing Job Mapping
-- Identify which existing AWS Glue jobs can be reused
-- Determine which capabilities need new development
-- Document the mapping
+#### 3. Risk and Unknown Identification
 
-### Must Include
+**The agent actively identifies risks:**
+- Agent suggests common risks: "XML parsing can fail with large files. Size limits?"
+- Agent asks: "What external systems could cause failures?"
+- Agent prompts: "Any unknowns about data volume or frequency?"
+- Agent marks TBDs: "TBD: Retry logic for API failures"
+
+#### 4. Existing Job Analysis
+```bash
+Agent: "I've scanned your jobs/ directory. Found:
+       - jobs/ingestion/s3_reader - could handle Step 1
+       - jobs/validation/schema_validator - could handle Step 2
+       Do you want to reuse these or create new jobs?"
+```
+
+#### 5. Automated Architecture Document Generation
+
+The agent generates complete pipeline plan:
+```
+✓ Processing sequence (numbered steps, first → last)
+✓ Detailed step descriptions (inputs, processing, outputs)
+✓ Decision points (conditions and branching logic)
+✓ Conceptual artifacts (data passed between steps)
+✓ Data flow diagram (automated generation)
+✓ Existing job mapping (reuse vs. new development)
+✓ Unknowns and open decisions (explicitly marked)
+✓ Risk assessment (identified risks per step)
+```
+
+#### 6. Architecture Review Facilitation
+```bash
+python tools/interactive_pipeline_planner_agent.py review \
+  --pipeline docs/roadmaps/<objective>_pipeline_plan.md \
+  --reviewers "tech_lead,architect"
+```
+
+Agent facilitates technical review:
+```
+Agent: "Tech Lead feedback: 'Consider async processing for scalability'
+        Architect feedback: 'Add circuit breaker for PIM API calls'
+        
+        Should I update the design to include:
+        - Async queue between steps 3-4?
+        - Circuit breaker pattern for API integration?
+        
+        This would address both concerns."
+```
+
+### Must Include (Auto-Generated by Agent)
 - **Processing sequence:** List capabilities/steps in order (first → last)
 - **Decision points:** Identify decision logic and fallback paths
 - **Conceptual artifacts:** Define artifacts exchanged between steps (names + meaning, NOT S3 paths)
@@ -171,6 +279,12 @@ python tools/pipeline_planner_agent.py create \
 
 ### Key Rule
 **DO NOT** define "how" each step works - only define "what" and "sequence"
+
+### Key Point
+**The Interactive Pipeline Planner Agent performs architectural planning WITH you.** Through conversation, it helps decompose objectives into capabilities, identifies dependencies and decision points, suggests risks, analyzes existing jobs for reuse, and produces a comprehensive pipeline architecture—automating the "agent assists by creating structured drafts" described in development_approach.md.
+
+### Next Step
+Once pipeline plan is approved → Proceed to **Step 2b** for EACH capability
 
 ### Key Point
 **The Pipeline Planner provides structure; YOU design the architecture.** The capability identification, sequencing, and architectural decisions are MANUAL human activities requiring technical expertise and discussion.

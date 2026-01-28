@@ -19,7 +19,7 @@ This approach focuses on iterative planning, collaboration between users and age
 
 ### 2. Iterative and Sequential Workflows
 - The development process is iterative, meaning outputs evolve dynamically across multiple cycles:
-  - Each step involves drafts from the agent.
+  - Each step involves drafts produced with agent assistance (and, where applicable, validated by tools).
   - Humans provide feedback, refine decisions, and validate results.
 - The workflow is sequential in structure and iterative within each step.
 

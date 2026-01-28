@@ -62,6 +62,36 @@ python tools/validate_repo_docs.py --all
 
 Assists in creating structured objective definitions with explicit boundaries, success criteria, and risk assessment.
 
+### How This Supports the Development Approach
+
+Per `development_approach.md`, the objective describes what the system aims to achieve and provides context/direction for all subsequent planning. The Planner Agent specifically supports this intent by:
+
+**1. Refining Objectives to be Actionable:**
+- **Template sections** prompt for specific, measurable goals (not vague intentions)
+- **Expected Outcomes** section forces concrete deliverables to be defined
+- **Success Criteria** section requires testable criteria (functional + quality)
+- **Validation command** checks that objectives are sufficiently detailed for next steps
+
+**2. Ensuring Context for Subsequent Steps:**
+- **Objective Statement** provides high-level direction for pipeline planning (Step 2a)
+- **Out-of-Scope Boundaries** prevent scope creep in downstream capability planning (Step 2b)
+- **Constraints** section documents limitations that affect architecture decisions
+- **Dependencies** section identifies external factors that impact implementation
+
+**3. Highlighting Constraints, Unknowns, and Risks:**
+- **Technical/Business/Time Constraints** sections force explicit documentation of limitations
+- **Unknowns and Open Questions** section requires unknowns to be marked (TBD, OPEN QUESTION)
+- **Risk Assessment** section with impact/likelihood/mitigation captures known risks
+- **Validation warnings** flag unresolved unknowns before approval
+
+**Example:** When a user states "I want to update products into my PIM system automatically," the agent helps transform this into:
+- **Actionable objective:** "Implement automated vendor onboarding pipeline with XML ingestion, validation, and PIM API integration"
+- **Boundaries:** "Does NOT include manual data entry, historical migrations, or real-time updates"
+- **Constraints:** "Must use existing PIM API v2.1, process <5GB files, complete within 30-minute SLA"
+- **Unknowns:** "TBD: Average file size (need baseline data), OPEN QUESTION: Batch vs. real-time processing"
+
+This structured refinement ensures the objective is ready to guide pipeline planning (Step 2a) with clarity and completeness.
+
 ### Command Syntax
 
 ```bash
@@ -213,6 +243,34 @@ python tools/planner_agent.py create "vendor_onboarding" --force
 
 Assists in designing end-to-end pipeline architecture showing processing sequence, decision points, and conceptual artifacts.
 
+### How This Supports the Development Approach
+
+Per `development_approach.md`, the pipeline plan breaks the high-level objective into capabilities and defines their order and dependencies. The Pipeline Planner Agent specifically supports this intent by:
+
+**1. Identifying Key Capabilities:**
+- **Processing Sequence** section breaks objective into discrete steps (e.g., "process XML", "validate data", "map to PIM")
+- **Detailed Step Descriptions** define what each capability does (inputs, processing, outputs)
+- **Existing Job Mapping** identifies which capabilities map to existing AWS Glue jobs vs. need new development
+
+**2. Defining Order and Dependencies:**
+- **Processing Sequence** establishes first → last flow with numbered steps
+- **Decision Points** section captures branching logic (e.g., "if validation fails → error handling path")
+- **Conceptual Artifacts** section defines data passed between steps, establishing dependencies
+- Steps documented with explicit inputs/outputs showing data flow
+
+**3. Highlighting Risks and Decision Points:**
+- **Decision Points** section explicitly documents where logic branches or choices must be made
+- **Unknowns and Open Decisions** section captures architectural uncertainties requiring resolution
+- **Complexity Analysis** command identifies when pipeline should be broken into smaller capabilities
+
+**Example:** From objective "automated vendor onboarding," the agent helps create:
+- **Capabilities identified:** "XML Ingestion" → "Schema Validation" → "Data Transformation" → "PIM API Integration"
+- **Order established:** Sequential flow with validation gate after ingestion
+- **Decision point:** "If schema validation fails → log errors and notify vendor (no PIM update)"
+- **Unknowns flagged:** "TBD: Retry logic for PIM API failures (exponential backoff vs. fixed delay)"
+
+This structured planning ensures capabilities are well-defined before detailed specification (Step 2b).
+
 ### Command Syntax
 
 ```bash
@@ -326,6 +384,37 @@ Creates a markdown file at `docs/roadmaps/<objective>_pipeline_plan.md`:
 ### Purpose
 
 Assists in breaking down pipeline steps into detailed technical capability specifications ready for implementation.
+
+### How This Supports the Development Approach
+
+Per `development_approach.md`, the Specification function refines each pipeline step into purpose, scope, inputs/outputs, and implementation steps. The Capability Planner Agent specifically supports this intent by:
+
+**1. Defining What the Capability Does:**
+- **Capability Name and Objective** section states the purpose in clear, actionable terms
+- **Scope** section explicitly defines what IS included and what is NOT included (boundaries)
+- Prevents ambiguity about what will be implemented vs. what's out of scope
+
+**2. Specifying Key Inputs, Outputs, and Transformations:**
+- **Inputs** section defines data sources, formats, and locations (e.g., S3 paths, CSV structure)
+- **Outputs** section defines artifacts produced, their formats, and destinations
+- **Processing Requirements** section describes transformations and business logic applied
+- YAML format ensures machine-readable specifications for validation
+
+**3. Structuring Implementation Steps:**
+- **Parameters** section defines configurable values for the capability (vendor_id, schema_version)
+- **Success Criteria** section provides testable acceptance criteria (functional + quality)
+- **Dependencies** section identifies prerequisite capabilities and external systems
+- **Assumptions** section explicitly labels uncertainties requiring approval before implementation
+
+**Example:** From pipeline step "Data Validation," the agent helps create:
+- **Purpose:** "Validate vendor-submitted product data against PIM schema v2.1"
+- **Inputs:** CSV/Excel at `s3://bucket/vendor-submissions/` with specific column structure
+- **Outputs:** Validated records at `s3://bucket/validated/` (Parquet), errors at `s3://bucket/errors/` (JSON)
+- **Processing:** "Apply PIM schema validation, check business rules per vendor contract, generate error reports"
+- **Success Criteria:** "All valid records pass, invalid records logged with error codes, 100% of submissions processed"
+- **Assumptions:** "ASSUMPTION: Vendor files <5GB (requires approval), Max 100K products per submission (requires approval)"
+
+This detailed specification ensures developers have clear requirements for implementation (Step 4).
 
 ### Command Syntax
 

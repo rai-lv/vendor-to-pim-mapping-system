@@ -32,6 +32,43 @@ This document does **not** define concrete tool names, command syntax, templates
 
 ---
 
+## Non-Negotiable Operating Rules
+
+### 1) Human approval gates
+Progression between workflow stages requires explicit human approval captured in an auditable form.
+
+Agents may produce drafts and implement tasks, but must not advance stage transitions without human approval of the relevant stage output.
+
+### 2) Explicit unknowns and controlled assumptions
+Assumptions and unknowns are allowed only if they are:
+
+* explicitly labeled,
+* bounded (what is assumed, why, impact),
+* approved by a human before implementation depends on them.
+
+### 3) No hidden authority
+Agents and tools must never imply outputs are “true” because an agent produced them or a tool reported them. Truth is grounded in:
+
+* human decisions and approvals,
+* enforceable standards and governance rules,
+* runtime behavior of implemented artifacts,
+* deterministic evidence outputs (e.g., validation/test/run results).
+
+### 4) Separation of concerns
+Documentation and artifacts must not mix layers:
+
+* **Principles / intent** (what the system is trying to achieve and what success means),
+* **Enforceable rules** (schemas, standards, governance constraints),
+* **Execution procedures** (how work is carried out and how completion is proven),
+* **Operational references** (how to run tools and interpret outputs).
+
+Agents must avoid creating “shadow specifications” in the wrong layer.
+
+### 5) No double truth and explicit conflict resolution
+If approved intent conflicts with current artifacts, tool outputs, or observed behavior, the conflict must be surfaced and resolved explicitly; it must not be silently overridden.
+
+---
+
 ## Core Design Principles
 
 ### 1) Human-led, agent-assisted, tool-enforced
@@ -43,18 +80,6 @@ This document does **not** define concrete tool names, command syntax, templates
 ### 2) Sequential workflow with iterative refinement inside steps
 
 The workflow proceeds through the five steps defined in `development_approach.md`. Iteration is allowed **within** a step until success criteria are satisfied; step transitions require explicit approval.
-
-### 3) Controlled assumptions and explicit unknowns
-
-Assumptions and unknowns are allowed only if:
-
-* explicitly labeled,
-* bounded (what, why, impact),
-* approved by a human before implementation depends on them.
-
-### 4) No double truth
-
-Rules and meaning must not be duplicated across documents. Conflicts must be surfaced and resolved explicitly rather than silently “fixed” or overridden.
 
 ---
 
@@ -104,7 +129,7 @@ Supports Step 3.
 Supports Step 4.
 
 * Executes the codable tasks defined in Step 3, producing the actual code/configuration/documentation changes required by each task.
-*Keeps implementation aligned with the approved capability definition and task boundaries; flags scope creep or missing prerequisites immediately.
+* Keeps implementation aligned with the approved capability definition and task boundaries; flags scope creep or missing prerequisites immediately.
 * Produces changes in a form suitable for human review and approval, including any evidence outputs required for validation.
 
 **Must escalate when:** implementing a task would require new assumptions, expands scope beyond the defined task boundaries, or changes the agreed rules/acceptance criteria.
@@ -165,10 +190,7 @@ Tools do not invent requirements, interpret intent, or make approval decisions.
 
 ### Approval gates (principle-level)
 
-Across the workflow:
-
-* Step outputs must be reviewed and explicitly approved by a human before progressing.
-* Approval must be based on evidence proportional to the stage and impact.
+Approval gates are a non-negotiable operating rule (see “Non-Negotiable Operating Rules”). Approval must be based on evidence proportional to the stage and impact.
 
 ### Evidence discipline
 

@@ -1,5 +1,12 @@
 # Job Inventory Specification (v1.4)
 
+UPD 2026-01-28 14:21
+**Canonical location:** `docs/standards/`
+**Purpose statement:** Defines the normative schema for job inventory entries.
+**Why necessary:** Enables validation, discovery, and consistent indexing.
+**Must contain:** Required fields; reference/link expectations; lifecycle/status semantics (as schema).
+**Must not contain:** Tool manuals or per-job narrative descriptions.
+
 ## 0) Purpose and scope
 
 `docs/job_inventory.md` is the authoritative **index** of executable jobs and their **system-level interfaces**.

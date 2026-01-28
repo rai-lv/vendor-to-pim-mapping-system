@@ -27,6 +27,63 @@ Step 5: Code Creation (PR Process)
 ### Purpose
 Define what must be achieved with explicit boundaries and testable success criteria.
 
+### How to Achieve the Intent (Refinement Process)
+
+Per `development_approach.md`, the Planning function supports you in **refining the objective** and **ensuring it is actionable**. Here's the process:
+
+#### 1. Generate Initial Template
+Use the Planner Agent tool to generate a structured template:
+```bash
+python tools/planner_agent.py create "<objective_name>" \
+  --description "<brief description>"
+```
+
+#### 2. Manual Refinement Process (Required)
+
+**The tool only generates an empty template. YOU must perform the refinement work:**
+
+**A. Refine the Objective to be Actionable:**
+- Read your initial description (e.g., "I want to update products automatically")
+- Ask yourself: What SPECIFICALLY needs to happen?
+- Break down vague statements into concrete actions
+- Example refinement:
+  - Before: "Update products automatically"
+  - After: "Implement automated vendor onboarding pipeline that ingests XML files, validates against PIM schema, transforms data, and updates products via PIM API v2.1"
+
+**B. Ensure Context for Subsequent Steps:**
+- Document WHY this objective exists (business context)
+- Define WHAT success looks like (measurable outcomes)
+- Specify WHAT is out of scope (boundaries to prevent scope creep)
+
+**C. Identify Constraints, Unknowns, and Risks:**
+
+**Constraints** (conduct analysis and discussions):
+- Technical: What existing systems/APIs must you use? (e.g., "Must use PIM API v2.1")
+- Business: What are the deadlines, budgets, compliance requirements?
+- Resources: What team size, time allocation, infrastructure limits?
+
+**Unknowns** (mark explicitly as TBD):
+- What don't you know yet? (e.g., "TBD: Average file size - need baseline data")
+- What decisions haven't been made? (e.g., "OPEN QUESTION: Batch vs. real-time processing")
+
+**Risks** (think through potential issues):
+- What could go wrong? (e.g., "API rate limits could cause delays")
+- What's the impact and likelihood?
+- How would you mitigate?
+
+#### 3. Stakeholder Discussion
+- Share the refined objective with stakeholders
+- Facilitate discussion to reach consensus
+- Iterate based on feedback
+- Resolve disagreements on scope, constraints, priorities
+
+#### 4. Validation
+Validate the refined objective:
+```bash
+python tools/planner_agent.py validate docs/roadmaps/<objective_name>.md
+```
+This checks structure, but YOU ensure the CONTENT is actionable.
+
 ### Must Include
 - **What must be achieved:** Specific, measurable goals and expected outcomes
 - **Out-of-scope boundaries:** Explicitly state what is NOT included
@@ -34,8 +91,8 @@ Define what must be achieved with explicit boundaries and testable success crite
 - **Constraints:** Technical, business, time/resource limitations
 - **Risk assessment:** Known risks, unknowns, open questions
 
-### Usage
-See `agent_tools_reference.md` for detailed CLI syntax and options.
+### Key Point
+**The Planner Agent provides structure; YOU provide the thinking.** The refinement, analysis, discussion, and consensus-building are MANUAL human activities. The tool validates format, not quality.
 
 ### Next Step
 Once approved by stakeholders → Proceed to **Step 2a**
@@ -51,6 +108,60 @@ Once approved by stakeholders → Proceed to **Step 2a**
 ### Purpose
 Create end-to-end pipeline plan showing the complete processing sequence.
 
+### How to Achieve the Intent (Planning Process)
+
+Per `development_approach.md`, you must **identify key capabilities**, **define order and dependencies**, and **highlight risks and decision points**. Here's the process:
+
+####1. Generate Pipeline Template
+```bash
+python tools/pipeline_planner_agent.py create \
+  --objective docs/roadmaps/<objective_name>.md
+```
+
+#### 2. Manual Planning Process (Required)
+
+**The tool only generates structure. YOU must do the architectural planning:**
+
+**A. Identify Key Capabilities:**
+- Review your objective document
+- Break down the objective into discrete processing steps
+- Think: What are the major chunks of work?
+- Example from "vendor onboarding":
+  - Step 1: XML Ingestion (read files from source)
+  - Step 2: Schema Validation (check against PIM schema)
+  - Step 3: Data Transformation (map vendor format to PIM format)
+  - Step 4: PIM API Integration (update products)
+  - Step 5: Error Handling (log failures, notify vendors)
+
+**B. Define Order and Dependencies:**
+- Sequence the steps: What must happen first?
+- Identify data flow: What does each step consume/produce?
+- Define dependencies: Which steps depend on others?
+- Document decision points: Where does logic branch?
+  - Example: "If schema validation fails → error handling path (no PIM update)"
+
+**C. Highlight Risks and Decision Points:**
+- **Decision Points** (where logic branches):
+  - What conditions trigger different paths?
+  - What are the alternative flows?
+- **Risks** (what could go wrong):
+  - Where could the pipeline fail?
+  - What external dependencies exist?
+- **Unknowns** (what needs investigation):
+  - Mark with TBD or OPEN QUESTION
+  - Example: "TBD: Retry logic for PIM API failures"
+
+#### 3. Architecture Discussion
+- Review with technical lead and architect
+- Discuss trade-offs (batch vs. streaming, sync vs. async, etc.)
+- Validate against objective constraints
+- Adjust based on feedback
+
+#### 4. Existing Job Mapping
+- Identify which existing AWS Glue jobs can be reused
+- Determine which capabilities need new development
+- Document the mapping
+
 ### Must Include
 - **Processing sequence:** List capabilities/steps in order (first → last)
 - **Decision points:** Identify decision logic and fallback paths
@@ -58,11 +169,11 @@ Create end-to-end pipeline plan showing the complete processing sequence.
 - **Existing job mapping:** State which existing jobs cover which steps
 - **Unknowns:** Explicitly mark unknowns and open decisions (no assumptions)
 
-### Usage
-See `agent_tools_reference.md` for detailed CLI syntax and options.
-
 ### Key Rule
 **DO NOT** define "how" each step works - only define "what" and "sequence"
+
+### Key Point
+**The Pipeline Planner provides structure; YOU design the architecture.** The capability identification, sequencing, and architectural decisions are MANUAL human activities requiring technical expertise and discussion.
 
 ### Next Step
 Once pipeline plan is approved → Proceed to **Step 2b** for EACH capability

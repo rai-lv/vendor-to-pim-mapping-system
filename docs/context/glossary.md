@@ -47,6 +47,7 @@ A structured description of what a capability must do, typically including:
 ### Codable task
 A bounded unit of implementation work derived from a capability definition.
 A codable task is defined so that it can be executed and reviewed in a controlled way (clear boundaries, dependencies, and intended outputs).
+Codable tasks are the primary work unit in Step 4 (Execute Development Tasks).
 
 ### Conflict
 Any mismatch between approved intent and observed reality (tool results, implementation behavior, or artifact content).
@@ -59,6 +60,10 @@ Conflicts must be surfaced explicitly and resolved via an explicit decision (not
 ### Double truth
 A failure mode where the same “contract” or meaning is defined in more than one place (e.g., a standard is duplicated inside a workflow doc),
 creating competing sources of authority and eventual inconsistency.
+
+### Deterministic
+A property of tools and evidence outputs: given the same inputs, a deterministic tool or process produces the same outputs consistently.
+Deterministic evidence can be independently verified and does not rely on subjective interpretation.
 
 ### Drift
 Uncontrolled divergence between:
@@ -84,6 +89,14 @@ Rules for how evidence is used:
 A required stop-and-surface behavior:
 when an agent cannot proceed without introducing new assumptions, expanding scope, or changing agreed rules/criteria,
 the agent must escalate for human decision.
+
+---
+
+## F
+
+### Function (agent function)
+A responsibility or role that an agent may fulfill in the workflow.
+Agent functions are defined independently of specific agent implementations, allowing one or multiple actual agents to fulfill a given function.
 
 ---
 
@@ -147,6 +160,7 @@ An ordered set of capabilities required to achieve an objective, including depen
 ### Process (workflow step)
 A named stage in the development approach (e.g., Define Objective → Plan Pipeline → Define Capabilities → Execute Tasks → Validate/Document).
 Step transitions require approval gates; iteration within a step is permitted.
+Note: "Stage" and "step" are used interchangeably in this system.
 
 ---
 

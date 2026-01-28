@@ -1,71 +1,72 @@
-# Agent System Context — AI-Assisted Development Workflow
+# Template Tools System Context — Structured Development Workflow
 
 ## Overview
 
-This document defines the roles, responsibilities, and governance principles for agents that assist in the development workflow. It provides a high-level view of how agents integrate with the 6-step operational model and support human decision-making throughout the development process.
+This document defines the roles, responsibilities, and governance principles for template tools that support the development workflow. It provides a high-level view of how template generation tools integrate with the 6-step operational model and provide structure for human work.
 
-**Key Principle**: Agents are **collaborators, not autonomous actors**. Their role is to assist in refining outputs based on human feedback, automate repetitive tasks, and enhance human decision-making rather than replace it.
+**Key Principle**: Tools are **template generators and validators, not interactive assistants**. Their role is to generate structured documents, validate completeness, and enforce standards—not to refine ideas, facilitate discussion, or iterate on content. Humans perform all thinking, refinement, and decision-making work.
 
-The agent workflows are structured to support the 5-step development process outlined in `development_approach.md`, with mandatory human oversight and approval at each critical stage.
+The tool workflows are structured to support the 5-step development process outlined in `development_approach.md`, with mandatory human work at each stage (refinement, analysis, discussion, decision-making).
 
 **For detailed technical specifications and usage instructions**, see:
-- `docs/workflows/agent_tools_reference.md` - Agent tool CLI commands, parameters, and troubleshooting
+- `docs/workflows/agent_tools_reference.md` - Tool CLI commands, parameters, and troubleshooting
 - `docs/workflows/agent_workflow_templates.md` - Example templates and step-by-step workflow guides
 
 ---
 
-## Objectives of the Agent System
+## Objectives of the Tool System
 
-The agent system is designed to:
-- **Assist humans** in streamlining the development workflow through selective automation of well-defined tasks
-- **Support human decision-making** with structured drafts and proposals at each stage
-- Maintain mandatory **manual oversight** during critical planning phases (Steps 1–2b)
-- Enforce repository standards via automated quality gates, **subject to human review**
-- Propose documentation updates as tasks evolve, **requiring human approval before integration**
-- Provide modular, self-contained tools that **support** specific roles in the workflow
+The template tool system is designed to:
+- **Provide structure** for development artifacts through standardized templates
+- **Generate starting points** with required sections and validation checkpoints
+- Maintain mandatory **manual work** during all planning phases (Steps 1–2b) where humans fill in content
+- Enforce repository standards via automated format and completeness checking
+- Validate documentation structure and required sections
+- Provide modular, self-contained tools that **generate templates** for specific workflow steps
 
 ---
 
-## Human Oversight and Governance Principles
+## Human Work and Governance Principles
 
-This agent system operates under strict governance principles aligned with `development_approach.md`:
+This template tool system operates under strict governance principles aligned with `development_approach.md`:
 
 ### Core Governance Principles
 
-1. **Human-Agent Collaboration**
-   - Agents are **collaborators, not autonomous actors**
-   - Agents **assist** in refining outputs based on human feedback
-   - Agents **automate** repetitive tasks to enhance, not replace, human decision-making
-   - Collaboration is a **feedback loop** where agents iteratively improve outputs with human guidance
+1. **Human-Performed Work**
+   - Tools are **template generators, not collaborators**
+   - Tools **generate structure** but humans perform all content work
+   - Tools **validate format** but humans make all decisions
+   - No "feedback loop" or "iteration" —tools generate once, humans refine manually
 
-2. **Mandatory Manual Checkpoints**
-   - **Every planning step (Steps 1, 2a, 2b)** requires explicit human approval before progression
-   - Humans provide feedback, refine decisions, and validate results at each stage
-   - No automated progression between major workflow stages
+2. **Mandatory Manual Work**
+   - **Every planning step (Steps 1, 2a, 2b)** requires humans to manually fill in all template content
+   - Humans perform refinement, analysis, discussion, and decision-making
+   - No automated content generation—only structure provision
    - Manual sign-off captured in planning artifacts (objectives, pipeline plans, capability specs)
 
 3. **Governance Hierarchy**
-   - **Human-defined inputs** and validated objectives take precedence over all agent outputs
-   - **Repository standards and criteria** guide all agent proposals
-   - **Automated agent outputs** remain subordinate to human-defined rules and validations
-   - Agent proposals require human validation before becoming authoritative
+   - **Human-defined content** is the authoritative source
+   - **Repository standards** guide template structure and validation rules
+   - **Tool-generated templates** are empty starting points, not proposals
+   - Templates provide structure; humans provide all substance
 
-4. **Balance of Automation and Oversight**
-   - Automation enforces standards, consistency, and efficiency for **well-defined tasks**
-   - Human judgment provides critical oversight for **open-ended, high-stakes, or creative decisions**
-   - Automation **complements** human intelligence; it never bypasses or replaces it
+4. **Clear Tool Limitations**
+   - Tools generate standardized templates with required sections
+   - Tools validate completeness and format compliance
+   - Tools do NOT: refine ideas, facilitate discussion, ask questions, iterate on content, or make suggestions
+   - All thinking, refinement, and consensus-building performed by humans
 
 ### Approval Gates
 
-| Stage | Agent Role | Human Approval Required | Documentation |
-|-------|-----------|-------------------------|---------------|
-| **Step 1** | Planner Agent proposes objective | ✅ Explicit approval | Captured in `docs/roadmaps/<objective>.md` |
-| **Step 2a** | Pipeline Planner proposes architecture | ✅ Explicit approval | Captured in `docs/roadmaps/<objective>_pipeline_plan.md` |
-| **Step 2b** | Capability Planner proposes specification | ✅ Explicit approval | Captured in `docs/specifications/<capability>.yaml` |
-| **Step 3** | Coding Agent proposes decomposition | ✅ Review and approval | Reviewed before task creation |
-| **Step 4** | Coding Agent proposes Codex tasks | ✅ Review and approval | Reviewed before PR creation |
-| **Step 5** | Coding Agent creates PR | ✅ Review before merge | PR review process |
-| **Step 6** | Testing/Documentation Agents propose results | ✅ Review before merge | PR review process |
+| Stage | Tool Role | Human Work Required | Documentation |
+|-------|-----------|---------------------|---------------|
+| **Step 1** | Planner tool generates objective template | ✅ Human fills all content, refines, gets approval | Captured in `docs/roadmaps/<objective>.md` |
+| **Step 2a** | Pipeline tool generates architecture template | ✅ Human designs architecture, fills content, gets approval | Captured in `docs/roadmaps/<objective>_pipeline_plan.md` |
+| **Step 2b** | Capability tool generates spec template | ✅ Human writes specification, gets approval | Captured in `docs/specifications/<capability>.yaml` |
+| **Step 3** | Coding tool generates decomposition template | ✅ Human performs decomposition, gets approval | Reviewed before task creation |
+| **Step 4** | Coding tool generates task templates | ✅ Human writes task details, gets approval | Reviewed before PR creation |
+| **Step 5** | Manual PR creation | ✅ Human review before merge | PR review process |
+| **Step 6** | Validation tools check standards | ✅ Human review of results | PR review process |
 
 ---
 

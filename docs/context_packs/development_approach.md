@@ -46,20 +46,20 @@ This approach focuses on iterative planning, collaboration between users and age
 ---
 
 ## Agent Context
-The sequential development process described in this document is **agent-assisted** at each stage. Agents support specific functions within the workflow:
-- **Planning Function**: Assists in refining objectives and producing pipeline plans.
-- **Specification Function**: Helps break down capabilities into building plans and actionable steps.
-- **Implementation Function**: Supports the execution of tasks aligned with building plans.
-- **Validation Function**: Ensures outputs meet predefined success criteria and include appropriate validation artifacts.
-- **Documentation Function**: Automates documentation tasks while addressing broader repository needs.
+The sequential development process described in this document is **template-assisted** at each stage. Automated tools provide structured templates and validation to support human work:
+- **Planning Function**: Provides structured templates for objectives and pipeline plans with validation checks.
+- **Specification Function**: Generates templates for capability specifications with required sections.
+- **Implementation Function**: Creates task templates and enforces repository standards.
+- **Validation Function**: Automates standards compliance checking and format validation.
+- **Documentation Function**: Generates documentation templates and validates completeness.
 
-Agents operate under human oversight, iterating on drafts, automating well-defined tasks, and providing structured support across the workflow. Role-specific responsibilities are documented in the Agent Role Charter (if present).
+Tools operate under human oversight, generating structured templates for well-defined artifacts. Humans perform the actual thinking, refinement, discussion, and decision-making work. Role-specific responsibilities are documented in the Agent Role Charter (if present).
 
 ---
 
 ## Sequential Development Process
 
-The development system follows a **structured, sequential workflow** divided into five steps. Each step builds on the previous one, ensuring gradual refinement from high-level objectives to implemented and validated solutions. Human efforts are **assisted by agents** at each stage.
+The development system follows a **structured, sequential workflow** divided into five steps. Each step builds on the previous one, ensuring gradual refinement from high-level objectives to implemented and validated solutions. Human efforts are **supported by templates** at each stage.
 
 ---
 
@@ -69,9 +69,10 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 #### What Happens:
 - The **user defines the objective**, describing what they want to accomplish. For example:
   > "I have incoming vendor XML documents containing assortment information and want a system that allows me to update the products into my PIM system automatically."
-- The Planning function, **assisted by agents**, supports the user in refining this objective:
-  - Ensuring it is actionable for the following steps.
-  - Highlighting any known constraints, unknowns, or risks.
+- The Planning function, **supported by template tools**, helps structure this objective:
+  - Template tools generate structured documents with required sections (goals, boundaries, success criteria, constraints, risks).
+  - Users manually fill in the content, performing the actual refinement work.
+  - Users ensure objectives are actionable, identify constraints, unknowns, and risks through their own analysis and stakeholder discussions.
 
 #### Output:
 - A defined **objective document** (`docs/roadmaps/<objective>.md`).
@@ -79,13 +80,14 @@ The **objective** describes what the system aims to achieve. This is a **high-le
 ---
 
 ### **Step 2: Plan the Pipeline**
-The **pipeline plan** breaks the high-level objective into a series of **capabilities** necessary to achieve the goal. Agents assist by creating structured drafts for collaboration.
+The **pipeline plan** breaks the high-level objective into a series of **capabilities** necessary to achieve the goal. Template tools provide structure for collaboration.
 
 #### What Happens:
-- The Planning function collaborates with the user and agents to create a high-level plan:
-  - Identify **key capabilities** or components (e.g., "process incoming XML files", "map assortment data").
-  - Define the **order of tasks** and dependencies for each capability.
-  - Highlight risks or decision points.
+- The Planning function, supported by template tools, helps users create a high-level plan:
+  - Tools generate structured templates for pipeline documentation (processing sequence, step descriptions, decision points).
+  - Users manually identify **key capabilities** or components (e.g., "process incoming XML files", "map assortment data").
+  - Users manually define the **order of tasks** and dependencies for each capability.
+  - Users manually highlight risks or decision points through analysis and discussion.
 
 #### Output:
 - A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
@@ -93,13 +95,14 @@ The **pipeline plan** breaks the high-level objective into a series of **capabil
 ---
 
 ### **Step 3: Break Down Into Capability Plans**
-Agents assist in creating a **building plan**, which includes success criteria and structured steps.
+Template tools provide structured specifications for capability documentation.
 
 #### What Happens:
-- The Specification function, working with users and agent drafts, refines each pipeline step into:
-  - What the capability does (purpose, scope).
-  - Key inputs, outputs, and transformations.
-  - Steps for implementation, included in a **Development Step Document**.
+- The Specification function, supported by template tools, helps users refine each pipeline step:
+  - Tools generate YAML specification templates with required sections.
+  - Users manually define what the capability does (purpose, scope).
+  - Users manually specify key inputs, outputs, and transformations.
+  - Users manually document steps for implementation in a **Development Step Document**.
 
 #### Output:
 - A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
@@ -109,7 +112,7 @@ Agents assist in creating a **building plan**, which includes success criteria a
 ### **Step 4: Execute Development Tasks**
 #### What Happens:
 - Tasks are implemented, reviewed, iterated on, and integrated collaboratively.
-- Agents assist by automating repetitive tasks and enforcing consistency.
+- Template tools assist by generating task templates and enforcing repository standards through validation.
 
 #### Output:
 - Completed changes merged into the repository with traceability to the initial capability plan.
@@ -118,9 +121,10 @@ Agents assist in creating a **building plan**, which includes success criteria a
 
 ### **Step 5: Validate, Test, and Document**
 #### What Happens:
-- Validate outputs against success criteria.
+- Validate outputs against success criteria (manual validation by developers/testers).
 - Capture validation artifacts.
 - Update necessary documentation to ensure clarity and completeness.
+- Automated tools validate documentation format and standards compliance.
 
 #### Output:
 - Validated deliverables aligned with success criteria.

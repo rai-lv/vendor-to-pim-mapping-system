@@ -155,3 +155,4 @@ So the output of this job is a **single canonical “forMapping” product feed*
 ## 7) What this job does *not* do (boundary)
 - It does not build vendor-category-level mapping proposals; it assigns at **product level** (per article_id). :contentReference[oaicite:33]{index=33}  
 - It does not attempt entity resolution “vendor SKU == PIM SKU”; it only prepares/enriches vendor products with **PIM category assignment fields** to support later mapping/training steps. :contentReference[oaicite:34]{index=34}
+````

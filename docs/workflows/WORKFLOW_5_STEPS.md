@@ -35,10 +35,7 @@ Define what must be achieved with explicit boundaries and testable success crite
 - **Risk assessment:** Known risks, unknowns, open questions
 
 ### Usage
-```bash
-python tools/planner_agent.py create "vendor_onboarding" \
-  --description "Implement vendor onboarding pipeline"
-```
+See `agent_tools_reference.md` for detailed CLI syntax and options.
 
 ### Next Step
 Once approved by stakeholders → Proceed to **Step 2a**
@@ -62,10 +59,7 @@ Create end-to-end pipeline plan showing the complete processing sequence.
 - **Unknowns:** Explicitly mark unknowns and open decisions (no assumptions)
 
 ### Usage
-```bash
-python tools/pipeline_planner_agent.py create "vendor_onboarding" \
-  --objective-ref "vendor_onboarding.md"
-```
+See `agent_tools_reference.md` for detailed CLI syntax and options.
 
 ### Key Rule
 **DO NOT** define "how" each step works - only define "what" and "sequence"
@@ -92,10 +86,7 @@ Specify ONE capability/step from the pipeline plan in detail.
 - **Dependencies:** Upstream capabilities, downstream consumers, external systems
 
 ### Usage
-```bash
-python tools/capability_planner_agent.py create "data_ingestion" \
-  --pipeline-ref "vendor_onboarding_pipeline_plan.md"
-```
+See `agent_tools_reference.md` for detailed CLI syntax and options.
 
 ### Key Rules
 - Define inputs/outputs by **meaning**, NOT by S3 location or format details
@@ -123,9 +114,7 @@ Break the approved capability into elements small enough for ONE PR each.
 - **Dependencies:** Other elements that must be completed first
 
 ### Usage
-```bash
-python tools/coding_agent.py decompose data_ingestion_capability
-```
+See `agent_tools_reference.md` for detailed CLI syntax and options.
 
 ### Key Rules
 - Each element must fit in ONE pull request
@@ -156,9 +145,7 @@ Generate a Codex task for ONE development element with all requirements.
 - **Boundaries:** What this element does NOT do
 
 ### Usage
-```bash
-python tools/coding_agent.py codex-task data_ingestion_capability 1
-```
+See `agent_tools_reference.md` for detailed CLI syntax and options.
 
 ### Key Rules
 - Reference standards under `docs/standards/`
@@ -188,16 +175,7 @@ Implement the code changes defined in the Codex task.
 - Include tests where applicable
 
 ### Quality Gates (Must Pass)
-```bash
-# Repository validation
-python tools/validate_repo_docs.py --all
-
-# Python syntax (if applicable)
-python -m py_compile <target_file>
-
-# Best practices check
-python tools/coding_agent.py check
-```
+See `agent_tools_reference.md` for specific validation commands and quality gate procedures.
 
 ### PR Review Process
 1. Automated tests run (Testing Agent)
@@ -250,36 +228,9 @@ At every step, explicitly state:
 
 ## Example Flow
 
-```bash
-# Step 1: Define objective
-python tools/planner_agent.py create "vendor_onboarding"
-
-# Edit and approve objective document
-vim docs/roadmaps/vendor_onboarding.md
-
-# Step 2a: Create pipeline plan
-python tools/pipeline_planner_agent.py create "vendor_onboarding" \
-  --objective-ref "vendor_onboarding.md"
-
-# Edit and approve pipeline plan
-vim docs/roadmaps/vendor_onboarding_pipeline_plan.md
-
-# Step 2b: Create capability plan for first step
-python tools/capability_planner_agent.py create "data_ingestion" \
-  --pipeline-ref "vendor_onboarding_pipeline_plan.md"
-
-# Edit and approve capability plan
-vim docs/specifications/data_ingestion_capability.yaml
-
-# Step 3: Decompose into elements
-python tools/coding_agent.py decompose data_ingestion_capability
-
-# Step 4: Create Codex task for element 1
-python tools/coding_agent.py codex-task data_ingestion_capability 1
-
-# Step 5: Create PR using Codex task
-# (Use GitHub Copilot or manual development)
-```
+For detailed command syntax and complete example workflow, see:
+- `agent_tools_reference.md` - CLI command reference
+- `agent_workflow_templates.md` - Step-by-step workflow examples
 
 ---
 
@@ -296,6 +247,9 @@ python tools/coding_agent.py codex-task data_ingestion_capability 1
 
 ## See Also
 
-- `AGENTS_SETUP.md` - Agent usage details
+- `AGENTS_SETUP.md` - Agent installation and setup guide
+- `agent_tools_reference.md` - Detailed CLI command reference
+- `agent_workflow_templates.md` - Example workflow templates
+- `docs/context_packs/agent_system_context.md` - Agent governance and integration
 - `docs/standards/` - Repository standards
 - `docs/context_packs/system_context.md` - Repository context

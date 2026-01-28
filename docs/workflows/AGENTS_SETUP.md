@@ -4,7 +4,7 @@ This document provides a comprehensive guide to the automated workflow agents im
 
 ## ⚠️ Important: Use the 5-Step Workflow
 
-This repository follows a **5-step development workflow** with two required planning layers before any code changes. See `WORKFLOW_5_STEPS.md` for complete details.
+This repository follows a 5-step development workflow. See `WORKFLOW_5_STEPS.md` for complete workflow details and `docs/context_packs/agent_system_context.md` for governance principles.
 
 **Quick Reference:**
 1. **Define Objective** (Planner Agent)
@@ -318,7 +318,7 @@ All agents can be manually triggered via GitHub Actions:
 
 ### 5-Step Workflow (Required)
 
-See `WORKFLOW_5_STEPS.md` for complete details. Summary:
+See `WORKFLOW_5_STEPS.md` for complete workflow details and `docs/context_packs/agent_system_context.md` for governance principles. Summary:
 
 ```
 Step 1: Define Objective (Planner Agent)
@@ -337,40 +337,6 @@ Testing (Testing Agent - automatic)
    ↓
 Documentation (Documentation Agent)
 ```
-
-**Key Rule:** Steps 2a and 2b MUST be completed and approved before any code changes.
-
-## Best Practices
-
-1. **Follow the 5-Step Workflow**
-   - Always complete Steps 1, 2a, 2b before coding
-   - Get approval at each planning step
-   - Do not skip steps or make assumptions
-
-2. **Two Planning Layers Required**
-   - Step 2a: Pipeline-level (overarching plan)
-   - Step 2b: Capability-level (detailed spec)
-   - Both must be agreed upon before decomposition
-
-3. **Explicit Boundaries**
-   - At every step, state what IS and is NOT included
-   - Mark unknowns explicitly - do not assume
-   - Defer storage details until implementation
-
-4. **Testable Criteria**
-   - Define success criteria that can be objectively tested
-   - Create acceptance criteria verifiable from repo contents
-   - Include quality gates at every step
-
-5. **Use Automation**
-   - Leverage GitHub Actions for consistency
-   - Let agents handle boilerplate
-   - Focus human effort on logic and decisions
-
-6. **Document Continuously**
-   - Update documentation as you code
-   - Keep script cards and business descriptions in sync
-   - Add new terms to glossary
 
 ## Troubleshooting
 

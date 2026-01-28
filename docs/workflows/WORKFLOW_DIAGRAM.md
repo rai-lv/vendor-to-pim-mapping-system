@@ -263,7 +263,7 @@ Each step tracks:
 The 5-step workflow integrates with existing repository infrastructure:
 
 1. **Standards Validation**: Uses existing `validate_repo_docs.py`
-2. **CI/CD**: Extends existing GitHub Actions setup
+2. **Continuous Integration**: Integrates with automated validation systems
 3. **Documentation Structure**: Follows existing specs in `docs/standards/`
 4. **Job Structure**: Works with existing `jobs/` layout
 

@@ -13,12 +13,15 @@ This document provides detailed technical specifications, command-line interface
 
 | Tool | Location | Workflow Step | Purpose |
 |------|----------|---------------|---------|
-| Planner Agent | `tools/planner_agent.py` | Step 1 | Define business objectives |
-| Pipeline Planner Agent | `tools/pipeline_planner_agent.py` | Step 2a | Design end-to-end pipeline architecture |
-| Capability Planner Agent | `tools/capability_planner_agent.py` | Step 2b | Break down into technical specifications |
-| Coding Agent | `tools/coding_agent.py` | Steps 3-4 | Decompose and create Codex tasks |
-| Testing Agent | `tools/testing_agent.py` | Step 6 | Validate code changes |
-| Documentation Agent | `tools/documentation_agent.py` | Step 6 | Update documentation |
+| Interactive Planner Agent | `tools/interactive_planner_agent.py` | Step 1 | Conversational objective refinement |
+| Interactive Pipeline Planner Agent | `tools/interactive_pipeline_planner_agent.py` | Step 2a | Interactive architectural design |
+| Interactive Capability Planner Agent | `tools/interactive_capability_planner_agent.py` | Step 2b | Conversational technical specification |
+| Interactive Decomposition Agent | `tools/interactive_decomposition_agent.py` | Step 3 | Intelligent code analysis and decomposition |
+| Interactive Task Generator Agent | `tools/interactive_task_generator_agent.py` | Step 4 | Automated Codex task generation with standards |
+| Automated Review Agent | `tools/automated_review_agent.py` | Step 5 | Continuous quality monitoring and PR review |
+| Automated Documentation Agent | `tools/automated_documentation_agent.py` | Step 6 | Post-merge documentation updates |
+
+**Note:** These agents use conversational AI (LLM integration) to provide interactive assistance. See individual agent sections below for detailed capabilities and CLI reference.
 
 ---
 
@@ -27,6 +30,7 @@ This document provides detailed technical specifications, command-line interface
 ### System Requirements
 
 - Python 3.9+
+- OpenAI API key or Anthropic API key (for conversational agents)
 - AWS CLI configured with appropriate permissions
 - Access to repository standards in `docs/standards/`
 - Repository validation tool: `tools/validate_repo_docs.py`
@@ -37,10 +41,15 @@ This document provides detailed technical specifications, command-line interface
 # Install required dependencies
 pip install -r requirements.txt
 
+# Set API key for conversational agents
+export OPENAI_API_KEY="your-api-key"
+# OR
+export ANTHROPIC_API_KEY="your-api-key"
+
 # Verify agent tools are accessible
-python tools/planner_agent.py --version
-python tools/pipeline_planner_agent.py --version
-python tools/capability_planner_agent.py --version
+python tools/interactive_planner_agent.py --version
+python tools/interactive_pipeline_planner_agent.py --version
+python tools/interactive_capability_planner_agent.py --version
 ```
 
 ### Validation Setup
@@ -56,97 +65,190 @@ python tools/validate_repo_docs.py --all
 
 ---
 
-## Planner Agent (Step 1)
+## Interactive Planner Agent (Step 1)
 
 ### Purpose
 
-Assists in creating structured objective definitions with explicit boundaries, success criteria, and risk assessment.
+Conversationally refines business objectives through interactive Q&A, automatically identifying constraints, unknowns, and risks to produce actionable, complete objective documents.
 
-### Current Limitations ⚠️
+### Capabilities
 
-**Important:** The current Planner Agent implementation is a **template generator**, not an interactive discussion facilitator. 
+**Interactive Refinement:**
+- Conducts conversation to understand vague ideas
+- Asks clarifying questions automatically
+- Helps identify constraints through guided dialogue
+- Discovers unknowns and risks via pattern recognition
+- Produces refined objectives WITH content (not empty TODOs)
 
-**What It Does:**
-- ✅ Generates structured document templates
-- ✅ Validates document completeness
-- ✅ Checks for required sections
+**Stakeholder Facilitation:**
+- Facilitates multi-party discussions
+- Helps build consensus on objectives
+- Resolves disagreements through structured conversation
 
-**What It Does NOT Do (Yet):**
-- ❌ Facilitate interactive discussion about your idea
-- ❌ Ask clarifying questions to understand context
-- ❌ Help think through implications and constraints
-- ❌ Iterate with you to refine vague concepts
-- ❌ Suggest unknowns or risks based on conversation
-- ❌ Assist in consensus-building between stakeholders
-
-**Current Workflow:**
-1. You provide objective name and brief description
-2. Agent generates template with TODO placeholders
-3. **You manually fill in all sections** (thinking, refinement, discussion happens manually)
-4. You iterate on the document yourself or with stakeholders
-
-**Documented Intent vs. Reality:**  
-The `development_approach.md` describes agents that "assist in refining objectives" and "facilitate discussion." The current implementation provides structure but **you must do the refinement work**. See `docs/AGENT_IMPLEMENTATION_GAP_ANALYSIS.md` for details on this gap and future plans.
-
-### How This Supports the Development Approach
-
-Per `development_approach.md`, the objective describes what the system aims to achieve and provides context/direction for all subsequent planning. The Planner Agent specifically supports this intent by:
-
-**1. Refining Objectives to be Actionable:**
-- **Template sections** prompt for specific, measurable goals (not vague intentions)
-- **Expected Outcomes** section forces concrete deliverables to be defined
-- **Success Criteria** section requires testable criteria (functional + quality)
-- **Validation command** checks that objectives are sufficiently detailed for next steps
-
-**2. Ensuring Context for Subsequent Steps:**
-- **Objective Statement** provides high-level direction for pipeline planning (Step 2a)
-- **Out-of-Scope Boundaries** prevent scope creep in downstream capability planning (Step 2b)
-- **Constraints** section documents limitations that affect architecture decisions
-- **Dependencies** section identifies external factors that impact implementation
-
-**3. Highlighting Constraints, Unknowns, and Risks:**
-- **Technical/Business/Time Constraints** sections force explicit documentation of limitations
-- **Unknowns and Open Questions** section requires unknowns to be marked (TBD, OPEN QUESTION)
-- **Risk Assessment** section with impact/likelihood/mitigation captures known risks
-- **Validation warnings** flag unresolved unknowns before approval
-
-**Example:** When a user states "I want to update products into my PIM system automatically," the agent helps transform this into:
-- **Actionable objective:** "Implement automated vendor onboarding pipeline with XML ingestion, validation, and PIM API integration"
-- **Boundaries:** "Does NOT include manual data entry, historical migrations, or real-time updates"
-- **Constraints:** "Must use existing PIM API v2.1, process <5GB files, complete within 30-minute SLA"
-- **Unknowns:** "TBD: Average file size (need baseline data), OPEN QUESTION: Batch vs. real-time processing"
-
-This structured refinement ensures the objective is ready to guide pipeline planning (Step 2a) with clarity and completeness.
+**Iterative Improvement:**
+- Reviews existing drafts and identifies gaps
+- Suggests improvements based on analysis
+- Continues refinement until objective is actionable
 
 ### Command Syntax
 
 ```bash
-python tools/planner_agent.py <command> [options]
+python tools/interactive_planner_agent.py <command> [options]
 ```
 
 ### Commands
 
-#### `create` - Create New Objective
+#### `discuss` - Start Interactive Objective Discussion
 
-Creates a new objective definition document.
+Begins a conversational session to refine your objective idea through guided Q&A.
 
 **Syntax:**
 ```bash
-python tools/planner_agent.py create "<objective_name>" \
-  --description "<brief_description>" \
-  [--output <path>] \
-  [--template <template_name>]
+python tools/interactive_planner_agent.py discuss "<objective_name>" \
+  [--initial-description "<brief_description>"]
 ```
 
 **Parameters:**
 - `objective_name` (required): Short, hyphenated name for the objective
-- `--description` (required): Brief description of what must be achieved
-- `--output` (optional): Custom output path (default: `docs/roadmaps/<objective_name>.md`)
-- `--template` (optional): Template name for specific objective types (default: `standard`)
+- `--initial-description` (optional): Brief starting description
 
 **Example:**
 ```bash
-python tools/planner_agent.py create "vendor_onboarding" \
+python tools/interactive_planner_agent.py discuss "vendor_onboarding" \
+  --initial-description "Automate vendor onboarding process"
+```
+
+**Interactive Flow:**
+```
+Agent: "Let's define your objective. What are you trying to achieve?"
+You: "I want to automate vendor onboarding"
+Agent: "Can you be more specific? What exactly happens in vendor onboarding?"
+You: "Vendors send XML files with product catalogs"
+Agent: "What do you do with these files? Update a system?"
+You: "Yes, update our PIM system"
+Agent: "Which PIM? What version? Any constraints?"
+[... conversation continues ...]
+Agent: "Based on our discussion, I'll generate a complete objective document."
+```
+
+**Output:**
+```
+✓ Created objective definition: docs/roadmaps/vendor_onboarding.md
+✓ Document includes refined content from conversation (not empty TODOs)
+✓ Constraints identified: PIM API v2.1, <5GB files, 30min SLA
+✓ Unknowns marked: TBD - average file size, OPEN QUESTION - batch vs real-time
+✓ Risks captured: API rate limits, data quality issues
+→ Next step: Review with stakeholders, then proceed to Step 2a
+```
+
+#### `refine` - Iteratively Improve Existing Objective
+
+Reviews an existing objective draft and continues refinement through conversation.
+
+**Syntax:**
+```bash
+python tools/interactive_planner_agent.py refine "<objective_file>"
+```
+
+**Example:**
+```bash
+python tools/interactive_planner_agent.py refine docs/roadmaps/vendor_onboarding.md
+```
+
+**Interactive Flow:**
+```
+Agent: "I've reviewed your objective. Analysis:
+        ✓ Clear objective statement
+        ✓ 3 specific goals defined
+        ⚠ Missing: Error handling requirements
+        ⚠ Missing: Performance SLA
+        ⚠ Unclear: Data retention policies
+        
+        Let's address these gaps. What happens when validation fails?"
+You: "Log errors and notify vendor"
+Agent: "Added to requirements. What's your processing SLA?"
+[... conversation continues ...]
+```
+
+#### `facilitate` - Multi-Stakeholder Consensus Building
+
+Facilitates discussion among multiple stakeholders to reach consensus on the objective.
+
+**Syntax:**
+```bash
+python tools/interactive_planner_agent.py facilitate "<objective_file>" \
+  --stakeholders "name1,name2,name3" \
+  [--mode interactive|async]
+```
+
+**Parameters:**
+- `--stakeholders`: Comma-separated list of stakeholder names/roles
+- `--mode`: `interactive` for live session, `async` for collecting separate feedback
+
+**Example:**
+```bash
+python tools/interactive_planner_agent.py facilitate \
+  docs/roadmaps/vendor_onboarding.md \
+  --stakeholders "tech_lead,architect,product_owner" \
+  --mode interactive
+```
+
+**Interactive Flow:**
+```
+Agent: "Facilitating consensus among 3 stakeholders.
+        
+        Analyzed feedback:
+        Tech Lead: Concerned about API rate limits (500/hour)
+        Architect: Wants async processing for scalability  
+        Product Owner: Requires 24hr SLA (not 30min mentioned)
+        
+        These create conflicts. Let's resolve:
+        - API limit: 500/hr = ~12K/day capacity
+        - 24hr SLA: Allows batch processing
+        - Async: Better for scale
+        
+        Proposed resolution: Async batch with 24hr SLA
+        Does this work for everyone?"
+```
+
+#### `validate` - Check Objective Completeness
+
+Validates objective document structure and content quality.
+
+**Syntax:**
+```bash
+python tools/interactive_planner_agent.py validate "<objective_file>"
+```
+
+**Example:**
+```bash
+python tools/interactive_planner_agent.py validate docs/roadmaps/vendor_onboarding.md
+```
+
+**Output:**
+```
+Validating: docs/roadmaps/vendor_onboarding.md
+
+Structure:
+✓ Objective statement present and clear
+✓ Specific goals defined (3 goals)
+✓ Expected outcomes documented (5 outcomes)
+✓ Out-of-scope boundaries explicit (4 items)
+✓ Success criteria testable (functional + quality)
+
+Content Quality:
+✓ Constraints documented (technical, business, time)
+✓ Risks assessed with mitigation strategies
+✓ Dependencies identified (2 external systems)
+⚠ Warning: 2 unknowns marked as TBD (resolve before approval)
+
+Actionability:
+✓ Objective is specific and measurable
+✓ Provides sufficient context for Step 2a
+✓ Boundaries prevent scope creep
+
+→ Status: READY FOR APPROVAL (2 TBDs should be resolved)
+```
   --description "Implement automated vendor onboarding pipeline"
 ```
 

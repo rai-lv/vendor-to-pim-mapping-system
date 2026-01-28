@@ -167,13 +167,13 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Role list; responsibilities; escalation conditions; interaction with approvals/evidence.
 **Must not contain:** Tool command syntax; embedded authoritative templates.
 
-#### 16) Agent Profiles (per role)
+#### 16) Agent Definitions (canonical)
 
-**Canonical location:** `docs/agents/profiles/`
-**Purpose statement:** Provides operational guidance for invoking each agent role consistently.
-**Why necessary:** Reduces variance and improves repeatability of agent-assisted work.
-**Must contain:** Expected inputs; typical outputs; stop/escalation rules; evidence expectations; forbidden behaviors.
-**Must not contain:** Normative schemas or full tool manuals.
+**Canonical location:** `.github/agents/`
+**Purpose statement:** Contains the authoritative agent profile definitions used by the GitHub Copilot agent invocation system.
+**Why necessary:** GitHub requires complete agent definitions in `.github/agents/` and cannot reference external files. This is the single source of truth for agent behavior.
+**Must contain:** Complete agent instructions including detailed operating rules, expected inputs/outputs, forbidden behaviors, stop/escalation rules, evidence expectations, and prompt examples; frontmatter metadata (name, description).
+**Must not contain:** Normative schemas or full tool manuals; business logic or contract definitions.
 
 #### 17) Prompt Packs (non-authoritative)
 

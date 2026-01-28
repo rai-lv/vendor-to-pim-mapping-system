@@ -315,17 +315,14 @@ To maintain the "single source per contract type" principle, this section clarif
 - Escalation triggers and typical outputs (conceptually, not as templates).
 - Mapping of roles to workflow steps.
 
-### What belongs in per-agent profiles (`docs/agents/profiles/`):
+### What belongs in `.github/agents/` agent files:
+- **Complete agent profile content** (canonical source of truth for agent definitions).
 - Detailed operating rules for invoking each agent role consistently.
 - Expected inputs and output formats (still high-level; not normative schemas).
 - Forbidden behaviors and stop conditions specific to the role's detailed operation.
 - Evidence expectations for that role's outputs.
 - Non-normative prompt skeletons and invocation examples.
-
-### What belongs in `.github/agents/` wrapper files:
-- Thin pointers to the canonical profile in `docs/agents/profiles/`.
-- Minimal metadata required by the agent invocation system (e.g., agent name, description line).
-- **No authoritative content**; wrappers must not redefine role responsibilities or operating rules.
+- Minimal metadata required by the agent invocation system (frontmatter: agent name, description).
 
 ### What belongs in Standards (`docs/standards/`):
 - Schemas, required fields, and normative structure definitions.
@@ -376,8 +373,7 @@ This charter is **subordinate** to:
 - `docs/context/documentation_system_catalog.md` (defines document types and canonical placement).
 
 This charter is **superior** to:
-- Per-agent profiles in `docs/agents/profiles/` (detailed operating rules must conform to the role definitions here).
-- Agent wrappers in `.github/agents/` (thin pointers only; no authoritative redefinition).
+- Agent definitions in `.github/agents/` (must implement the role definitions and boundaries specified here).
 
 This charter **references** but does not redefine:
 - `docs/context/glossary.md` (shared term definitions; do not redefine terms here).

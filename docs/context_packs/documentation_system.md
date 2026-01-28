@@ -1,24 +1,26 @@
 # Documentation System Metadata
 
-**Version:** 1.0  
+**Version:** 1.2  
 **Last Updated:** 2026-01-27  
-**Purpose:** Centralized metadata catalog of all repository documentation, establishing objectives, roles, and scope for each document.
+**Purpose:** Centralized metadata catalog of all repository documentation, establishing objectives, roles, and scope for each document. Aligned with locked truth principles in `development_approach.md`.
 
 ---
 
 ## Overview
 
-This repository contains **31 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an agent-driven development workflow. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+This repository contains **34 markdown documentation files** organized into a sophisticated, multi-layered documentation system that supports an **agent-assisted** development workflow with **mandatory human oversight**. The documentation follows a clear authority hierarchy (code → manifests → standards → descriptions → script cards) and uses normative specifications to ensure consistency and compliance.
+
+**Key Governance Principle:** This documentation system reflects the core principle from `development_approach.md` that **agents are collaborators, not autonomous actors**. All agent-generated outputs require human review and approval before becoming authoritative.
 
 ### Documentation Organization
 
 The documentation is organized into **5 functional layers**:
 
-1. **Context Layer** (4 files) — Foundation documents establishing repository structure, workflows, and principles
-2. **Process Layer** (3 files) — Workflow guides and agent setup instructions
-3. **Governance Layer** (6 files) — Normative specifications that control structure and compliance
+1. **Context Layer** (5 files) — Foundation documents establishing repository structure, workflows, and principles
+2. **Process Layer** (5 files) — Workflow guides, agent setup instructions, and agent operational references
+3. **Governance Layer** (7 files) — Normative specifications that control structure and compliance
 4. **Planning & Implementation Layer** (2 files) — Guides for creating planning and specification documents
-5. **Artifact Layer** (16 files) — Job-specific documentation, catalogs, GitHub integration, and operational guides
+5. **Artifact Layer** (15 files) — Job-specific documentation, catalogs, and operational guides
 
 ---
 
@@ -30,7 +32,7 @@ The documentation is organized into **5 functional layers**:
 
 **Objective:** Establish the single source of truth for repository organization, structure, authority hierarchy, and development workflows.
 
-**Role:** Master context document that defines the repository's purpose, non-negotiable rules, and comprehensive workflow options (manual, Codex-assisted, and agent-driven).
+**Role:** Master context document that defines the repository's purpose, non-negotiable rules, and comprehensive workflow options (manual, Codex-assisted, and agent-assisted with human oversight).
 
 **Scope:**
 - Repository objective and structure (`jobs/`, `docs/`, `tools/` directories)
@@ -45,42 +47,65 @@ The documentation is organized into **5 functional layers**:
 
 #### 2. Agent System Context (`docs/context_packs/agent_system_context.md`)
 
-**Objective:** Provide detailed agent-specific workflows, responsibilities, and system implementation details.
+**Objective:** Provide high-level governance and workflow integration for agents that assist in the development workflow.
 
-**Role:** Supporting reference document for `system_context.md` that explains how agents operate within the repository and implement the agent-driven development workflow (v1.3).
+**Role:** Supporting reference document for `system_context.md` that explains agent roles, responsibilities, governance principles, and how agents integrate with the 6-step operational model. **Focuses on "what" and "why", not "how".**
 
 **Scope:**
-- Agent roles and responsibilities (Planner, Pipeline Planner, Capability Planner, Coding, Testing, Documentation)
-- Agent workflows and execution details
-- Agent integration with the 5-step development process
-- Agent context and coordination mechanisms
+- Agent objectives and key principles (agents as collaborators)
+- Human oversight and governance principles (mandatory approval gates)
+- Workflow context and mapping to Development Approach
+- High-level agent role descriptions (Planning, Implementation)
+- Integration with system_context.md and development_approach.md
+- References to detailed technical documentation
+
+**Note:** Restructured in v2.0 (2026-01-27) to align with documentation_system.md description. Detailed technical content extracted to `docs/workflows/agent_tools_reference.md` and `docs/workflows/agent_workflow_templates.md`.
+
+---
+
+#### Documentation System (`docs/context_packs/documentation_system.md`)
+
+**Objective:** Provide centralized metadata catalog of all repository documentation.
+
+**Role:** Meta-documentation that establishes objectives, roles, and scope for each document in the repository.
+
+**Scope:**
+- Complete inventory of documentation files
+- Documentation organization and layers
+- Document objectives and roles
+- Documentation relationships and dependencies
 
 ---
 
 #### 3. Development Approach (`docs/context_packs/development_approach.md`)
 
-**Objective:** Define core development principles and the sequential development process.
+**Objective:** Define core development principles and the sequential development process. **This is the locked truth document that establishes foundational governance.**
 
-**Role:** Establishes foundational principles (human-agent collaboration, iterative workflows, governance hierarchy) and explains the "why" and "how" of the repository's development methodology.
+**Role:** **Foundational governance document** that establishes principles (human-agent collaboration, iterative workflows, governance hierarchy) and explains the "why" and "how" of the repository's development methodology. **All other documents must align with this locked truth.**
 
 **Scope:**
-- Core principles (human-agent collaboration, sequential workflows, balance of automation and oversight)
+- Core principles (agents as collaborators not autonomous actors, sequential workflows, balance of automation and human oversight)
 - Sequential 5-step development process overview (Steps 1-5)
-- Agent context and role definitions
+- Agent context emphasizing assistance role
+- Mandatory manual oversight and checkpoints
+- Governance hierarchy: human inputs > standards > automated outputs
 - References to where specifics live (standards, governance, agent charters)
 
 ---
 
 #### 4. GitHub Element Map (`docs/context_packs/github_element_map.md`)
 
-**Objective:** Map GitHub repository structure to conceptual documentation elements.
+**Objective:** Map GitHub repository structure to conceptual documentation elements and governance hierarchy.
 
-**Role:** Integration guide between GitHub organization and documentation system; provides visual representation of repository organization.
+**Role:** Integration guide between GitHub organization and documentation system; provides visual representation of repository organization **with governance hierarchy annotations**.
 
 **Scope:**
-- Repository folder structure with annotations
+- Repository folder structure with governance layer annotations
 - Mapping of conceptual elements to physical locations
-- Visual guide for navigating the repository structure
+- 5-level governance hierarchy (human inputs > standards > code truth > documentation > automated outputs)
+- Human approval artifact locations
+- Agent-generated vs. human-defined content distinctions
+- Navigation guide for different user types
 
 ---
 
@@ -142,9 +167,48 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
+#### 8. Agent Tools Reference (`docs/workflows/agent_tools_reference.md`)
+
+**Objective:** Provide detailed technical specifications, CLI documentation, and troubleshooting guidance for all agent tools.
+
+**Role:** Comprehensive technical reference for agent tool usage; contains detailed command syntax, parameters, output formats, and troubleshooting solutions.
+
+**Scope:**
+- Tool inventory and system requirements
+- Detailed CLI command syntax for each agent (Planner, Pipeline Planner, Capability Planner, Coding, Testing, Documentation)
+- Command parameters and options
+- Output formats and file structures
+- Validation procedures and quality gates
+- Common issues and troubleshooting solutions
+- Best practices for agent tool usage
+
+**Note:** Created in 2026-01-27 restructuring to extract detailed technical content from `agent_system_context.md`. Complements high-level governance in `agent_system_context.md` with operational "how-to" details.
+
+---
+
+#### 9. Agent Workflow Templates (`docs/workflows/agent_workflow_templates.md`)
+
+**Objective:** Provide example templates and step-by-step workflow guides for agent-assisted development activities.
+
+**Role:** Template library and workflow guide demonstrating expected output formats and best practices for each workflow step.
+
+**Scope:**
+- Template catalog for all workflow steps (Steps 1, 2a, 2b, 4)
+- Objective definition template with examples
+- Pipeline plan template with examples
+- Capability specification template with examples
+- Codex task template with examples
+- Step-by-step workflow guides for each template
+- Best practices for template usage and iteration
+- Troubleshooting common template issues
+
+**Note:** Created in 2026-01-27 restructuring to extract example templates from `agent_system_context.md`. Focuses on "show don't tell" approach with concrete examples.
+
+---
+
 ### Governance Layer (Standards & Specifications)
 
-#### 8. Job Manifest Specification (`docs/standards/job_manifest_spec.md`)
+#### 10. Job Manifest Specification (`docs/standards/job_manifest_spec.md`)
 
 **Objective:** Define the normative schema, structure, and rules for all job manifest files.
 
@@ -165,7 +229,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 9. Script Card Specification (`docs/standards/script_card_spec.md`)
+#### 11. Script Card Specification (`docs/standards/script_card_spec.md`)
 
 **Objective:** Define normative structure and content requirements for operational reference documentation (script cards).
 
@@ -181,7 +245,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 10. Business Job Description Specification (`docs/standards/business_job_description_spec.md`)
+#### 12. Business Job Description Specification (`docs/standards/business_job_description_spec.md`)
 
 **Objective:** Define normative structure for business-level job documentation.
 
@@ -197,7 +261,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 11. Job Inventory Specification (`docs/standards/job_inventory_spec.md`)
+#### 13. Job Inventory Specification (`docs/standards/job_inventory_spec.md`)
 
 **Objective:** Define normative structure and derivation rules for `docs/job_inventory.md`.
 
@@ -216,7 +280,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 12. Artifacts Catalog Specification (`docs/standards/artifacts_catalog_spec.md`)
+#### 14. Artifacts Catalog Specification (`docs/standards/artifacts_catalog_spec.md`)
 
 **Objective:** Define normative structure and rules for cross-job artifacts documentation.
 
@@ -234,7 +298,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 13. Naming Standard (`docs/standards/naming-standard.md`)
+#### 15. Naming Standard (`docs/standards/naming-standard.md`)
 
 **Objective:** Define naming conventions for repository elements.
 
@@ -249,9 +313,28 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
+#### 32. Validation Standard (`docs/standards/validation_standard.md`)
+
+**Objective:** Define validation requirements, tools, and processes for repository documentation and code.
+
+**Role:** Normative specification for validation tooling, CI/CD integration, and compliance verification.
+
+**Scope:**
+- Validation tool location and usage (`tools/validate_repo_docs.py`)
+- CI/CD integration (`.github/workflows/validate_standards.yml`)
+- Validation scope (manifest, business descriptions, script cards, artifacts catalog, job inventory compliance)
+- Pass criteria and requirements for PRs
+- Common validation workflows (adding jobs, updating documentation, updating manifests)
+- Troubleshooting guidance for validation failures
+- References to related standards
+
+**Note:** Created as part of conceptual-layer purity implementation to centralize validation rules that were previously duplicated in `system_context.md`.
+
+---
+
 ### Planning & Implementation Layer (Guides)
 
-#### 14. Roadmaps Guide (`docs/roadmaps/README.md`)
+#### 33. Roadmaps Guide (`docs/roadmaps/README.md`)
 
 **Objective:** Guide for creating objective definitions (Step 1) and pipeline plans (Step 2a).
 
@@ -269,7 +352,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 15. Specifications Guide (`docs/specifications/README.md`)
+#### 32. Specifications Guide (`docs/specifications/README.md`)
 
 **Objective:** Guide for creating capability specifications (Step 2b).
 
@@ -289,7 +372,7 @@ The documentation is organized into **5 functional layers**:
 
 ### Artifact Layer (Job Documentation & Catalogs)
 
-#### 16. Business Job Description: Matching Proposals (`docs/business_job_descriptions/matching_proposals.md`)
+#### 32. Business Job Description: Matching Proposals (`docs/business_job_descriptions/matching_proposals.md`)
 
 **Objective:** Document the business purpose and logic of the "matching_proposals" job.
 
@@ -308,7 +391,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 17. Business Job Description: Category Mapping to Canonical (`docs/business_job_descriptions/category_mapping_to_canonical.md`)
+#### 33. Business Job Description: Category Mapping to Canonical (`docs/business_job_descriptions/category_mapping_to_canonical.md`)
 
 **Objective:** Document business purpose of category mapping to canonical assignments.
 
@@ -327,7 +410,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 18. Business Job Description: Mapping Method Training (`docs/business_job_descriptions/mapping_method_training.md`)
+#### 32. Business Job Description: Mapping Method Training (`docs/business_job_descriptions/mapping_method_training.md`)
 
 **Objective:** Document business purpose of self-learning mapping method training.
 
@@ -344,7 +427,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 19. Business Job Description: Preprocess Incoming BMECAT (`docs/business_job_descriptions/preprocess_incoming_bmecat.md`)
+#### 33. Business Job Description: Preprocess Incoming BMECAT (`docs/business_job_descriptions/preprocess_incoming_bmecat.md`)
 
 **Objective:** Document business purpose of BMECAT XML preprocessing.
 
@@ -361,7 +444,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 20. Script Card: Matching Proposals (`docs/script_cards/matching_proposals.md`)
+#### 32. Script Card: Matching Proposals (`docs/script_cards/matching_proposals.md`)
 
 **Objective:** Provide operational reference for matching_proposals job.
 
@@ -382,7 +465,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 21. Codex Task: Generate Missing Job Manifest Files (`docs/codex-tasks/generate_missing_job_manifest_files.md`)
+#### 33. Codex Task: Generate Missing Job Manifest Files (`docs/codex-tasks/generate_missing_job_manifest_files.md`)
 
 **Objective:** Codex task specification for generating missing job manifests.
 
@@ -399,7 +482,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 22. Job Inventory (`docs/job_inventory.md`)
+#### 32. Job Inventory (`docs/job_inventory.md`)
 
 **Objective:** Provide authoritative index of executable jobs and their system-level interfaces.
 
@@ -415,7 +498,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 23. Artifacts Catalog (`docs/artifacts_catalog.md`)
+#### 33. Artifacts Catalog (`docs/artifacts_catalog.md`)
 
 **Objective:** Catalog persistent artifacts exchanged between jobs.
 
@@ -429,7 +512,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 24. Glossary (`docs/glossary.md`)
+#### 32. Glossary (`docs/glossary.md`)
 
 **Objective:** Provide canonical definitions for shared terminology.
 
@@ -443,7 +526,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 25. Documentation Index (`docs/README.md`)
+#### 33. Documentation Index (`docs/README.md`)
 
 **Objective:** Provide documentation index and navigation guide.
 
@@ -465,7 +548,7 @@ The documentation is organized into **5 functional layers**:
 
 ### GitHub Integration & CI/CD
 
-#### 26. Copilot Instructions (`.github/copilot-instructions.md`)
+#### 32. Copilot Instructions (`.github/copilot-instructions.md`)
 
 **Objective:** Provide instructions for GitHub Copilot on repository conventions and standards.
 
@@ -489,9 +572,9 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 27. Workflows Implementation Summary (`.github/workflows/IMPLEMENTATION_SUMMARY.md`)
+#### 33. Workflows Implementation Summary (`.github/workflows/IMPLEMENTATION_SUMMARY.md`)
 
-**Objective:** Provide summary of GitHub Actions workflow enhancements for agent-driven development.
+**Objective:** Provide summary of GitHub Actions workflow enhancements for agent-assisted development with human oversight.
 
 **Role:** Technical summary of workflow implementation decisions and architecture.
 
@@ -509,7 +592,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 28. GitHub Workflows Diagram (`.github/workflows/WORKFLOW_DIAGRAM.md`)
+#### 32. GitHub Workflows Diagram (`.github/workflows/WORKFLOW_DIAGRAM.md`)
 
 **Objective:** Provide visual diagrams of GitHub Actions workflow architecture.
 
@@ -530,7 +613,7 @@ The documentation is organized into **5 functional layers**:
 
 ---
 
-#### 29. GitHub Workflows Guide (`.github/workflows/WORKFLOWS_README.md`)
+#### 33. GitHub Workflows Guide (`.github/workflows/WORKFLOWS_README.md`)
 
 **Objective:** Provide comprehensive documentation of all GitHub Actions workflows.
 
@@ -561,7 +644,7 @@ The documentation is organized into **5 functional layers**:
 
 ### Operational & Logging
 
-#### 30. Test Logs Guide (`logs/tests_logs/README.md`)
+#### 32. Test Logs Guide (`logs/tests_logs/README.md`)
 
 **Objective:** Guide for understanding and using test logs.
 
@@ -581,7 +664,7 @@ The documentation is organized into **5 functional layers**:
 
 ### Repository Root
 
-#### 31. Repository README (`README.md`)
+#### 33. Repository README (`README.md`)
 
 **Objective:** Provide repository overview and quick start guide.
 
@@ -621,10 +704,11 @@ The documentation is organized into **5 functional layers**:
    - Automated validation enforcement via CI
    - Compliance checklists for each standard
 
-5. **Agent-Driven Development Support**
-   - Extensive agent documentation (system context, setup guide, workflow integration)
-   - Agent roles and responsibilities clearly defined
-   - GitHub Actions workflow integration
+5. **Agent-Assisted Development Support**
+   - Extensive agent documentation with human oversight emphasis (system context, setup guide, workflow integration)
+   - Agent roles and responsibilities clearly defined as assistants, not autonomous actors
+   - Mandatory human approval gates documented
+   - GitHub Actions workflow integration with human review checkpoints
 
 ### Observations & Opportunities
 
@@ -716,4 +800,5 @@ The documentation system is comprehensive, well-organized, and follows a coheren
 
 ## Version History
 
+- **v1.1 (2026-01-27):** Aligned with `development_approach.md` locked truth principles; emphasized human oversight, agent assistance role, and governance hierarchy throughout document descriptions.
 - **v1.0 (2026-01-27):** Initial metadata consolidation; comprehensive inventory of all 31 markdown files; no documents proposed for removal.

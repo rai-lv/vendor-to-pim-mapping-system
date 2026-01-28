@@ -91,7 +91,7 @@ notes: "Additional context"
 python tools/capability_planner_agent.py create "capability_name" \
   --pipeline-ref "objective_name_pipeline_plan.md"
 
-# Output: docs/specifications/capability_name_capability.yaml
+# Output: docs/specifications/capability_name.yaml
 ```
 
 ### Via GitHub Actions:

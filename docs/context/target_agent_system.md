@@ -90,6 +90,8 @@ The workflow proceeds through the five steps defined in `development_approach.md
 
 Agents are defined as **functions** that may be implemented by one or multiple actual agents. Responsibilities describe what they may do; humans decide.
 
+**Note:** The summaries below provide an overview of each agent role. For detailed, canonical role definitions including full responsibilities, non-responsibilities, escalation triggers, and typical outputs, see `docs/agents/agent_role_charter.md`.
+
 ### Objective Support Agent
 
 Supports Step 1.

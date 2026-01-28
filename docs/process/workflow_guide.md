@@ -90,7 +90,7 @@ Every step follows the same loop:
 
 ## 2) Step 1 — Define the Objective
 
-**Agent support:** Objective Support Agent (see target_agent_system.md).
+**Agent support:** Objective Support Agent (see `agent_role_charter.md`).
 
 ### Practical goal
 Produce an objective that is “implementable enough” to plan a pipeline.
@@ -125,7 +125,7 @@ Produce an objective that is “implementable enough” to plan a pipeline.
 
 ## 3) Step 2 — Plan the Pipeline
 
-**Agent support:** Pipeline Support Agent (see target_agent_system.md).
+**Agent support:** Pipeline Support Agent (see `agent_role_charter.md`).
 
 ### Practical goal
 Translate the objective into an ordered list of capabilities with clear boundaries.
@@ -156,7 +156,7 @@ Translate the objective into an ordered list of capabilities with clear boundari
 
 ## 4) Step 3 — Capability Planning (and codable tasks)
 
-**Agent support:** Capability Support Agent (see target_agent_system.md).
+**Agent support:** Capability Support Agent (see `agent_role_charter.md`).
 
 ### Practical goal
 Make one capability implementable without uncontrolled decomposition.
@@ -195,7 +195,7 @@ Make one capability implementable without uncontrolled decomposition.
 
 ## 5) Step 4 — Execute codable tasks (implementation)
 
-**Agent support:** Coding Agent (see target_agent_system.md).
+**Agent support:** Coding Agent (see `agent_role_charter.md`).
 
 ### Practical goal
 Implement approved tasks and produce reviewable changes aligned to the capability plan.
@@ -232,7 +232,7 @@ Implement approved tasks and produce reviewable changes aligned to the capabilit
 
 ## 6) Step 5 — Validate, test, and document
 
-**Agent support:** Validation Support Agent and Documentation Support Agent (see target_agent_system.md).
+**Agent support:** Validation Support Agent and Documentation Support Agent (see `agent_role_charter.md`).
 
 ### Practical goal
 Produce evidence that acceptance criteria are met and update documentation to match reality without creating double truth.

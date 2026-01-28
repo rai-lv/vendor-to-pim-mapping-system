@@ -167,23 +167,15 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Role list; responsibilities; escalation conditions; interaction with approvals/evidence.
 **Must not contain:** Tool command syntax; embedded authoritative templates.
 
-#### 16) GitHub Agent Definitions (system-required)
+#### 16) Agent Definitions (canonical)
 
 **Canonical location:** `.github/agents/`
-**Purpose statement:** Contains full agent profile content required by GitHub Copilot agent invocation system.
-**Why necessary:** GitHub requires complete agent definitions in `.github/agents/` and cannot reference external files.
+**Purpose statement:** Contains the authoritative agent profile definitions used by the GitHub Copilot agent invocation system.
+**Why necessary:** GitHub requires complete agent definitions in `.github/agents/` and cannot reference external files. This is the single source of truth for agent behavior.
 **Must contain:** Complete agent instructions including detailed operating rules, expected inputs/outputs, forbidden behaviors, stop/escalation rules, evidence expectations, and prompt examples; frontmatter metadata (name, description).
 **Must not contain:** Normative schemas or full tool manuals; business logic or contract definitions.
 
-#### 17) Agent Profiles (optional documentation reference)
-
-**Canonical location:** `docs/agents/profiles/`
-**Purpose statement:** Optional human-readable documentation copies of agent profiles for reference and version tracking.
-**Why necessary:** Provides documentation-browsable reference outside GitHub Copilot context; useful for comparison and audit.
-**Must contain:** May duplicate `.github/agents/` content; should indicate that `.github/agents/` is authoritative.
-**Must not contain:** Conflicting or divergent instructions from `.github/agents/` versions.
-
-#### 18) Prompt Packs (non-authoritative)
+#### 17) Prompt Packs (non-authoritative)
 
 **Canonical location:** `docs/agents/prompt_packs/`
 **Purpose statement:** Provides reusable prompt skeletons and examples to invoke agents consistently.
@@ -191,7 +183,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Prompt templates/examples clearly labeled as non-normative.
 **Must not contain:** Requirements that compete with standards.
 
-#### 19) Agent–Tool Interaction Guide
+#### 18) Agent–Tool Interaction Guide
 
 **Canonical location:** `docs/agents/`
 **Purpose statement:** Describes how agents should use tools conceptually and what evidence outputs should be produced/referenced.
@@ -203,7 +195,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ### Process layer (`docs/process/`)
 
-#### 20) Workflow Guide: 5-Step Execution
+#### 19) Workflow Guide: 5-Step Execution
 
 **Canonical location:** `docs/process/`
 **Purpose statement:** Provides the practical how-to for executing the 5-step approach, including checkpoints and handoffs.
@@ -211,7 +203,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Step procedures; iteration guidance; checkpoints; escalation triggers; references to standards.
 **Must not contain:** Normative schemas or CLI manuals.
 
-#### 21) Contribution and Approval Guide
+#### 20) Contribution and Approval Guide
 
 **Canonical location:** `docs/process/`
 **Purpose statement:** Defines how work is proposed, reviewed, approved, and recorded.
@@ -223,7 +215,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ### Operational reference layer (`docs/ops/`)
 
-#### 22) Tooling Reference
+#### 21) Tooling Reference
 
 **Canonical location:** `docs/ops/`
 **Purpose statement:** Technical manual for repo tools and agent-support tools, including usage and troubleshooting.
@@ -231,7 +223,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Tool inventory; usage; parameters; outputs; troubleshooting; version notes.
 **Must not contain:** Normative rules that belong in standards.
 
-#### 23) CI / Automation Reference
+#### 22) CI / Automation Reference
 
 **Canonical location:** `docs/ops/`
 **Purpose statement:** Explains what automation runs, what evidence it produces, and how to interpret failures.
@@ -243,7 +235,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ### Living catalogs and per-job documentation (`docs/catalogs/` and `docs/jobs/`)
 
-#### 24) Job Inventory (instance)
+#### 23) Job Inventory (instance)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Living catalog of all jobs, conforming to Job Inventory Spec.
@@ -251,7 +243,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Job entries; links/references; status signals.
 **Must not contain:** Schema definitions.
 
-#### 25) Artifact Catalog (instance)
+#### 24) Artifact Catalog (instance)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Living catalog of artifact contracts, conforming to Artifact Contract Spec.
@@ -259,7 +251,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Artifact entries; content expectations; producer/consumer relations.
 **Must not contain:** Schema definitions.
 
-#### 26) Per-job Business Description
+#### 25) Per-job Business Description
 
 **Canonical location:** `docs/jobs/<job_id>/`
 **Purpose statement:** Job-local business intent: purpose, scope boundaries, and business rules.
@@ -267,7 +259,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Purpose; scope; rules; job-local assumptions/unknowns.
 **Must not contain:** Operational run instructions or normative contract schemas.
 
-#### 27) Per-job Script Card
+#### 26) Per-job Script Card
 
 **Canonical location:** `docs/jobs/<job_id>/`
 **Purpose statement:** Job-local operational behavior: how it runs, invariants, failure modes, observability.
@@ -275,7 +267,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Behavior summary; failure modes; invariants; observability expectations.
 **Must not contain:** Business rationale or normative contract schemas.
 
-#### 28) Decision Log (index)
+#### 27) Decision Log (index)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Index of recorded decision records for navigation and traceability.
@@ -283,7 +275,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** List of decisions with status/tags/links.
 **Must not contain:** Decision templates.
 
-#### 29) Repository README
+#### 28) Repository README
 
 **Canonical location:** repository root
 **Purpose statement:** Entry point for contributors to understand the repo and find the documentation system quickly.

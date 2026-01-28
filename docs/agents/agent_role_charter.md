@@ -316,19 +316,13 @@ To maintain the "single source per contract type" principle, this section clarif
 - Mapping of roles to workflow steps.
 
 ### What belongs in `.github/agents/` agent files:
-- **Full agent profile content** (required by GitHub - cannot reference external files).
+- **Complete agent profile content** (canonical source of truth for agent definitions).
 - Detailed operating rules for invoking each agent role consistently.
 - Expected inputs and output formats (still high-level; not normative schemas).
 - Forbidden behaviors and stop conditions specific to the role's detailed operation.
 - Evidence expectations for that role's outputs.
 - Non-normative prompt skeletons and invocation examples.
 - Minimal metadata required by the agent invocation system (frontmatter: agent name, description).
-
-### What belongs in per-agent profiles (`docs/agents/profiles/`):
-- **Optional canonical reference documentation** for human readers.
-- May duplicate `.github/agents/` content for documentation purposes.
-- Should indicate that `.github/agents/` is the authoritative version used by the system.
-- Useful for version control, comparison, and documentation browsing outside GitHub Copilot context.
 
 ### What belongs in Standards (`docs/standards/`):
 - Schemas, required fields, and normative structure definitions.
@@ -380,7 +374,6 @@ This charter is **subordinate** to:
 
 This charter is **superior** to:
 - Agent definitions in `.github/agents/` (must implement the role definitions and boundaries specified here).
-- Optional agent profiles in `docs/agents/profiles/` (documentation references that should align with `.github/agents/` implementations).
 
 This charter **references** but does not redefine:
 - `docs/context/glossary.md` (shared term definitions; do not redefine terms here).

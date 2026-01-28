@@ -67,6 +67,9 @@ Agents must avoid creating “shadow specifications” in the wrong layer.
 ### 5) No double truth and explicit conflict resolution
 If approved intent conflicts with current artifacts, tool outputs, or observed behavior, the conflict must be surfaced and resolved explicitly; it must not be silently overridden.
 
+### 6) Single source per contract type
+To prevent “double truth,” each contract type must have exactly one authoritative home. Other documents may reference it, but must not redefine it.
+
 ---
 
 ## Core Design Principles
@@ -197,6 +200,7 @@ Approval gates are a non-negotiable operating rule (see “Non-Negotiable Operat
 * Evidence must be deterministic and reviewable.
 * Agents may summarize evidence but must not substitute narrative for proof.
 * Lack of evidence must be recorded explicitly (e.g., “evidence missing / TBD”) and blocks approval unless a human explicitly approves proceeding under a controlled assumption.
+* Agents may use terms like “verified” or “confirmed” only when explicit evidence is referenced (in the repository or in the conversation).
 
 ---
 

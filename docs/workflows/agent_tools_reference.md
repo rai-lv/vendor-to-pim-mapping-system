@@ -775,22 +775,21 @@ pip install -r requirements.txt --upgrade
 1. **Pull latest changes**: `git pull origin main`
 2. **Run validation**: `python tools/validate_repo_docs.py --all`
 3. **Review standards**: Check `docs/standards/` for any updates
-4. **Understand governance**: Review approval requirements in `docs/context_packs/agent_system_context.md`
+4. **Review governance**: See `docs/context_packs/agent_system_context.md` for approval requirements
 
-### During Agent-Assisted Workflow
+### During Agent Tool Usage
 
-1. **Follow sequential steps**: Complete each step before proceeding
-2. **Seek human approval**: Wait for explicit approval at each gate
-3. **Document assumptions**: Label all unknowns and assumptions explicitly
-4. **Validate frequently**: Run validation after each significant change
-5. **Iterate based on feedback**: Treat agent outputs as proposals, not final
+1. **Validate frequently**: Run validation after each significant change
+2. **Review outputs**: Carefully examine all agent-generated content
+3. **Document issues**: Note any errors or unexpected behavior
+4. **Use version control**: Commit incremental changes for easy rollback
 
 ### After Agent Tool Usage
 
-1. **Review outputs**: Carefully review all agent-generated content
-2. **Run validation**: Ensure all standards are met
-3. **Commit with context**: Include workflow step and approval status in commit messages
-4. **Update status**: Mark approvals and completions in planning documents
+1. **Run validation**: Ensure all standards are met with `python tools/validate_repo_docs.py --all`
+2. **Test outputs**: Verify generated files match expected format
+3. **Commit with context**: Include clear commit messages describing changes
+4. **Update documentation**: Keep related documentation in sync
 
 ---
 

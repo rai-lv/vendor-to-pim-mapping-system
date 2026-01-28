@@ -26,7 +26,7 @@ This document provides example templates, step-by-step workflow guides, and best
 
 **Purpose:** Document business objectives with clear boundaries, testable criteria, and risk assessment.  
 **Output Location:** `docs/roadmaps/<objective>.md`  
-**Approval Required:** Yes - explicit stakeholder approval before Step 2a
+**Example Approval Gate:** Stakeholder approval typically required before Step 2a (see `docs/context_packs/agent_system_context.md` for governance details)
 
 ### Template Structure
 
@@ -236,7 +236,7 @@ Example:
 
 **Purpose:** Document end-to-end pipeline architecture showing processing flow, decision points, and artifacts.  
 **Output Location:** `docs/roadmaps/<objective>_pipeline_plan.md`  
-**Approval Required:** Yes - technical lead and architect approval before Step 2b
+**Example Approval Gate:** Technical lead and architect approval typically required before Step 2b (see `docs/context_packs/agent_system_context.md` for governance details)
 
 ### Template Structure
 
@@ -426,7 +426,7 @@ Example:
 
 **Purpose:** Detail technical specifications for implementing a specific capability.  
 **Output Location:** `docs/specifications/<capability>.yaml`  
-**Approval Required:** Yes - technical lead approval before Step 3
+**Example Approval Gate:** Technical lead approval typically required before Step 3 (see `docs/context_packs/agent_system_context.md` for governance details)
 
 ### Template Structure
 
@@ -700,7 +700,7 @@ approval_status:
 
 **Purpose:** Define a discrete development task for implementation.  
 **Output Location:** `docs/codex-tasks/<task_id>.md`  
-**Approval Required:** Yes - review before assigning to implementation
+**Example Review Practice:** Review typically performed before assigning to implementation (see `docs/context_packs/agent_system_context.md` for governance details)
 
 ### Template Structure
 
@@ -858,31 +858,36 @@ Example:
 
 ---
 
-## Best Practices
+## Example Best Practices
+
+These practices are commonly used with templates. For normative governance requirements, see `docs/context_packs/agent_system_context.md` and `docs/context_packs/development_approach.md`.
 
 ### For All Templates
 
-1. **Be Specific:** Avoid vague language; use concrete, measurable terms
+1. **Be Specific:** Use concrete, measurable terms in templates
 2. **Label Unknowns:** Mark TBD and OPEN QUESTION items explicitly
-3. **Document Assumptions:** Label all assumptions and track approval status
+3. **Document Assumptions:** Label assumptions and track their status
 4. **Link Standards:** Reference relevant `docs/standards/` specifications
-5. **Seek Approval:** Don't skip approval gates - they prevent rework
+5. **Example Approval Flow:** Typical workflows include review gates (see Context Layer for governance)
 
 ### For Iterative Refinement
 
-1. **Start Simple:** Initial draft doesn't need to be perfect
-2. **Iterate Quickly:** Multiple short review cycles better than one long cycle
-3. **Capture Feedback:** Document all review comments and resolutions
+1. **Start Simple:** Initial drafts can be refined through iteration
+2. **Iterate Quickly:** Multiple short review cycles often work well
+3. **Capture Feedback:** Document review comments and resolutions
 4. **Version Control:** Use git commits to track template evolution
 5. **Learn from History:** Review previous similar objectives/capabilities
 
-### For Workflow Progression
+### Example Workflow Progression Practices
 
-1. **Don't Skip Steps:** Complete each step before moving to next
-2. **Validate Frequently:** Run validation tools after each significant change
-3. **Maintain Traceability:** Link documents (objective → pipeline → capability → tasks)
-4. **Communicate Changes:** Alert stakeholders when templates updated
-5. **Archive Approvals:** Keep records of who approved what and when
+Common patterns observed in successful workflows:
+1. **Sequential Completion:** Completing each step before the next reduces rework
+2. **Frequent Validation:** Running validation tools after changes catches issues early
+3. **Maintain Traceability:** Linking documents (objective → pipeline → capability → tasks) aids understanding
+4. **Communicate Changes:** Alerting stakeholders about updates prevents surprises
+5. **Archive Approvals:** Keeping approval records supports audit trails
+
+**Note:** For mandatory workflow requirements and approval gates, refer to `docs/context_packs/agent_system_context.md`.
 
 ---
 

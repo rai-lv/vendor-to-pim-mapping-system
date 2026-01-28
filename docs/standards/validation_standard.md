@@ -1,5 +1,12 @@
 # Validation Standard
 
+UPD 2026-01-28 14:18
+**Canonical location:** `docs/standards/`
+**Purpose statement:** Defines what “verified” means, what validations are required, and what evidence is acceptable for approvals.
+**Why necessary:** Operationalizes evidence discipline and prevents unverifiable claims.
+**Must contain:** Validation rules; evidence expectations; pass/fail semantics; blocking conditions.
+**Must not contain:** Tool command syntax.
+
 **Version:** 1.0  
 **Last Updated:** 2026-01-27  
 **Purpose:** Define validation requirements, tools, and processes for repository documentation and code

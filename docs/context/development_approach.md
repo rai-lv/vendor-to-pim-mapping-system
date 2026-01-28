@@ -19,7 +19,7 @@ This approach focuses on iterative planning, collaboration between users and age
 
 ### 2. Iterative and Sequential Workflows
 - The development process is iterative, meaning outputs evolve dynamically across multiple cycles:
-  - Each step involves drafts from the agent.
+  - Each step may produce drafts with agent assistance, refined by human feedback.
   - Humans provide feedback, refine decisions, and validate results.
 - The workflow is sequential in structure and iterative within each step.
 
@@ -37,7 +37,7 @@ This approach focuses on iterative planning, collaboration between users and age
 - Decision-making is guided by a clear **truth hierarchy**:
   1. **Human-defined inputs** and validated objectives take precedence.
   2. **Standards and criteria** enforced across the repository.
-  3. **Automated outputs**, which must remain subordinate to human-defined rules and validations.
+  3. **Automated outputs and checks**, which must remain subordinate to human-defined rules and validations.
 
 ### 6. Alignment with Success Criteria
 - Every artifact (pipeline, capabilities, code) must comply with user-defined success criteria at each planning stage.
@@ -45,15 +45,44 @@ This approach focuses on iterative planning, collaboration between users and age
 
 ---
 
-## Agent Context
-The sequential development process described in this document is **agent-assisted** at each stage. Agents support specific functions within the workflow:
-- **Planning Function**: Assists in refining objectives and producing pipeline plans.
-- **Specification Function**: Helps break down capabilities into building plans and actionable steps.
-- **Implementation Function**: Supports the execution of tasks aligned with building plans.
-- **Validation Function**: Ensures outputs meet predefined success criteria and include appropriate validation artifacts.
-- **Documentation Function**: Automates documentation tasks while addressing broader repository needs.
+## Definitions
 
-Agents operate under human oversight, iterating on drafts, automating well-defined tasks, and providing structured support across the workflow. Role-specific responsibilities are documented in the Agent Role Charter (if present).
+- **Objective:** A bounded outcome statement describing what must be achieved, with success criteria and scope boundaries.
+- **Pipeline:** An ordered set of capabilities required to achieve the objective, including dependencies and decision points where relevant/known.
+- **Capability:** A coherent unit of behavior that can be specified with inputs/outputs, rules, and acceptance criteria, and then implemented.
+
+## Agents and Tools
+
+### Agents
+Agents are **collaborative roles** that support humans during planning, implementation, validation, and documentation. Agents may:
+- propose and refine drafts based on human feedback,
+- surface unknowns, risks, and trade-offs,
+- implement changes when explicitly tasked.
+
+Agents are not autonomous owners of decisions. Progression between stages requires explicit human sign-off.
+
+### Tools
+Tools are **deterministic instruments** used by humans and agents. Tools may:
+- generate scaffolding/skeletons when requested,
+- validate structure and conformance to repository standards,
+- check presence/consistency of required artifacts and links,
+- produce deterministic evidence outputs (e.g., validation reports).
+
+Tools do not invent requirements, change intent, or introduce new business logic. Tools enforce structure; humans (assisted by agents) define meaning.
+
+### Scope rule
+This document defines **principles and workflow shape**. Concrete tool names, command syntax, templates, required fields, and enforcement mechanisms are defined in adjacent standards and workflow documents.
+
+---
+
+## Agent Context
+The sequential development process described in this document is **human-led** and **agent-assisted**.
+
+- Agents support specific functions within the workflow by drafting, refining, reviewing, and implementing work under human oversight.
+- Tools support the workflow by generating scaffolding when requested and enforcing standards via deterministic validation and consistency checks.
+- Stage transitions require explicit human approval, captured in the repository’s governance artifacts.
+
+Role-specific responsibilities are documented in the Agent Role Charter (if present). Tooling requirements, templates, and enforcement mechanisms are defined in adjacent standards and workflow documents.
 
 ---
 
@@ -74,7 +103,7 @@ The **objective** describes what the system aims to achieve. This is a **high-le
   - Highlighting any known constraints, unknowns, or risks.
 
 #### Output:
-- A defined **objective document** (`docs/roadmaps/<objective>.md`).
+- A defined **objective document**, maintained in the repository.
 
 ---
 
@@ -88,7 +117,7 @@ The **pipeline plan** breaks the high-level objective into a series of **capabil
   - Highlight risks or decision points.
 
 #### Output:
-- A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
+- A pipeline plan, maintained in the repository.
 
 ---
 
@@ -102,7 +131,7 @@ Agents assist in creating a **building plan**, which includes success criteria a
   - Steps for implementation, included in a **Development Step Document**.
 
 #### Output:
-- A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
+- A capability building plan that includes a structured implementation step outline.
 
 ---
 
@@ -119,7 +148,7 @@ Agents assist in creating a **building plan**, which includes success criteria a
 ### **Step 5: Validate, Test, and Document**
 #### What Happens:
 - Validate outputs against success criteria.
-- Capture validation artifacts.
+- Use tools to generate deterministic validation evidence; agents may summarize and humans approve it.
 - Update necessary documentation to ensure clarity and completeness.
 
 #### Output:

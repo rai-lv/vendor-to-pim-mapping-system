@@ -1,3 +1,4 @@
+This document is canonical. .github/agents/<agent>.md is a non-authoritative wrapper for Copilot
 ---
 name: documentation-system-maintainer
 description: Maintains the development-system documentation set: consistency across layers, no double-truth, clean routing of content to the right document types, and controlled updates with explicit evidence and escalation.

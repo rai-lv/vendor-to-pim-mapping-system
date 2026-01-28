@@ -37,7 +37,7 @@ This approach focuses on iterative planning, collaboration between users and age
 - Decision-making is guided by a clear **truth hierarchy**:
   1. **Human-defined inputs** and validated objectives take precedence.
   2. **Standards and criteria** enforced across the repository.
-  3. **Automated outputs**, which must remain subordinate to human-defined rules and validations.
+  3. **Automated outputs and checks**, which must remain subordinate to human-defined rules and validations.
 
 ### 6. Alignment with Success Criteria
 - Every artifact (pipeline, capabilities, code) must comply with user-defined success criteria at each planning stage.
@@ -103,7 +103,7 @@ The **objective** describes what the system aims to achieve. This is a **high-le
   - Highlighting any known constraints, unknowns, or risks.
 
 #### Output:
-- A defined **objective document** (`docs/roadmaps/<objective>.md`).
+- A defined **objective document**, maintained in the repository.
 
 ---
 
@@ -117,7 +117,7 @@ The **pipeline plan** breaks the high-level objective into a series of **capabil
   - Highlight risks or decision points.
 
 #### Output:
-- A pipeline plan (`docs/roadmaps/<objective>_pipeline_plan.md`).
+- A pipeline plan, maintained in the repository.
 
 ---
 
@@ -131,7 +131,7 @@ Agents assist in creating a **building plan**, which includes success criteria a
   - Steps for implementation, included in a **Development Step Document**.
 
 #### Output:
-- A building plan (`docs/specifications/<capability>.yaml`) and structured Development Step Document.
+- A capability building plan that includes a structured implementation step outline.
 
 ---
 
@@ -148,9 +148,8 @@ Agents assist in creating a **building plan**, which includes success criteria a
 ### **Step 5: Validate, Test, and Document**
 #### What Happens:
 - Validate outputs against success criteria.
-- Use tools to generate deterministic validation evidence; agents may summarize and humans approve
+- Use tools to generate deterministic validation evidence; agents may summarize and humans approve it.
 - Update necessary documentation to ensure clarity and completeness.
-- 
 
 #### Output:
 - Validated deliverables aligned with success criteria.

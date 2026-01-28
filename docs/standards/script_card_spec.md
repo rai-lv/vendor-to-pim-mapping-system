@@ -1,5 +1,12 @@
 # Script Card Specification (v1.0) — Glue Job
 
+UPD 2026-01-28 14:23
+**Canonical location:** `docs/standards/`
+**Purpose statement:** Defines the normative structure for operational job documentation (behavior, invariants, failure modes).
+**Why necessary:** Ensures consistent operational clarity without mixing business rationale.
+**Must contain:** Runtime behavior sections; failure-mode/observability structure.
+**Must not contain:** Business justification or contract rules already defined elsewhere.
+
 ## 0) Scope
 
 A **Script Card** documents **one executable job** (one Glue job / one script entrypoint) as an **operational + interface reference**.

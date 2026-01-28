@@ -54,14 +54,17 @@ Based on GitHub's documentation (as of January 2026):
 ## Result
 The agent file now contains the complete instructions and proper YAML frontmatter, making it properly visible to GitHub Copilot.
 
-## Notes on Dual-File Pattern
+## Notes on Dual-File Pattern (Corrected)
 The repository uses a dual-file pattern:
-- `docs/agents/profiles/*.md` - Canonical, human-readable profiles  
-- `.github/agents/*.md` - GitHub Copilot agent files (must contain full content)
+- `.github/agents/*.md` - **Authoritative agent definitions** (required by GitHub Copilot - must contain full content)
+- `docs/agents/profiles/*.md` - Optional documentation reference copies for human readers
 
-**Important**: The `docs/agents/profiles/*.md` file is the canonical source. When updating agent instructions:
-1. Update the canonical profile in `docs/agents/profiles/*.md`
-2. Copy the updated content to `.github/agents/*.md`, removing any comment lines before the YAML frontmatter
-3. Ensure the YAML frontmatter (especially the `description` field) matches exactly between both files
+**Important**: Per GitHub requirements, the `.github/agents/*.md` file is the authoritative source that the system uses. The `docs/agents/profiles/*.md` files are optional documentation references.
 
-**Future Consideration**: Consider implementing a build/sync script to automatically copy from profiles to agents and validate synchronization.
+When updating agent instructions:
+1. Update the authoritative agent definition in `.github/agents/*.md`
+2. Optionally, sync changes to `docs/agents/profiles/*.md` for documentation purposes
+3. Ensure YAML frontmatter is at line 1 of `.github/agents/*.md` files (no comments before it)
+4. The `docs/agents/profiles/*.md` may include a note indicating that `.github/agents/*.md` is authoritative
+
+**Rationale**: GitHub Copilot does not follow file references and requires complete agent content directly in `.github/agents/*.md`. Therefore, this location must be treated as the source of truth for the agent system.

@@ -19,7 +19,7 @@ This approach focuses on iterative planning, collaboration between users and age
 
 ### 2. Iterative and Sequential Workflows
 - The development process is iterative, meaning outputs evolve dynamically across multiple cycles:
-  - Each step involves drafts produced with agent assistance (and, where applicable, validated by tools).
+  - Each step may produce drafts with agent assistance, refined by human feedback.
   - Humans provide feedback, refine decisions, and validate results.
 - The workflow is sequential in structure and iterative within each step.
 
@@ -48,7 +48,7 @@ This approach focuses on iterative planning, collaboration between users and age
 ## Definitions
 
 - **Objective:** A bounded outcome statement describing what must be achieved, with success criteria and scope boundaries.
-- **Pipeline:** An ordered set of capabilities required to achieve the objective, including dependencies and decision points.
+- **Pipeline:** An ordered set of capabilities required to achieve the objective, including dependencies and decision points where relevant/known.
 - **Capability:** A coherent unit of behavior that can be specified with inputs/outputs, rules, and acceptance criteria, and then implemented.
 
 ## Agents and Tools
@@ -148,8 +148,9 @@ Agents assist in creating a **building plan**, which includes success criteria a
 ### **Step 5: Validate, Test, and Document**
 #### What Happens:
 - Validate outputs against success criteria.
-- Capture validation artifacts.
+- Use tools to generate deterministic validation evidence; agents may summarize and humans approve
 - Update necessary documentation to ensure clarity and completeness.
+- 
 
 #### Output:
 - Validated deliverables aligned with success criteria.

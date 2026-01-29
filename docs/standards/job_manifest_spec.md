@@ -291,14 +291,23 @@ Recommended pattern:
 Canonical placeholder style is `${NAME}`.
 Note: Other documents (e.g., business descriptions) may show placeholders as <vendor> or {vendor} for readability. In job_manifest.yaml, the canonical placeholder style MUST be ${NAME}.
 
-Rules:
+#### 6.1.1 Placeholder types and naming
+
+**Type 1: Job parameter placeholders**
+- Represent values from the `parameters` list
+- Naming: MUST match the parameter name exactly (case-sensitive)
+- Examples: `${vendor_name}`, `${INPUT_BUCKET}`, `${prepared_input_key}`
+
+**Type 2: Runtime-generated placeholders**
+- Represent values computed at runtime (not in `parameters` list)
+- Naming: MUST begin with a lowercase letter and use snake_case
+- Examples: `${run_id}`, `${timestamp}`, `${run_id_compact}`
+- Documentation: MUST be explained in `notes` section (what they represent, how generated)
+
+**General rules:**
 - Placeholder names are case-sensitive.
-- Placeholder names MUST begin with an uppercase letter.
-  - Both UPPER_CASE (e.g., `${INPUT_BUCKET}`, `${TIMESTAMP}`) and PascalCase (e.g., `${Vendor_name}`, `${Timestamp}`) are allowed.
-  - Choose a consistent style within your manifest.
 - Placeholders MUST NOT contain spaces.
-- Bucket placeholders are allowed (e.g., `${INPUT_BUCKET}`).
-- Key placeholders are allowed (e.g., `${Vendor_name}`, `${Timestamp}`).
+- Choose a consistent style within your manifest.
 
 ### 6.2 Stability requirement
 

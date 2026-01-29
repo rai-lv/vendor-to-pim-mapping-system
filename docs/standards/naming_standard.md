@@ -1,4 +1,4 @@
-# Naming Standard (v1.3)
+# Naming Standard (v2.0)
 
 **Canonical location:** `docs/standards/`
 **Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
@@ -7,7 +7,7 @@
 **Must not contain:** Tool instructions or job-specific business logic.
 
 **Last Updated:** 2026-01-29
-**Version:** 1.3
+**Version:** 2.0
 
 ---
 
@@ -637,90 +637,11 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 ---
 
-## 7) Open Items / TBD
-
-### 7.1 Resolved items (closed by referencing existing standards)
-
-**TBD-1: Artifact catalog entry identifiers — RESOLVED**
-- **Question:** Should artifact catalog entries have explicit `artifact_id` keys distinct from filenames?
-- **Resolution:** This is already resolved in `docs/standards/artifacts_catalog_spec.md` (v1.3.5) Section 3.1
-- **Finding:** Artifact catalog entries already have explicit `artifact_id` fields distinct from `file_name_pattern`
-- **Format:** `<producer_anchor>__<artifact_type_snake_case>` with full deterministic derivation rules
-- **Reference:** See `artifacts_catalog_spec.md` Section 3.1 for canonical `artifact_id` naming rules
-- **Impact:** No changes needed to this standard; artifact catalog spec is authoritative for catalog-level identifiers
-- **Resolved date:** 2026-01-29
-
-**TBD-2: Version suffix conventions — RESOLVED**
-- **Question:** How should versioned artifacts be named (e.g., `vendor_products_v2.json` vs. `vendor_products.json` with version in path)?
-- **Resolution:** Explicit filename versioning (e.g., `_v2` suffixes) is NOT required; use existing PR and breaking change process
-- **Rationale:**
-  - Section 5 of this standard already defines breaking change governance (decision records, approval, migration plans)
-  - GitHub PRs provide version control, review gates, and rollback capability
-  - Artifact catalog tracks producer/consumer relationships for impact analysis
-  - Deprecation period with dual-write supports transitions without filename changes
-  - No evidence of need for simultaneous multi-version support
-- **Rule:** Artifact filenames remain stable; breaking changes to artifact structure/contract are managed through:
-  1. Decision record (required per Section 5.3)
-  2. PR review and approval
-  3. Coordinated update of producers and consumers
-  4. Optional deprecation period with dual-write if transition needed
-- **When filename versioning MAY be used (exceptional case):**
-  - If explicit side-by-side multi-version support is required (rare)
-  - Use `_v<N>` suffix pattern (e.g., `vendor_products_v2.json`)
-  - Requires decision record justifying the exception
-  - Treat as separate artifacts in catalog (distinct `artifact_id` entries)
-- **Reference:** See Section 5 "Compatibility and Change Rules" for breaking change process
-- **Impact:** No new naming rules needed; existing governance is sufficient
-- **Resolved date:** 2026-01-29
-
-**TBD-3: Temporary/intermediate artifact naming — RESOLVED**
-- **Question:** Should temporary or intermediate outputs (within a job, not cross-job) follow the same snake_case rules?
-- **Resolution:** Temporary/intermediate artifacts are explicitly EXCLUDED from this naming standard
-- **Rationale:**
-  - This standard's scope is "elements referenced by automation, validation tools, and cross-job integration" (Section 1)
-  - Temp artifacts fail all three criteria: not referenced by automation, not validated as contracts, not integrated across jobs
-  - Temp artifacts are job-internal implementation details, not stable contracts
-  - Including them would significantly expand scope and validation burden without adding contract clarity
-  - Jobs need flexibility for performance optimization and third-party library compatibility
-- **Rule:** Temporary/intermediate artifacts are OUT OF SCOPE for this standard
-- **Boundary definition:** An artifact is temp/intermediate if it:
-  - Is NOT declared in the job's manifest (inputs/outputs/config_files sections)
-  - Is NOT consumed by other jobs
-  - Has ephemeral lifecycle (deleted before job completion or managed with S3 lifecycle policies)
-  - Examples: checkpoint files, intermediate transforms, debug outputs, job-internal cache files
-- **Conformance boundary:** If an artifact IS declared in a job manifest, it MUST conform to this standard. If not declared, conformance is optional.
-- **Reference:** See Section 1 "What this standard does NOT cover" for the exclusion list
-- **Impact:** Clear scope boundary; reduces validation complexity; allows job-internal flexibility
-- **Resolved date:** 2026-01-29
-
-**TBD-4: Multi-environment naming (dev, staging, prod) — RESOLVED**
-- **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
-- **Resolution:** This is already resolved in `docs/standards/job_manifest_spec.md` (v1.0) Section 2.2
-- **Finding:** Environment prefixes are explicitly documented as deployment-time transforms, NOT part of canonical naming
-- **Rule:** Canonical `job_id` in manifests remains unprefixed; deployment scripts apply environment prefixes as needed
-- **Reference:** See `job_manifest_spec.md` Section 2.2 "Deployment note" for authoritative guidance
-- **Impact:** No changes needed to this standard; manifests document canonical identity, deployment handles environment-specific transforms
-- **Resolved date:** 2026-01-29
-
-### 7.2 Next steps for resolution
-
-**All TBDs resolved.** No open naming decisions remain.
-
-**Future extensions:**
-- If new naming categories emerge (e.g., new artifact types, new identifier classes), they will be added via versioned updates to this standard
-- Each addition requires explicit scope decision and approval before incorporation
-
-**Resolution process (for reference):**
-- Each TBD requires a decision record once resolution is approved
-- TBDs MUST NOT block current naming enforcement; existing rules are sufficient for current automation
-- Future decisions will extend this standard via versioned updates
-
----
-
 ## Revision History
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 2.0     | 2026-01-29 | Removed Section 7 (TBD resolution history); specification now contains only normative rules. All resolved items already incorporated into appropriate sections. |
 | 1.3     | 2026-01-29 | Closed TBD-3: Temp artifacts explicitly excluded from scope; all 4 TBDs now resolved |
 | 1.2     | 2026-01-29 | Closed TBD-2: No filename versioning needed, use PR/breaking change process; 1 TBD remains open (TBD-3) |
 | 1.1     | 2026-01-29 | Closed TBD-1 and TBD-4 by referencing existing approved standards (artifacts_catalog_spec.md, job_manifest_spec.md); 2 TBDs remain open |

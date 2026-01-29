@@ -57,12 +57,30 @@ For each job folder:
 - `jobs/<job_group>/<job_id>/glue_script.py`
 - `jobs/<job_group>/<job_id>/job_manifest.yaml`
 
-### 2.2 `job_id` consistency rule
+### 2.2 Naming consistency rules
 
-- The canonical `job_id` for repo indexing is the folder name: `jobs/<job_group>/<job_id>/`.
-- The manifest MUST contain a top-level `job_id` key whose value matches the folder `<job_id>` exactly.
+**Rule 1: job_id matches folder name**
+- The canonical `job_id` is the folder name: `jobs/<job_group>/<job_id>/`
+- The manifest MUST contain `job_id` key whose value matches `<job_id>` exactly
+- If `job_id ≠ folder name`, this is a spec violation
 
-If the manifest `job_id` is not equal to the folder `<job_id>`, this is a spec violation and should be handled as a verification item by inventory/QA processes.
+**Rule 2: glue_job_name matches job_id**
+- The deployed Glue job name MUST equal the `job_id` (and therefore the folder name)
+- The manifest MUST contain `glue_job_name` key whose value matches `job_id` exactly
+- Example: folder `preprocessIncomingBmecat` → `glue_job_name: preprocessIncomingBmecat`
+- If `glue_job_name ≠ job_id`, this is a spec violation
+
+**Verification:**
+Verification tools SHOULD check both consistency rules (folder = job_id = glue_job_name).
+
+**Rationale:**
+This 1:1:1 mapping ensures:
+- No ambiguity about deployed job identity
+- Traceability from repo structure to AWS Glue console
+- Simplified automation (no separate deployment name lookup needed)
+
+**Deployment note:**
+If deployments use environment-specific naming (e.g., `prod-{job_id}`), that is a deployment-time transform. The manifest documents the canonical identity; deployment scripts apply environment prefixes as needed.
 
 ---
 
@@ -81,9 +99,8 @@ Top-level keys and whether they are required:
 
 | Key | Required | Type | Purpose |
 |---|---:|---|---|
-| `schema_version` | recommended | string | Manifest schema version (e.g., `1.0`) |
 | `job_id` | yes | string | Identifier for this job (must match folder `<job_id>`) |
-| `glue_job_name` | yes (Glue scope) | string or `TBD` | Deployed Glue job name (deployment identity) |
+| `glue_job_name` | yes | string | Deployed Glue job name (MUST equal `job_id`) |
 | `runtime` | yes | enum | Execution runtime type |
 | `entrypoint` | recommended | string | Entry file name inside job folder (commonly `glue_script.py`) |
 | `parameters` | yes | list(string) or `TBD` | Parameter names only (no values) |
@@ -242,6 +259,33 @@ To keep parsing uniform:
 - Legacy keys `s3_bucket` / `s3_key_pattern` MUST NOT be used in new manifests.
 - **Migration from legacy fields:** If older manifests use `s3_key_pattern` or `s3_bucket`, replace them with `key_pattern` and `bucket` respectively. This ensures consistency across all S3 references and simplifies automation parsing.
 
+#### 5.5.2 Handling repo_path (automation rule)
+
+The `repo_path` field indicates whether a config file is mirrored in the repository.
+
+**Determination rules:**
+1. Search repository for file matching the S3 key pattern under:
+   - `jobs/<job_id>/config/`
+   - `jobs/<job_id>/`
+   - `config/` (repo root)
+2. **IF file found:** `repo_path: <relative_path_from_repo_root>`
+3. **ELIF file not found (confirmed S3-only):** `repo_path: null`
+4. **ELSE (cannot determine):** `repo_path: TBD` with explanation in `notes`
+
+**Example (S3-only config):**
+```yaml
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: configuration-files/job_config_${vendor_name}.json
+    format: json
+    required: true
+    repo_path: null  # Verified: not in jobs/*/config/ or config/ directories
+```
+
+**Note on TBD vs null:**
+- Use `null` when you have confirmed the file is NOT in the repository (S3-only)
+- Use `TBD` only when you haven't checked yet or cannot determine the location
+
 ### 5.6 `side_effects`
 
 `side_effects` MUST be an object with:
@@ -258,13 +302,74 @@ To keep parsing uniform:
 | Field | Required | Type | Meaning |
 |---|---:|---|---|
 | `writes_run_receipt` | yes | `true`/`false`/`TBD` | Whether a run receipt/status artifact is written |
-| `run_receipt_bucket` | yes | string or `TBD` | Bucket/pattern for run receipt (if written) |
-| `run_receipt_key_pattern` | yes | string or `TBD` | Key pattern for run receipt (if written) |
-| `counters_observed` | yes | list(string) or `TBD` | Names of counters emitted/recorded |
+| `run_receipt_bucket` | yes | string or `null` or `TBD` | Bucket/pattern for run receipt (if written) |
+| `run_receipt_key_pattern` | yes | string or `null` or `TBD` | Key pattern for run receipt (if written) |
+| `counters_observed` | yes | list(string) or `[]` or `TBD` | Names of counters emitted/recorded |
 
-Rules:
-- If `writes_run_receipt` is `false`, `run_receipt_bucket` and `run_receipt_key_pattern` MAY be `TBD` but must be explained in `notes`.
-- If `writes_run_receipt` is `true`, both `run_receipt_bucket` and `run_receipt_key_pattern` MUST be concrete (not `TBD`).
+**Rules (for automation and manual authoring):**
+
+**If `writes_run_receipt` is `true`:**
+- Both `run_receipt_bucket` and `run_receipt_key_pattern` MUST be concrete strings (not `TBD` or `null`)
+- Values MUST be derivable from code (e.g., S3 put_object calls)
+- If code writes receipt but pattern cannot be determined, use `TBD` with explanation in `notes`
+
+**If `writes_run_receipt` is `false`:**
+- Set `run_receipt_bucket: null`
+- Set `run_receipt_key_pattern: null`
+- Do NOT use `TBD` - the value is known to be "not applicable", not "unknown"
+- No explanation required in `notes` for these null values
+
+**If `writes_run_receipt` is `TBD`:**
+- Set `run_receipt_bucket: TBD`
+- Set `run_receipt_key_pattern: TBD`
+- Explanation in `notes` MUST state why receipt-writing behavior cannot be determined from code
+
+#### 5.7.1 Determining counters_observed
+
+The `counters_observed` field lists names of structured metrics/counters emitted by the job.
+
+**Determination rules:**
+
+**Step 1: Check if run receipt is written**
+- IF `writes_run_receipt` is `true` AND receipt structure contains a "counts" dictionary:
+  - `counters_observed: [list of keys from counts dict]`
+- ELIF receipt exists but has no counts:
+  - `counters_observed: []`
+
+**Step 2: Check for CloudWatch metrics**
+- IF script contains boto3 `cloudwatch.put_metric_data()` calls:
+  - Extract metric names from `MetricName` parameters
+  - `counters_observed: [list of metric names]`
+
+**Step 3: Default for no structured counters**
+- IF no structured counters found in steps 1-2:
+  - `counters_observed: []` (NOT `TBD` - this represents proven absence)
+
+**Use `TBD` ONLY if:**
+- Receipt structure is dynamically constructed and cannot be parsed statically
+- Metrics are computed from external config files not available during manifest generation
+- In these cases, explain in `notes` which dynamic construction prevents static analysis
+
+**Example (no receipt, no counters):**
+```yaml
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: null
+  run_receipt_key_pattern: null
+  counters_observed: []  # No CloudWatch metrics, no receipt file (verified script analysis)
+```
+
+**Example (receipt with counters):**
+```yaml
+logging_and_receipt:
+  writes_run_receipt: true
+  run_receipt_bucket: ${OUTPUT_BUCKET}
+  run_receipt_key_pattern: ${output_prefix}run_receipts/receipt_${run_id}.json
+  counters_observed: 
+    - products_processed
+    - categories_mapped
+    - errors_encountered
+```
 
 ### 5.8 `notes`
 
@@ -295,19 +400,23 @@ Note: Other documents (e.g., business descriptions) may show placeholders as <ve
 
 **Type 1: Job parameter placeholders**
 - Represent values from the `parameters` list
-- Naming: MUST match the parameter name exactly (case-sensitive)
-- Examples: `${vendor_name}`, `${INPUT_BUCKET}`, `${prepared_input_key}`
+- Naming: MUST match the parameter name exactly (case-sensitive, character-for-character)
+- NO case transformation is applied; placeholder name = parameter name
+- Examples: 
+  - Parameter `INPUT_BUCKET` → placeholder `${INPUT_BUCKET}`
+  - Parameter `vendor_name` → placeholder `${vendor_name}`
+  - Parameter `bmecat_input_key` → placeholder `${bmecat_input_key}`
 
 **Type 2: Runtime-generated placeholders**
 - Represent values computed at runtime (not in `parameters` list)
-- Naming: MUST begin with a lowercase letter and use snake_case
-- Examples: `${run_id}`, `${timestamp}`, `${run_id_compact}`
+- Naming convention: SHOULD use snake_case (lowercase with underscores)
+- Examples: `${run_id}`, `${timestamp}`, `${new_suffix}`
 - Documentation: MUST be explained in `notes` section (what they represent, how generated)
 
 **General rules:**
-- Placeholder names are case-sensitive.
-- Placeholders MUST NOT contain spaces.
-- Choose a consistent style within your manifest.
+- Placeholder names are case-sensitive
+- Placeholders MUST NOT contain spaces
+- For parameter placeholders: use exact match to parameter name (no case conversion)
 
 ### 6.2 Stability requirement
 
@@ -410,6 +519,7 @@ A manifest is compliant if:
 **Structure**
 - file exists at `jobs/<job_group>/<job_id>/job_manifest.yaml`
 - `job_id` exists and matches folder `<job_id>`
+- `glue_job_name` exists and matches `job_id` (and folder name)
 - required top-level keys exist: `job_id`, `glue_job_name`, `runtime`, `parameters`, `inputs`, `outputs`, `side_effects`, `logging_and_receipt`
 
 **Types and enums**
@@ -422,10 +532,10 @@ A manifest is compliant if:
 **Optional fields validation**
 - if `entrypoint` is present, it must be a valid filename (typically `glue_script.py` or other `.py` files within the job folder)
 - if `config_files` is present, each item must have required fields: `bucket`, `key_pattern`, `required`
-- if `schema_version` is present, it should follow semantic versioning (e.g., `1.0`, `1.1`)
 
 **Placeholder rules**
-- placeholder names begin with an uppercase letter
+- parameter placeholders match parameter names exactly (case-sensitive)
+- runtime placeholders use snake_case convention
 - placeholders use `${NAME}` format (case-sensitive, no spaces)
 - normalized prefix placeholders use `${X_norm}` when script contains normalization logic
 
@@ -436,15 +546,16 @@ A manifest is compliant if:
 **TBD discipline**
 - if any `TBD` appears anywhere, `notes` exists and contains explicit explanations for each TBD field
 - each TBD explanation must state: why unknown, what evidence was checked, and what action is needed
+- use `null` for "not applicable" (e.g., receipt bucket when no receipt written)
+- use `[]` for "provably empty" (e.g., counters when none exist)
 
 ---
 
 ## 10) Minimal template
 
 ```yaml
-schema_version: "1.0"
 job_id: <folder_job_id>
-glue_job_name: <glue_job_name_or_TBD>
+glue_job_name: <folder_job_id>  # MUST equal job_id
 runtime: <pyspark|python_shell|python|nodejs|other|TBD>
 entrypoint: glue_script.py
 
@@ -469,20 +580,18 @@ config_files:
     key_pattern: configuration-files/..._${Vendor_name}.json
     format: json
     required: true
-    repo_path: TBD
+    repo_path: null  # or path if mirrored in repo
 
 side_effects:
   deletes_inputs: false
-  overwrites_outputs: TBD
+  overwrites_outputs: true
 
 logging_and_receipt:
-  writes_run_receipt: TBD
-  run_receipt_bucket: TBD
-  run_receipt_key_pattern: TBD
-  counters_observed: TBD
+  writes_run_receipt: false
+  run_receipt_bucket: null
+  run_receipt_key_pattern: null
+  counters_observed: []
 
 notes:
-  - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — Not yet deployed to AWS Glue (checked deployment scripts). Needs deployment config from DevOps team."
-  - "side_effects.overwrites_outputs: TBD — Script does not show explicit overwrite logic (checked relevant sections in glue_script.py). Need to test job in staging to observe actual behavior."
-  - "config_files[0].repo_path: TBD — Config file exists in S3 but not mirrored in repository. Team to decide if repo mirror is needed."
+  - "Evidence source: Analyzed glue_script.py, checked parameters, I/O patterns, and side effects."
+  - "Script does not write run receipt (verified via code analysis). No structured counters emitted."

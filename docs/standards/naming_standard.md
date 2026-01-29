@@ -1,13 +1,7 @@
-# Naming Standard (v1.0)
+# Naming Standard (v2.1)
 
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
-**Why necessary:** Prevents drift and enables consistent validation and tooling.
-**Must contain:** Naming conventions; identifier rules; compatibility expectations.
-**Must not contain:** Tool instructions or job-specific business logic.
-
+**Version:** 2.1  
 **Last Updated:** 2026-01-29
-**Version:** 1.0
 
 ---
 
@@ -26,6 +20,11 @@ This standard governs the naming conventions for repository elements that are re
 - Tool command syntax or operational procedures (belongs in ops layer)
 - Data content schema or artifact contracts (belongs in artifact catalog spec)
 - Deployment-specific naming transforms (e.g., environment prefixes like `prod-{job_id}`)
+- **Temporary or intermediate artifacts** (within a job, not cross-job) that are:
+  - Not declared in job manifests (inputs/outputs/config_files)
+  - Not consumed by other jobs
+  - Ephemeral (deleted before job completion or managed with S3 lifecycle policies)
+  - Examples: checkpoint files, intermediate transforms, debug outputs, job-internal cache files
 
 ---
 
@@ -632,59 +631,13 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 ---
 
-## 7) Open Items / TBD
-
-### 7.1 Unresolved naming decisions
-
-**TBD-1: Artifact catalog entry identifiers**
-- **Question:** Should artifact catalog entries have explicit `artifact_id` keys distinct from filenames?
-- **Current state:** Artifacts are identified by filename patterns; no separate `artifact_id` field exists
-- **Why TBD:** If artifacts are versioned or renamed, a stable `artifact_id` may be needed
-- **Decision needed:** Approve current filename-based approach OR introduce explicit `artifact_id` field in artifact catalog spec
-- **Impact:** If explicit IDs are introduced, need to define naming rules for them
-
-**TBD-2: Version suffix conventions**
-- **Question:** How should versioned artifacts be named (e.g., `vendor_products_v2.json` vs. `vendor_products.json` with version in path)?
-- **Current state:** No explicit versioning convention; artifacts are effectively "current" or deprecated
-- **Why TBD:** Future need for backward-compatible artifact evolution
-- **Decision needed:** Define versioning strategy (filename suffix vs. path-based vs. metadata-based)
-- **Impact:** May require additional naming rules for version identifiers
-
-**TBD-3: Temporary/intermediate artifact naming**
-- **Question:** Should temporary or intermediate outputs (within a job, not cross-job) follow the same snake_case rules?
-- **Current state:** Jobs may write intermediate files to S3 (e.g., checkpoints, temp transforms); naming is ad-hoc
-- **Why TBD:** Current spec focuses on stable cross-job artifacts; temp artifacts are underspecified
-- **Decision needed:** Extend naming rules to cover temp artifacts OR explicitly exclude them from this standard
-- **Impact:** If included, need to define temp artifact pattern (e.g., `temp_<name>.json` or `<name>_temp.json`)
-
-**TBD-4: Multi-environment naming (dev, staging, prod)**
-- **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
-- **Current state:** Job manifests document canonical names; deployment transforms are out-of-scope
-- **Why TBD:** Deployment scripts may apply environment prefixes; need to clarify boundary
-- **Decision needed:** Explicitly document that environment prefixes are deployment-time transforms and NOT part of canonical naming
-- **Impact:** Confirm that canonical `job_id` remains unprefixed in all manifests and docs; deployment scripts responsible for prefixing
-
-### 7.2 Next steps for resolution
-
-**Priority 1 (high impact):**
-- TBD-4: Clarify environment prefix handling (impacts deployment automation)
-
-**Priority 2 (medium impact):**
-- TBD-1: Decide on artifact_id vs. filename-based identification (impacts artifact catalog design)
-
-**Priority 3 (low impact, future-proofing):**
-- TBD-2: Define versioning convention (for future artifact evolution)
-- TBD-3: Decide on temp artifact naming inclusion (for completeness)
-
-**Resolution process:**
-- Each TBD requires a decision record once resolution is approved
-- TBDs MUST NOT block current naming enforcement; existing rules are sufficient for current automation
-- Future decisions will extend this standard via versioned updates
-
----
-
 ## Revision History
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 2.1     | 2026-01-29 | Removed redundant metadata stub (lines 3-7); all content already in Section 1. Canonical metadata lives in documentation_system_catalog.md |
+| 2.0     | 2026-01-29 | Removed Section 7 (TBD resolution history); specification now contains only normative rules. All resolved items already incorporated into appropriate sections. |
+| 1.3     | 2026-01-29 | Closed TBD-3: Temp artifacts explicitly excluded from scope; all 4 TBDs now resolved |
+| 1.2     | 2026-01-29 | Closed TBD-2: No filename versioning needed, use PR/breaking change process; 1 TBD remains open (TBD-3) |
+| 1.1     | 2026-01-29 | Closed TBD-1 and TBD-4 by referencing existing approved standards (artifacts_catalog_spec.md, job_manifest_spec.md); 2 TBDs remain open |
 | 1.0     | 2026-01-29 | Initial release: all sections, 4 open TBDs   |

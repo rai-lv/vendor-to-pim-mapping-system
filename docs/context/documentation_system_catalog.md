@@ -102,9 +102,9 @@ This catalog is **descriptive and governing**: it defines what each document is 
 #### 8) Documentation Specification
 
 **Canonical location:** `docs/standards/`
-**Purpose statement:** Defines how documentation in this repository must be formatted, structured, and versioned to maintain consistency.
-**Why necessary:** Eliminates inconsistencies in document formatting, structure, versioning, and metadata; ensures uniform presentation across all documentation types.
-**Must contain:** Formatting rules; metadata requirements; versioning discipline; file naming conventions; structural anti-patterns.
+**Purpose statement:** Defines how documentation must be structured, formatted, and governed, combining foundational principles (the WHY) with practical rules (the WHAT and HOW).
+**Why necessary:** Ensures documentation is reliable, maintainable, discoverable, and aligned with principles that prevent duplication, confusion, and unclear authority.
+**Must contain:** Foundational principles; formatting rules; metadata requirements; versioning discipline; quality criteria; anti-patterns; application guidelines; governance procedures.
 **Must not contain:** Semantic content rules (those live in documentation_system_catalog.md); tool command syntax; operational procedures.
 
 #### 9) Job Manifest Spec

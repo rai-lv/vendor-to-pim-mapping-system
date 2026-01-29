@@ -1,4 +1,4 @@
-# Naming Standard (v1.1)
+# Naming Standard (v1.2)
 
 **Canonical location:** `docs/standards/`
 **Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
@@ -7,7 +7,7 @@
 **Must not contain:** Tool instructions or job-specific business logic.
 
 **Last Updated:** 2026-01-29
-**Version:** 1.1
+**Version:** 1.2
 
 ---
 
@@ -645,6 +645,29 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 - **Impact:** No changes needed to this standard; artifact catalog spec is authoritative for catalog-level identifiers
 - **Resolved date:** 2026-01-29
 
+**TBD-2: Version suffix conventions — RESOLVED**
+- **Question:** How should versioned artifacts be named (e.g., `vendor_products_v2.json` vs. `vendor_products.json` with version in path)?
+- **Resolution:** Explicit filename versioning (e.g., `_v2` suffixes) is NOT required; use existing PR and breaking change process
+- **Rationale:**
+  - Section 5 of this standard already defines breaking change governance (decision records, approval, migration plans)
+  - GitHub PRs provide version control, review gates, and rollback capability
+  - Artifact catalog tracks producer/consumer relationships for impact analysis
+  - Deprecation period with dual-write supports transitions without filename changes
+  - No evidence of need for simultaneous multi-version support
+- **Rule:** Artifact filenames remain stable; breaking changes to artifact structure/contract are managed through:
+  1. Decision record (required per Section 5.3)
+  2. PR review and approval
+  3. Coordinated update of producers and consumers
+  4. Optional deprecation period with dual-write if transition needed
+- **When filename versioning MAY be used (exceptional case):**
+  - If explicit side-by-side multi-version support is required (rare)
+  - Use `_v<N>` suffix pattern (e.g., `vendor_products_v2.json`)
+  - Requires decision record justifying the exception
+  - Treat as separate artifacts in catalog (distinct `artifact_id` entries)
+- **Reference:** See Section 5 "Compatibility and Change Rules" for breaking change process
+- **Impact:** No new naming rules needed; existing governance is sufficient
+- **Resolved date:** 2026-01-29
+
 **TBD-4: Multi-environment naming (dev, staging, prod) — RESOLVED**
 - **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
 - **Resolution:** This is already resolved in `docs/standards/job_manifest_spec.md` (v1.0) Section 2.2
@@ -656,13 +679,6 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 ### 7.2 Unresolved naming decisions
 
-**TBD-2: Version suffix conventions**
-- **Question:** How should versioned artifacts be named (e.g., `vendor_products_v2.json` vs. `vendor_products.json` with version in path)?
-- **Current state:** No explicit versioning convention; artifacts are effectively "current" or deprecated
-- **Why TBD:** Future need for backward-compatible artifact evolution
-- **Decision needed:** Define versioning strategy (filename suffix vs. path-based vs. metadata-based)
-- **Impact:** May require additional naming rules for version identifiers
-
 **TBD-3: Temporary/intermediate artifact naming**
 - **Question:** Should temporary or intermediate outputs (within a job, not cross-job) follow the same snake_case rules?
 - **Current state:** Jobs may write intermediate files to S3 (e.g., checkpoints, temp transforms); naming is ad-hoc
@@ -672,11 +688,8 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 ### 7.3 Next steps for resolution
 
-**Priority 1 (medium impact):**
-- TBD-2: Define versioning convention (for future artifact evolution)
-
-**Priority 2 (low impact, future-proofing):**
-- TBD-3: Decide on temp artifact naming inclusion (for completeness)
+**Remaining open item:**
+- TBD-3: Decide on temp artifact naming inclusion (for completeness) — low impact, future-proofing
 
 **Resolution process:**
 - Each TBD requires a decision record once resolution is approved
@@ -689,5 +702,6 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 1.2     | 2026-01-29 | Closed TBD-2: No filename versioning needed, use PR/breaking change process; 1 TBD remains open (TBD-3) |
 | 1.1     | 2026-01-29 | Closed TBD-1 and TBD-4 by referencing existing approved standards (artifacts_catalog_spec.md, job_manifest_spec.md); 2 TBDs remain open |
 | 1.0     | 2026-01-29 | Initial release: all sections, 4 open TBDs   |

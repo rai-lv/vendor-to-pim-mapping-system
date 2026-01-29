@@ -206,9 +206,17 @@ All documents MUST include a metadata header block immediately after the H1 titl
 
 ### 3.1 Standards Documents (docs/standards/)
 
-Standards documents define normative rules and schemas.
+Standards documents define normative rules and schemas. They MUST include:
 
-**Metadata:** Standards documents do NOT require metadata headers (Canonical location, Purpose statement, Why necessary, Must contain, Must not contain). This information is authoritatively defined in `documentation_system_catalog.md` for each standard to maintain Single Source of Truth. See principle 1.1.
+```markdown
+# [Document Title]
+
+**Version:** X.Y.Z  (OR)  UPD YYYY-MM-DD
+
+## Purpose
+
+[2-3 sentences: what this standard defines and why it exists]
+```
 
 **Version and Update Tracking:**
 
@@ -229,10 +237,9 @@ Standards documents MUST include ONE of the following versioning approaches:
 
 **Rule:** Do NOT use both version number and update timestamp in the same document. Choose one approach based on the standard's maturity.
 
-**Migration rule:** When transitioning from timestamp-based to version-based tracking:
-1. Remove the timestamp line
-2. Add `**Version:** 1.0.0` to mark the first stable version
-3. Document the change in a decision record if the standard is widely used
+**Purpose Section:**
+
+Standards documents MUST include a "Purpose" section (as H2) immediately after the version/timestamp, providing 2-3 sentences explaining what the standard defines and why it exists. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
 
 ### 3.2 Context Documents (docs/context/)
 
@@ -723,9 +730,12 @@ Existing documents that violate this specification:
 # Example Standard Specification
 
 **Version:** 1.2.0
-```
 
-**Note:** Standards documents do NOT include metadata headers (Canonical location, Purpose statement, etc.). This information is maintained in `documentation_system_catalog.md`.
+## Purpose
+
+This standard defines the normative schema for example artifacts, ensuring 
+consistent structure and validation across all example implementations.
+```
 
 ### 8.2 Correct Standards Document Header (with timestamp)
 
@@ -733,9 +743,12 @@ Existing documents that violate this specification:
 # Example Standard Specification
 
 UPD 2026-01-28
-```
 
-**Note:** Standards documents do NOT include metadata headers. Only version OR timestamp is included.
+## Purpose
+
+This standard defines the normative schema for example artifacts, ensuring 
+consistent structure and validation across all example implementations.
+```
 
 ### 8.3 Correct Context Document Header
 

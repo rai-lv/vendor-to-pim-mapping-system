@@ -216,10 +216,6 @@ Standards documents define normative rules and schemas. They MUST include:
 [2-3 sentences: what this standard defines and why it exists]
 ```
 
-**Change Tracking:**
-
-Standards documents do NOT include version numbers or timestamps in metadata. Change tracking is managed through git history, which provides comprehensive tracking of all changes, authors, dates, and context through commit messages.
-
 **Purpose Section:**
 
 Standards documents MUST include a "Purpose" section (as H2) immediately after the title, providing 2-3 sentences explaining what the standard defines and why it exists. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
@@ -232,15 +228,9 @@ Context documents define intent, principles, and system framing. They MUST inclu
 # [Document Title]
 
 ## Purpose
+
 [2-3 sentences explaining the document's purpose]
 ```
-
-Context documents MUST NOT:
-- Include version numbers (they evolve with system understanding, not schema changes)
-- Include update timestamps in metadata (use git history for change tracking)
-- Include "Last Updated" or "UPD" fields
-
-**Rationale:** Context documents describe evolving understanding and intent. Their authority comes from human approval and git history, not version markers. Version numbers imply contract stability that doesn't apply to conceptual framing.
 
 ### 3.3 Process Documents (docs/process/)
 
@@ -250,17 +240,14 @@ Process documents describe how-to guidance. They MUST include:
 # [Document Title]
 
 ## Purpose statement
+
 [2-3 sentences: what this guide covers and when to use it]
 
 ## Scope and non-goals
+
 **In scope:** [what this guide addresses]
 **Out of scope:** [what belongs elsewhere, with pointers]
 ```
-
-Process documents MUST NOT:
-- Include version numbers
-- Include update timestamps in metadata
-- Duplicate normative rules from standards documents
 
 ### 3.4 Operational Reference Documents (docs/ops/)
 
@@ -270,13 +257,13 @@ Operational documents provide technical tool manuals. They MUST include:
 # [Document Title]
 
 ## Purpose
+
 [One sentence: what this reference covers]
 
 ## Scope
+
 [What tools/systems are covered]
 ```
-
-Operational documents do NOT include version numbers or timestamps. Change tracking is managed through git history.
 
 ### 3.5 Living Catalogs (docs/catalogs/)
 
@@ -289,10 +276,6 @@ Living catalogs are compiled views. They MUST include:
 
 [2-3 sentences: what this catalog indexes and why it exists]
 ```
-
-**Change Tracking:**
-
-Catalogs do NOT include timestamps or version numbers in metadata. Change tracking is managed through git history, which provides comprehensive tracking of all changes including when catalogs were last updated.
 
 **Purpose Section:**
 

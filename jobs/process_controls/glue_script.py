@@ -1,12 +1,12 @@
 import sys
-import os
-import re
 import json
+import re
 import traceback
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Optional
 import csv
 from io import StringIO
+from os.path import basename
 
 import boto3
 from awsglue.utils import getResolvedOptions
@@ -18,8 +18,30 @@ from pyspark.sql.functions import col, expr, trim
 from pyspark.sql.types import StringType
 
 # =========================
+# Configuration Constants
+# =========================
+
+SAMPLE_BUFFER_SIZE = 65536  # 64KB for CSV dialect detection
+MAX_DIALECT_SAMPLE_LINES = 200
+CSV_SEPARATORS = [";", ",", "\t", "|"]
+MAX_DUPLICATE_SAMPLE_COUNT = 20
+
+# =========================
 # Helpers (aligned pattern)
 # =========================
+
+def validate_s3_key(key: str) -> None:
+    """
+    Validate S3 key format for basic security checks.
+    Raises ValueError if key is invalid.
+    """
+    if not key:
+        raise ValueError("S3 key cannot be empty")
+    
+    # Check for invalid null characters
+    if '\0' in key:
+        raise ValueError(f"Invalid S3 key format (contains null character)")
+
 
 def ensure_prefix_uri(uri: str) -> str:
     if uri.endswith("/"):
@@ -49,7 +71,7 @@ def list_s3_objects(bucket: str, prefix: str) -> List[str]:
     print(f"[INFO] Found {len(keys)} object(s) under prefix '{prefix}'")
     return keys
 
-def _read_s3_head(bucket: str, key: str, max_bytes: int = 65536) -> bytes:
+def _read_s3_head(bucket: str, key: str, max_bytes: int = SAMPLE_BUFFER_SIZE) -> bytes:
     s3 = boto3.client("s3")
     resp = s3.get_object(Bucket=bucket, Key=key, Range=f"bytes=0-{max_bytes-1}")
     return resp["Body"].read()
@@ -59,7 +81,7 @@ def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     Detect separator + encoding using a small head sample.
     Returns (sep, encoding_name_for_spark).
     """
-    raw = _read_s3_head(bucket, key, 65536)
+    raw = _read_s3_head(bucket, key, SAMPLE_BUFFER_SIZE)
 
     decode_attempts = [
         ("utf-8-sig", "UTF-8"),
@@ -83,9 +105,8 @@ def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     if text is None or chosen_encoding_for_spark is None:
         raise RuntimeError(f"Could not decode head sample of s3://{bucket}/{key}. Last error: {last_err}")
 
-    sample = "\n".join(text.splitlines()[:200])
-    candidates = [";", ",", "\t", "|"]
-    counts = {c: sample.count(c) for c in candidates}
+    sample = "\n".join(text.splitlines()[:MAX_DIALECT_SAMPLE_LINES])
+    counts = {c: sample.count(c) for c in CSV_SEPARATORS}
     sep = max(counts, key=counts.get)
 
     if counts[sep] == 0:
@@ -263,8 +284,13 @@ try:
 
     csv_keys.sort()
     key_a, key_b = csv_keys[0], csv_keys[1]
-    base_a = os.path.basename(key_a)
-    base_b = os.path.basename(key_b)
+    
+    # Validate S3 keys before use
+    validate_s3_key(key_a)
+    validate_s3_key(key_b)
+    
+    base_a = basename(key_a)
+    base_b = basename(key_b)
 
     def tag_from_name(name: str) -> str:
         n = name.lower()
@@ -368,8 +394,8 @@ try:
     dup_a_exists = dup_a.limit(1).count() > 0
     dup_b_exists = dup_b.limit(1).count() > 0
     if dup_a_exists or dup_b_exists:
-        sample_a = [r[key_safe_a] for r in dup_a.select(key_safe_a).limit(20).collect()] if dup_a_exists else []
-        sample_b = [r[key_safe_b] for r in dup_b.select(key_safe_b).limit(20).collect()] if dup_b_exists else []
+        sample_a = [r[key_safe_a] for r in dup_a.select(key_safe_a).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_a_exists else []
+        sample_b = [r[key_safe_b] for r in dup_b.select(key_safe_b).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_b_exists else []
         raise RuntimeError(
             f"Duplicate xmedia IDs detected. "
             f"A sample={sample_a} | B sample={sample_b}. "

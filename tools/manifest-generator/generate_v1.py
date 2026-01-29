@@ -138,7 +138,7 @@ class ManifestExtractor:
         return parameters
     
     def find_s3_operations(self) -> Tuple[List[Dict], List[Dict]]:
-        """Find S3 read and write operations using both AST and regex patterns."""
+        """Find S3 read and write operations."""
         reads = []
         writes = []
         
@@ -180,66 +180,7 @@ class ManifestExtractor:
                                     'format': node.func.attr
                                 })
         
-        # Use regex to find helper function calls and variable assignments
-        reads_regex, writes_regex = self._find_s3_operations_regex()
-        reads.extend(reads_regex)
-        writes.extend(writes_regex)
-        
         self.add_evidence(f"S3 operations: Found {len(reads)} read operations and {len(writes)} write operations")
-        return reads, writes
-    
-    def _find_s3_operations_regex(self) -> Tuple[List[Dict], List[Dict]]:
-        """Use regex to find helper function patterns and variable usage."""
-        reads = []
-        writes = []
-        
-        # Find read helper calls: read_text_from_s3(BUCKET, KEY)
-        read_pattern = r'read_\w+_from_s3\s*\(\s*(\w+)\s*,\s*(\w+)\s*\)'
-        for match in re.finditer(read_pattern, self.source_code):
-            bucket_var = match.group(1)
-            key_var = match.group(2)
-            line_num = self.source_code[:match.start()].count('\n') + 1
-            reads.append({
-                'bucket': f'${{{bucket_var}}}',
-                'key': f'${{{key_var}}}',
-                'line': line_num,
-                'method': 'helper_read'
-            })
-        
-        # Find write helper calls: write_*_to_s3(BUCKET, KEY, ...)
-        write_pattern = r'write_\w+_to_s3\s*\(\s*(\w+)\s*,\s*(\w+)\s*,'
-        for match in re.finditer(write_pattern, self.source_code):
-            bucket_var = match.group(1)
-            key_var = match.group(2)
-            line_num = self.source_code[:match.start()].count('\n') + 1
-            writes.append({
-                'bucket': f'${{{bucket_var}}}',
-                'key': f'${{{key_var}}}',
-                'line': line_num,
-                'method': 'helper_write'
-            })
-        
-        # Find key variable assignments with f-strings
-        # Pattern: some_key = f"{PREFIX}{VAR}_something.json"
-        key_assignment_pattern = r'(\w+_key)\s*=\s*f["\']([^"\']+)["\']'
-        for match in re.finditer(key_assignment_pattern, self.source_code):
-            key_var = match.group(1)
-            key_pattern = match.group(2)
-            # Convert Python f-string to manifest placeholder
-            converted_pattern = re.sub(r'\{(\w+)\}', r'${\1}', key_pattern)
-            line_num = self.source_code[:match.start()].count('\n') + 1
-            
-            # Check if this key is used in a write operation
-            if re.search(rf'write_\w+_to_s3\s*\([^,]+,\s*{key_var}\s*,', self.source_code):
-                # It's an output
-                writes.append({
-                    'bucket': 'TBD',  # Need to track bucket separately
-                    'key': converted_pattern,
-                    'line': line_num,
-                    'method': 'f-string_key',
-                    'key_var': key_var
-                })
-        
         return reads, writes
     
     def _extract_s3_args(self, node: ast.Call) -> Tuple[Optional[str], Optional[str]]:
@@ -390,37 +331,18 @@ class ManifestExtractor:
         
         reads, writes = self.find_s3_operations()
         
-        # Deduplicate operations by key pattern
-        seen_input_keys = set()
-        seen_output_keys = set()
-        
         # Convert reads to inputs
         inputs = []
         for read in reads:
             # Skip config files (will be in separate section)
-            key = read.get('key', '') or ''
+            key = read.get('key', '')
             if key and ('config' in key.lower() or 'configuration' in key.lower()):
                 continue
             
-            # Skip duplicates
-            key_sig = f"{read.get('bucket', 'TBD')}:{key}"
-            if key_sig in seen_input_keys:
-                continue
-            seen_input_keys.add(key_sig)
-            
-            # Try to infer format from key
-            format_type = 'TBD'
-            if key and '.xml' in key.lower():
-                format_type = 'xml'
-            elif key and '.json' in key.lower():
-                format_type = 'ndjson'  # Assume ndjson for Spark/Glue
-            elif key and '.csv' in key.lower():
-                format_type = 'csv'
-            
             inputs.append({
                 'bucket': read.get('bucket', 'TBD'),
-                'key_pattern': key if key else 'TBD',
-                'format': format_type,
+                'key_pattern': read.get('key', 'TBD'),
+                'format': read.get('format', 'TBD'),
                 'required': True
             })
         
@@ -428,31 +350,20 @@ class ManifestExtractor:
         outputs = []
         for write in writes:
             # Skip receipts (will be in logging_and_receipt section)
-            key = write.get('key', '') or ''
+            key = write.get('key', '')
             if key and 'receipt' in key.lower():
                 continue
             
-            # Skip duplicates
-            key_sig = f"{write.get('bucket', 'TBD')}:{key}"
-            if key_sig in seen_output_keys:
-                continue
-            seen_output_keys.add(key_sig)
-            
             # Detect format from write method or key extension
-            format_type = 'ndjson'  # Default for write_ndjson_to_s3
-            if key and '.json' in key.lower():
-                format_type = 'ndjson'  # Spark/Glue default
-            elif key and '.csv' in key.lower():
+            format_type = 'TBD'
+            if '.json' in key.lower():
+                format_type = 'ndjson'  # Default for Spark/Glue
+            elif '.csv' in key.lower():
                 format_type = 'csv'
-            elif write.get('method') == 'helper_write':
-                # If it's a helper, check the helper name
-                context = self.source_code[max(0, write.get('line', 0)-5):write.get('line', 0)+5].lower()
-                if 'ndjson' in context:
-                    format_type = 'ndjson'
             
             outputs.append({
                 'bucket': write.get('bucket', 'TBD'),
-                'key_pattern': key if key else 'TBD',
+                'key_pattern': write.get('key', 'TBD'),
                 'format': format_type,
                 'required': True
             })

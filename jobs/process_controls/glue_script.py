@@ -14,7 +14,7 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, expr, trim, udf, lit
+from pyspark.sql.functions import col, expr, trim, udf, lit, sum as spark_sum, when
 from pyspark.sql.types import StringType, StructType, StructField, LongType
 
 # =========================
@@ -630,47 +630,66 @@ try:
     # -------------------------
     print("[INFO] Calculating column-level statistics...")
     
-    statistics_rows = []
-    
+    # Optimize: Calculate all column statistics in a single aggregation pass
+    # Build aggregate expressions for all columns at once
+    agg_exprs = []
     for safe_col in comparable_cols:
-        # Get the original column name for the output
-        original_col = combined_reverse_map.get(safe_col, safe_col)
-        
-        # Reference the prefixed columns from the joined dataframe
         a_col = f"{a_pref}{safe_col}"
         b_col = f"{b_pref}{safe_col}"
         
-        # Calculate statistics for this column
         # both_differ: Both have values (not null/empty) but values differ
-        both_differ_count = joined.filter(
-            (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
-            (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
-            (trim(col(a_col)) != trim(col(b_col)))
-        ).count()
+        both_differ_expr = spark_sum(
+            when(
+                (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+                (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+                (trim(col(a_col)) != trim(col(b_col))),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__both_differ")
         
-        # in_X1_not_X2: X1 (A) has value but X2 (B) is null/empty
-        in_a_not_b_count = joined.filter(
-            (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
-            ((col(b_col).isNull()) | (trim(col(b_col)) == ""))
-        ).count()
+        # in_A_not_B: A has value but B is null/empty
+        in_a_not_b_expr = spark_sum(
+            when(
+                (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+                ((col(b_col).isNull()) | (trim(col(b_col)) == "")),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__in_a_not_b")
         
-        # in_X2_not_X1: X2 (B) has value but X1 (A) is null/empty
-        in_b_not_a_count = joined.filter(
-            (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
-            ((col(a_col).isNull()) | (trim(col(a_col)) == ""))
-        ).count()
+        # in_B_not_A: B has value but A is null/empty
+        in_b_not_a_expr = spark_sum(
+            when(
+                (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+                ((col(a_col).isNull()) | (trim(col(a_col)) == "")),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__in_b_not_a")
         
-        statistics_rows.append({
-            "column_name": original_col,
-            "both_differ": both_differ_count,
-            f"in_{tag_a}_not_{tag_b}": in_a_not_b_count,
-            f"in_{tag_b}_not_{tag_a}": in_b_not_a_count,
-        })
+        agg_exprs.extend([both_differ_expr, in_a_not_b_expr, in_b_not_a_expr])
     
-    # Create statistics DataFrame
-    if statistics_rows:
+    # Execute single aggregation for all columns
+    if agg_exprs:
+        stats_result = joined.agg(*agg_exprs).collect()[0]
+        
+        # Transform result into statistics rows
+        statistics_rows = []
+        for safe_col in comparable_cols:
+            # Get the original column name for the output
+            original_col = combined_reverse_map.get(safe_col, safe_col)
+            
+            both_differ_count = stats_result[f"{safe_col}__both_differ"]
+            in_a_not_b_count = stats_result[f"{safe_col}__in_a_not_b"]
+            in_b_not_a_count = stats_result[f"{safe_col}__in_b_not_a"]
+            
+            statistics_rows.append({
+                "column_name": original_col,
+                "both_differ": both_differ_count,
+                f"in_{tag_a}_not_{tag_b}": in_a_not_b_count,
+                f"in_{tag_b}_not_{tag_a}": in_b_not_a_count,
+            })
+        
         statistics_df = spark.createDataFrame(statistics_rows)
-        print(f"[INFO] Generated statistics for {len(statistics_rows)} columns")
+        print(f"[INFO] Generated statistics for {len(statistics_rows)} columns in single aggregation pass")
     else:
         # Empty dataframe with correct schema
         schema = StructType([
@@ -681,6 +700,7 @@ try:
         ])
         statistics_df = spark.createDataFrame([], schema=schema)
         print("[INFO] No comparable columns for statistics")
+
 
     # -------------------------
     # 8) Write outputs as single TSV objects (still .csv extension)

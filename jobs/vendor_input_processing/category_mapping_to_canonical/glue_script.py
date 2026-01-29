@@ -563,7 +563,7 @@ try:
         try:
             s3_client.delete_object(Bucket=output_bucket, Key=k)
         except Exception as cleanup_err:
-            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {type(cleanup_err).__name__}: {cleanup_err}")
 
     # =========================================================
     # PART-2: enrich with existing canonical mappings
@@ -1419,7 +1419,7 @@ try:
         try:
             s3_client.delete_object(Bucket=output_bucket, Key=k)
         except Exception as cleanup_err:
-            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {type(cleanup_err).__name__}: {cleanup_err}")
 
     print("[INFO] Job completed successfully (Part-1 + Part-2 + Part-3 + Part-4).")
     job.commit()
@@ -1430,6 +1430,7 @@ except Exception as e:
     
     # Categorize error types for better debugging
     # Check for AWS-specific error types (exact matches for known AWS exceptions)
+    # Note: 'boto' substring check intentionally catches boto3/botocore-related errors
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
     is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
     

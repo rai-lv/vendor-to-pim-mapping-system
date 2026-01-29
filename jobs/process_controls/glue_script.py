@@ -152,6 +152,17 @@ def write_single_csv(
         # For empty DataFrames, write CSV with headers only (properly escaped)
         print(f"[INFO] DataFrame is empty. Writing headers-only CSV to: s3://{output_bucket}/{final_key}")
         
+        # Handle edge case: DataFrame with no columns
+        if not df.columns:
+            print("[WARN] DataFrame has no columns. Writing empty CSV file.")
+            s3_client.put_object(
+                Bucket=output_bucket,
+                Key=final_key,
+                Body=b"",
+                ContentType="text/csv",
+            )
+            return
+        
         # Use csv module to properly escape headers
         output = StringIO()
         writer = csv.writer(output)
@@ -199,7 +210,7 @@ def write_single_csv(
         try:
             s3_client.delete_object(Bucket=output_bucket, Key=k)
         except Exception as cleanup_err:
-            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {type(cleanup_err).__name__}: {cleanup_err}")
 
 # =========================
 # Glue entry point (same args)
@@ -531,6 +542,7 @@ except Exception as e:
     
     # Categorize error types for better debugging
     # Check for AWS-specific error types (exact matches for known AWS exceptions)
+    # Note: 'boto' substring check intentionally catches boto3/botocore-related errors
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
     is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
     

@@ -74,6 +74,19 @@ Tools **do not**:
 ### Separation principle
 Agent role definitions (this document) describe **what agents do**. Tool manuals (in `docs/ops/`) describe **how to run tools** and **how to interpret their outputs**. This separation prevents the charter from becoming an operational reference manual.
 
+### Agent roles vs agent implementations
+
+This charter defines **agent role functions** that support the 5-step workflow. These are conceptual responsibilities, not specific agent instances.
+
+**Role functions** (defined in Section 4 below) describe what must be done at each workflow step. These definitions are stable and implementation-independent.
+
+**Agent implementations** (in `.github/agents/`) are the actual agents that fulfill these functions. The current implementation is the **Combined Planning Agent** (`.github/agents/combined-planning-agent.md`), which fulfills the Objective Support, Pipeline Support, and Capability Support functions through explicit mode switching.
+
+This separation allows:
+- Role definitions to remain stable even as implementations change
+- Multiple implementation approaches (separate agents, combined agents, tool-based agents)
+- Clear distinction between "what must be done" (roles) and "how it's done" (implementations)
+
 ---
 
 ## 4) Canonical Agent Roles

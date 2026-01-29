@@ -1,4 +1,4 @@
-# Naming Standard (v1.0)
+# Naming Standard (v1.1)
 
 **Canonical location:** `docs/standards/`
 **Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
@@ -7,7 +7,7 @@
 **Must not contain:** Tool instructions or job-specific business logic.
 
 **Last Updated:** 2026-01-29
-**Version:** 1.0
+**Version:** 1.1
 
 ---
 
@@ -634,14 +634,27 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 ## 7) Open Items / TBD
 
-### 7.1 Unresolved naming decisions
+### 7.1 Resolved items (closed by referencing existing standards)
 
-**TBD-1: Artifact catalog entry identifiers**
+**TBD-1: Artifact catalog entry identifiers — RESOLVED**
 - **Question:** Should artifact catalog entries have explicit `artifact_id` keys distinct from filenames?
-- **Current state:** Artifacts are identified by filename patterns; no separate `artifact_id` field exists
-- **Why TBD:** If artifacts are versioned or renamed, a stable `artifact_id` may be needed
-- **Decision needed:** Approve current filename-based approach OR introduce explicit `artifact_id` field in artifact catalog spec
-- **Impact:** If explicit IDs are introduced, need to define naming rules for them
+- **Resolution:** This is already resolved in `docs/standards/artifacts_catalog_spec.md` (v1.3.5) Section 3.1
+- **Finding:** Artifact catalog entries already have explicit `artifact_id` fields distinct from `file_name_pattern`
+- **Format:** `<producer_anchor>__<artifact_type_snake_case>` with full deterministic derivation rules
+- **Reference:** See `artifacts_catalog_spec.md` Section 3.1 for canonical `artifact_id` naming rules
+- **Impact:** No changes needed to this standard; artifact catalog spec is authoritative for catalog-level identifiers
+- **Resolved date:** 2026-01-29
+
+**TBD-4: Multi-environment naming (dev, staging, prod) — RESOLVED**
+- **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
+- **Resolution:** This is already resolved in `docs/standards/job_manifest_spec.md` (v1.0) Section 2.2
+- **Finding:** Environment prefixes are explicitly documented as deployment-time transforms, NOT part of canonical naming
+- **Rule:** Canonical `job_id` in manifests remains unprefixed; deployment scripts apply environment prefixes as needed
+- **Reference:** See `job_manifest_spec.md` Section 2.2 "Deployment note" for authoritative guidance
+- **Impact:** No changes needed to this standard; manifests document canonical identity, deployment handles environment-specific transforms
+- **Resolved date:** 2026-01-29
+
+### 7.2 Unresolved naming decisions
 
 **TBD-2: Version suffix conventions**
 - **Question:** How should versioned artifacts be named (e.g., `vendor_products_v2.json` vs. `vendor_products.json` with version in path)?
@@ -657,23 +670,12 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 - **Decision needed:** Extend naming rules to cover temp artifacts OR explicitly exclude them from this standard
 - **Impact:** If included, need to define temp artifact pattern (e.g., `temp_<name>.json` or `<name>_temp.json`)
 
-**TBD-4: Multi-environment naming (dev, staging, prod)**
-- **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
-- **Current state:** Job manifests document canonical names; deployment transforms are out-of-scope
-- **Why TBD:** Deployment scripts may apply environment prefixes; need to clarify boundary
-- **Decision needed:** Explicitly document that environment prefixes are deployment-time transforms and NOT part of canonical naming
-- **Impact:** Confirm that canonical `job_id` remains unprefixed in all manifests and docs; deployment scripts responsible for prefixing
+### 7.3 Next steps for resolution
 
-### 7.2 Next steps for resolution
-
-**Priority 1 (high impact):**
-- TBD-4: Clarify environment prefix handling (impacts deployment automation)
-
-**Priority 2 (medium impact):**
-- TBD-1: Decide on artifact_id vs. filename-based identification (impacts artifact catalog design)
-
-**Priority 3 (low impact, future-proofing):**
+**Priority 1 (medium impact):**
 - TBD-2: Define versioning convention (for future artifact evolution)
+
+**Priority 2 (low impact, future-proofing):**
 - TBD-3: Decide on temp artifact naming inclusion (for completeness)
 
 **Resolution process:**
@@ -687,4 +689,5 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 1.1     | 2026-01-29 | Closed TBD-1 and TBD-4 by referencing existing approved standards (artifacts_catalog_spec.md, job_manifest_spec.md); 2 TBDs remain open |
 | 1.0     | 2026-01-29 | Initial release: all sections, 4 open TBDs   |

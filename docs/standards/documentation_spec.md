@@ -173,7 +173,7 @@ Every document MUST:
 
 Every document MUST NOT:
 - Have multiple H1 headings
-- Use hard-coded dates/timestamps in body content (use metadata headers only)
+- Use hard-coded dates/timestamps in body content or metadata (use git history for change tracking)
 - Include "Draft" or "WIP" markers in committed documents (use git branches for drafts)
 
 ### 2.4 Lists and Formatting
@@ -356,6 +356,8 @@ Documentation in this repository does NOT use explicit version numbers or timest
 
 **Exception:** Per-job documentation (job manifests, business descriptions) may include versioning when they represent versioned contracts between systems. See section 3.7 for per-job documentation requirements.
 
+**Note on Evidence Citations:** This rule forbids timestamps in document metadata (version tracking). It does NOT forbid timestamps in evidence citations (e.g., "validated on 2025-12-15"), which are required by Section 1.3 to indicate when verification occurred. Evidence timestamps document when a validation was performed, not when the document was updated.
+
 **Migration from versioned documents:** Existing documents with version numbers or timestamps should be migrated by removing the version/timestamp metadata. Git history preserves all historical version information.
 
 ---
@@ -389,9 +391,9 @@ Documentation should be evaluated against these criteria:
 **Definition:** Documentation reflects current state, not stale information.
 
 **Validation:**
-- Are timestamps/versions recent?
-- Do git commit dates match metadata timestamps (when present)?
-- Are obsolete documents marked as such?
+- Do git commit dates indicate recent updates?
+- Does content reflect current implementation and decisions?
+- Are obsolete documents marked as deprecated?
 
 #### 5.1.4 Clarity
 

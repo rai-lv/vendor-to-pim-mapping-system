@@ -116,7 +116,7 @@ These are the non-negotiable foundation of the documentation system. All other r
 
 **Rules:**
 - Words like "verified", "confirmed", "validated" MUST reference specific evidence
-- Evidence must be deterministic (reproducible by others with same inputs)
+- Evidence must be reproducible (others with same inputs and context can verify the claim)
 - If evidence doesn't exist, use "TBD" or "unverified" rather than claiming verification
 
 **Example violations:**
@@ -124,9 +124,9 @@ These are the non-negotiable foundation of the documentation system. All other r
 - ❌ "All tests pass" - which tests? when? evidence link?
 
 **Example compliance:**
-- ✅ "Edge case handling verified via test suite run 2026-01-29 (see test_results.log)"
+- ✅ "Edge case handling verified via test suite run 2025-12-15 (see test_results.log)"
 - ✅ "Validation status: UNVERIFIED - requires integration testing in staging"
-- ✅ "Complies with spec (validated by `validate_manifest.py` on 2026-01-29)"
+- ✅ "Complies with spec (validated by `validate_manifest.py` on 2025-12-15)"
 
 ### 1.4 Human Authority, Agent Support
 
@@ -137,7 +137,7 @@ These are the non-negotiable foundation of the documentation system. All other r
 **Rules:**
 - Agents may draft, suggest, implement when tasked
 - Agents MUST NOT advance workflow stages without explicit human approval
-- Agents MUST NOT claim authority for their outputs ("the agent verified" is not sufficient)
+- Agent-performed verification MUST NOT be treated as authoritative without human review
 - Human approvals must be captured in auditable form (git commits, decision records)
 
 **Application to documentation:**
@@ -165,7 +165,7 @@ These are the non-negotiable foundation of the documentation system. All other r
 
 **Example compliance:**
 - ✅ "Parameter `retry_count`: TBD - requires discussion with ops team"
-- ✅ "Assumption: S3 bucket has versioning enabled. Impact: Recovery possible. Approved: 2026-01-28"
+- ✅ "Assumption: S3 bucket has versioning enabled. Impact: Recovery possible. Approved: 2025-12-15"
 - ✅ Decision record documents why approach X was chosen over alternatives Y and Z
 
 ---
@@ -478,7 +478,7 @@ Documentation should be evaluated against these criteria:
 
 **Validation:**
 - Are timestamps/versions recent?
-- Do git commit dates match claimed "last updated"?
+- Do git commit dates match metadata timestamps (when present)?
 - Are obsolete documents marked as such?
 
 #### 5.1.4 Clarity
@@ -568,11 +568,11 @@ Based on real issues encountered:
 
 #### 5.3.1 Circular Documentation
 
-**Problem:** Document A defines format that document A itself uses.
+**Problem:** Document A defines format that document A itself uses, creating circular self-reference issues.
 
-**Example:** documentation_spec.md contained the metadata header it was defining.
+**Example:** A metadata specification that references its own metadata format definition within its metadata header, creating infinite regress.
 
-**Solution:** Meta-documents (specs, guides about documentation) should define rules but not necessarily follow them (to avoid circular self-reference).
+**Solution:** Meta-documents (specs, guides about documentation) define rules for other documents to follow. When a meta-document follows its own rules, this is acceptable as long as it doesn't create circular references in the content itself (e.g., "See section X for metadata format" within the metadata header itself).
 
 #### 5.3.2 Shadow Specifications
 
@@ -650,7 +650,7 @@ When documentation becomes obsolete:
 1. **Mark as deprecated** - Add "DEPRECATED" marker at top.
 2. **State reason** - Why is it obsolete? What replaced it?
 3. **Provide redirect** - Link to replacement documentation if it exists.
-4. **Don't delete immediately** - Keep for historical reference (grace period).
+4. **Don't delete immediately** - Keep for historical reference (minimum 30 days or one release cycle).
 5. **Remove from catalog** - Update documentation_system_catalog.md.
 6. **Archive eventually** - Move to an archive folder or delete after grace period.
 
@@ -703,22 +703,22 @@ Validation tools MAY check:
 
 ### 7.2 Human Review Checklist
 
-When reviewing documentation changes, check:
-- [ ] Metadata header is complete and correctly formatted for document type
-- [ ] Version/timestamp approach is consistent (not hybrid)
-- [ ] No prohibited patterns present
-- [ ] Content boundaries respected (no shadow specs)
-- [ ] Cross-references use correct paths
-- [ ] Changes align with versioning discipline
-- [ ] Claims are backed by evidence or marked as TBD
-- [ ] Unknowns and assumptions are explicit
+When reviewing documentation changes, check that:
+- Metadata header is complete and correctly formatted for document type
+- Version/timestamp approach is consistent (not hybrid)
+- No prohibited patterns present
+- Content boundaries respected (no shadow specs)
+- Cross-references use correct paths
+- Changes align with versioning discipline
+- Claims are backed by evidence or marked as TBD
+- Unknowns and assumptions are explicit
 
 ### 7.3 Compliance Checking
 
 Principles should be enforced through:
 - **Automated validation:** Where possible (format checks, broken link detection)
 - **Human review:** For semantic compliance (separation of concerns, authority)
-- **Documentation Impact Scan:** Run checklist after significant changes
+- **Documentation review checklist:** Run after significant changes (see section 7.2)
 - **Periodic audits:** Review documentation set against principles quarterly
 
 ### 7.4 Exceptions
@@ -955,7 +955,7 @@ Bad documentation:
 - Stale references (broken cross-document links)
 
 **For semantic content rules (what belongs in each document type):**
-- See `docs/context/documentation_system_catalog.md`
+- See [documentation_system_catalog.md](../context/documentation_system_catalog.md)
 
 ---
 

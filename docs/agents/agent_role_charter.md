@@ -223,6 +223,7 @@ Step 4 (Execute Development Tasks)
 - Keep implementation aligned with approved task boundaries; do not expand scope silently.
 - Produce changes in a reviewable form suitable for human approval (e.g., PR-ready commits).
 - Generate any evidence outputs required for validation (e.g., test results, run receipts).
+- Use available scaffolding tools (e.g., manifest-generator) to accelerate artifact creation, reviewing and enhancing tool outputs before committing.
 - Flag scope creep, missing prerequisites, or conflicts with approved intent immediately.
 
 **Non-responsibilities (MUST NOT):**

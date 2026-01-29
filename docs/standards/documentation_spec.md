@@ -216,10 +216,6 @@ Standards documents define normative rules and schemas. They MUST include:
 [2-3 sentences: what this standard defines and why it exists]
 ```
 
-**Purpose Section:**
-
-Standards documents MUST include a "Purpose" section (as H2) immediately after the title, providing 2-3 sentences explaining what the standard defines and why it exists. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
-
 ### 3.2 Context Documents (docs/context/)
 
 Context documents define intent, principles, and system framing. They MUST include:
@@ -276,10 +272,6 @@ Living catalogs are compiled views. They MUST include:
 
 [2-3 sentences: what this catalog indexes and why it exists]
 ```
-
-**Purpose Section:**
-
-Catalogs MUST include a "Purpose" section (as H2) providing 2-3 sentences explaining what the catalog indexes and why. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
 
 ### 3.6 Agent Documentation (docs/agents/ and .github/agents/)
 

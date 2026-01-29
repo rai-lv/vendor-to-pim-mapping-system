@@ -14,7 +14,7 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, expr, trim, udf
+from pyspark.sql.functions import col, expr, trim, udf, lit
 from pyspark.sql.types import StringType
 
 # =========================
@@ -513,7 +513,8 @@ try:
     missing_in_a = ids_b.subtract(ids_a).withColumnRenamed(KEY_SAFE, "xmedia ID")
     missing_in_b = ids_a.subtract(ids_b).withColumnRenamed(KEY_SAFE, "xmedia ID")
 
-    # Join xmedia name if available
+    # Always include xmedia name column for schema consistency
+    # Join xmedia name if available in both files, otherwise add as null column
     if name_safe_a and name_safe_b:
         # Get name mappings from original dataframes
         name_map_a = df_a.select(col(KEY_SAFE).alias("xmedia ID"), col(NAME_SAFE).alias("xmedia name")).distinct()
@@ -522,6 +523,12 @@ try:
         # Join missing IDs with their corresponding names
         missing_in_a = missing_in_a.join(name_map_b, on="xmedia ID", how="left")
         missing_in_b = missing_in_b.join(name_map_a, on="xmedia ID", how="left")
+        print("[INFO] Added xmedia name to missing_in outputs from source data")
+    else:
+        # Add xmedia name column as null to maintain consistent output schema
+        missing_in_a = missing_in_a.withColumn("xmedia name", lit(None).cast(StringType()))
+        missing_in_b = missing_in_b.withColumn("xmedia name", lit(None).cast(StringType()))
+        print("[INFO] Added xmedia name as null column to missing_in outputs for schema consistency")
 
     # -------------------------
     # Create reverse mapping (safe -> original) for field name restoration
@@ -583,10 +590,15 @@ try:
     if stack_parts:
         stack_expr = f"stack({len(comparable_cols)}, {', '.join(stack_parts)}) as (field, value_a, value_b)"
         
-        # Build select columns list - include xmedia name if available
+        # Build select columns list - always include xmedia name for schema consistency
         select_cols = [col(KEY_SAFE).alias("xmedia ID")]
         if name_safe_a and name_safe_b:
             select_cols.append(col(NAME_SAFE).alias("xmedia name"))
+            print("[INFO] Added xmedia name to field_differences output from source data")
+        else:
+            # Add xmedia name column as null to maintain consistent output schema
+            select_cols.append(lit(None).cast(StringType()).alias("xmedia name"))
+            print("[INFO] Added xmedia name as null column to field_differences output for schema consistency")
         select_cols.append(expr(stack_expr))
         
         diffs_long = (
@@ -610,11 +622,8 @@ try:
         
         print(f"[INFO] Applied reverse mapping to restore original column names in field_differences output")
     else:
-        # Create empty schema with xmedia name if available
-        if name_safe_a and name_safe_b:
-            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
-        else:
-            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
+        # Create empty schema - always include xmedia name for consistency
+        diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
 
     # -------------------------
     # 7) Write outputs as single TSV objects (still .csv extension)
@@ -666,6 +675,7 @@ try:
             "comparison_key_header_normalized": KEY_NORM,
             "comparison_name_header_normalized": NAME_NORM,
             "name_column_present": name_col_a is not None and name_col_b is not None,
+            "name_column_always_in_output": True,
             "excluded_header_normalized": PATH_NORM,
             "diff_compares_intersection_only": True,
             "null_marker_in_diff": NULL_MARK,

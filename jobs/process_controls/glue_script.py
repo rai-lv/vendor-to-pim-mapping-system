@@ -15,7 +15,7 @@ from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, expr, trim, udf, lit
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, StructType, StructField, LongType
 
 # =========================
 # Configuration Constants
@@ -626,22 +626,82 @@ try:
         diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
 
     # -------------------------
-    # 7) Write outputs as single TSV objects (still .csv extension)
+    # 7) Column-level statistics
+    # -------------------------
+    print("[INFO] Calculating column-level statistics...")
+    
+    statistics_rows = []
+    
+    for safe_col in comparable_cols:
+        # Get the original column name for the output
+        original_col = combined_reverse_map.get(safe_col, safe_col)
+        
+        # Reference the prefixed columns from the joined dataframe
+        a_col = f"{a_pref}{safe_col}"
+        b_col = f"{b_pref}{safe_col}"
+        
+        # Calculate statistics for this column
+        # both_differ: Both have values (not null/empty) but values differ
+        both_differ_count = joined.filter(
+            (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+            (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+            (trim(col(a_col)) != trim(col(b_col)))
+        ).count()
+        
+        # in_X1_not_X2: X1 (A) has value but X2 (B) is null/empty
+        in_a_not_b_count = joined.filter(
+            (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+            ((col(b_col).isNull()) | (trim(col(b_col)) == ""))
+        ).count()
+        
+        # in_X2_not_X1: X2 (B) has value but X1 (A) is null/empty
+        in_b_not_a_count = joined.filter(
+            (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+            ((col(a_col).isNull()) | (trim(col(a_col)) == ""))
+        ).count()
+        
+        statistics_rows.append({
+            "column_name": original_col,
+            "both_differ": both_differ_count,
+            f"in_{tag_a}_not_{tag_b}": in_a_not_b_count,
+            f"in_{tag_b}_not_{tag_a}": in_b_not_a_count,
+        })
+    
+    # Create statistics DataFrame
+    if statistics_rows:
+        statistics_df = spark.createDataFrame(statistics_rows)
+        print(f"[INFO] Generated statistics for {len(statistics_rows)} columns")
+    else:
+        # Empty dataframe with correct schema
+        schema = StructType([
+            StructField("column_name", StringType(), True),
+            StructField("both_differ", LongType(), True),
+            StructField(f"in_{tag_a}_not_{tag_b}", LongType(), True),
+            StructField(f"in_{tag_b}_not_{tag_a}", LongType(), True),
+        ])
+        statistics_df = spark.createDataFrame([], schema=schema)
+        print("[INFO] No comparable columns for statistics")
+
+    # -------------------------
+    # 8) Write outputs as single TSV objects (still .csv extension)
     # -------------------------
     out_missing_in_a_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_a}.csv"
     out_missing_in_b_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_b}.csv"
     out_diffs_key = f"{result_prefix.rstrip('/')}/field_differences.csv"
+    out_statistics_key = f"{result_prefix.rstrip('/')}/statistics.csv"
 
     tmp_missing_in_a = f"{result_prefix.rstrip('/')}/_tmp_missing_in_{tag_a}_{RUN_TS}/"
     tmp_missing_in_b = f"{result_prefix.rstrip('/')}/_tmp_missing_in_{tag_b}_{RUN_TS}/"
     tmp_diffs = f"{result_prefix.rstrip('/')}/_tmp_field_differences_{RUN_TS}/"
+    tmp_statistics = f"{result_prefix.rstrip('/')}/_tmp_statistics_{RUN_TS}/"
 
     write_single_csv(missing_in_a, output_bucket, out_missing_in_a_key, tmp_missing_in_a, s3_client)
     write_single_csv(missing_in_b, output_bucket, out_missing_in_b_key, tmp_missing_in_b, s3_client)
     write_single_csv(diffs_long, output_bucket, out_diffs_key, tmp_diffs, s3_client)
+    write_single_csv(statistics_df, output_bucket, out_statistics_key, tmp_statistics, s3_client)
 
     # -------------------------
-    # 8) Run receipt (JSON)
+    # 9) Run receipt (JSON)
     # -------------------------
     receipt = {
         "job_name": job_name,
@@ -665,6 +725,7 @@ try:
             "missing_in_a_key": out_missing_in_a_key,
             "missing_in_b_key": out_missing_in_b_key,
             "field_differences_key": out_diffs_key,
+            "statistics_key": out_statistics_key,
         },
         "schema": {
             "comparable_columns_count": len(comparable_cols),

@@ -136,7 +136,23 @@ def write_single_csv(
     """
     Spark writes CSV as a folder; this writes to tmp_prefix, copies the single part file to final_key,
     and deletes tmp objects. Output is a single CSV object.
+    Handles empty DataFrames by ensuring headers are written.
     """
+    # Check if DataFrame is empty
+    is_empty = df.limit(1).count() == 0
+    
+    if is_empty:
+        # For empty DataFrames, write CSV with headers only
+        print(f"[INFO] DataFrame is empty. Writing headers-only CSV to: s3://{output_bucket}/{final_key}")
+        header_csv = ",".join(df.columns) + "\n"
+        s3_client.put_object(
+            Bucket=output_bucket,
+            Key=final_key,
+            Body=header_csv.encode("utf-8"),
+            ContentType="text/csv",
+        )
+        return
+    
     tmp_uri = f"s3://{output_bucket}/{tmp_prefix}"
     print(f"[INFO] Writing CSV to temporary prefix: {tmp_uri}")
 
@@ -164,9 +180,13 @@ def write_single_csv(
         Key=final_key,
     )
 
+    # Non-fatal cleanup: log warnings on failure instead of raising exceptions
     print(f"[INFO] Cleaning up tmp prefix: {tmp_prefix}")
     for k in tmp_keys:
-        s3_client.delete_object(Bucket=output_bucket, Key=k)
+        try:
+            s3_client.delete_object(Bucket=output_bucket, Key=k)
+        except Exception as cleanup_err:
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
 
 # =========================
 # Glue entry point (same args)
@@ -493,6 +513,21 @@ try:
     job.commit()
 
 except Exception as e:
-    print(f"[ERROR] Job failed: {e}")
+    import traceback
+    error_type = type(e).__name__
+    error_msg = str(e)
+    
+    # Categorize error types for better debugging
+    aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
+    is_aws_error = any(aws_err in error_type for aws_err in aws_error_types) or 'boto' in error_type.lower()
+    
+    if is_aws_error:
+        print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")
+    else:
+        print(f"[ERROR] Runtime Error ({error_type}): {error_msg}")
+    
+    print("[ERROR] Full traceback:")
+    traceback.print_exc()
+    
     job.commit()
     raise

@@ -556,10 +556,13 @@ try:
             Key=final_key_legacy,
         )
 
-    # Cleanup temporary folder
+    # Cleanup temporary folder (non-fatal)
     print(f"[INFO] Cleaning up PART-1 temporary prefix: {tmp_key_prefix_part1}")
     for k in tmp_keys_part1:
-        s3_client.delete_object(Bucket=output_bucket, Key=k)
+        try:
+            s3_client.delete_object(Bucket=output_bucket, Key=k)
+        except Exception as cleanup_err:
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
 
     # =========================================================
     # PART-2: enrich with existing canonical mappings
@@ -1412,12 +1415,30 @@ try:
 
     print(f"[INFO] Cleaning up PART-4 temporary prefix: {tmp_key_prefix_part4}")
     for k in tmp_keys_part4:
-        s3_client.delete_object(Bucket=output_bucket, Key=k)
+        try:
+            s3_client.delete_object(Bucket=output_bucket, Key=k)
+        except Exception as cleanup_err:
+            print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {cleanup_err}")
 
     print("[INFO] Job completed successfully (Part-1 + Part-2 + Part-3 + Part-4).")
     job.commit()
 
 except Exception as e:
-    print(f"[ERROR] Job failed: {e}")
+    import traceback
+    error_type = type(e).__name__
+    error_msg = str(e)
+    
+    # Categorize error types for better debugging
+    aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
+    is_aws_error = any(aws_err in error_type for aws_err in aws_error_types) or 'boto' in error_type.lower()
+    
+    if is_aws_error:
+        print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")
+    else:
+        print(f"[ERROR] Runtime Error ({error_type}): {error_msg}")
+    
+    print("[ERROR] Full traceback:")
+    traceback.print_exc()
+    
     job.commit()
     raise

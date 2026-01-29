@@ -1,27 +1,31 @@
 # Documentation Specification
 
 **Canonical location:** `docs/standards/`  
-**Purpose statement:** Defines how documentation in this repository must be formatted, versioned, and structured to maintain consistency, prevent double truth, and enforce separation of concerns.  
-**Why necessary:** Eliminates inconsistencies in document formatting, versioning, metadata, and content boundaries; provides clear MUST and MUST NOT rules for each document type.  
-**Must contain:** Formatting rules; metadata requirements; versioning discipline; content boundary rules per document type; prohibited patterns.  
-**Must not contain:** Tool command syntax or operational procedures.
+**Purpose statement:** Defines how documentation in this repository must be formatted, structured, and versioned to maintain consistency.  
+**Why necessary:** Eliminates inconsistencies in document formatting, structure, versioning, and metadata; ensures uniform presentation across all documentation types.  
+**Must contain:** Formatting rules; metadata requirements; versioning discipline; file naming conventions; structural anti-patterns.  
+**Must not contain:** Semantic content rules (see documentation_system_catalog.md); tool command syntax; operational procedures.
 
 ---
 
 ## 0) Purpose and Scope
 
-This specification defines **how documents must be formatted and what they may/may not contain**, independent of their semantic purpose (which is defined in the Documentation System Catalog).
+This specification defines **how documents must be formatted, structured, and versioned** to maintain consistency across the documentation system.
 
 ### In scope:
-- Document structure and formatting rules
-- Metadata header requirements and versioning discipline
-- Content boundaries (what may NOT appear in each document type)
-- Prohibited patterns that violate separation of concerns or create double truth
+- Document structure and formatting rules (Markdown conventions, headings, lists, code blocks)
+- Metadata header requirements and formatting
+- Versioning discipline (when to use versions vs timestamps, how to format them)
+- Structural anti-patterns (e.g., multiple H1 headings, hardcoded timestamps in body text)
+- File naming conventions
 
 ### Out of scope:
-- Semantic purpose and canonical placement (see `documentation_system_catalog.md`)
+- **Semantic content rules** (what each document type should/shouldn't contain) - see `documentation_system_catalog.md`
+- Canonical placement and document type purposes - see `documentation_system_catalog.md`
 - Specific schemas and templates (see individual standard specs)
 - Tool usage and operational procedures (see `docs/ops/`)
+
+**Key principle:** This specification addresses FORMAT and STRUCTURE. The documentation_system_catalog.md addresses SEMANTIC CONTENT and PURPOSE.
 
 ---
 
@@ -322,110 +326,22 @@ When using timestamps instead of semantic versions:
 
 ---
 
-## 4) Content Boundary Rules by Document Type
+## 4) Semantic Content Rules
 
-### 4.1 Context Documents (docs/context/) MUST NOT Contain:
+**This specification does NOT define semantic content rules.** 
 
-- Tool command syntax or CLI usage examples
-- Step-by-step operational procedures
-- Normative schemas, required fields, or validation rules
-- Embedded authoritative templates
-- Specific tool names as requirements (tools are referenced conceptually)
-- Detailed troubleshooting instructions
+For rules about what content belongs in each document type (what documents MUST contain and MUST NOT contain), see:
+- **`docs/context/documentation_system_catalog.md`** - Defines the purpose, scope, and content boundaries for each document type
 
-**What they SHOULD contain:**
-- Principles and intent
-- Conceptual definitions
-- Operating model and roles
-- Truth hierarchy and authority structure
-- Pointers to where specifics live
-
-### 4.2 Standards Documents (docs/standards/) MUST NOT Contain:
-
-- Tool command examples (reference ops docs instead)
-- Workflow procedures (reference process docs instead)
-- Embedded context/rationale that restates principles
-- Per-job content or instances (those belong in catalogs or per-job docs)
-- Conflicting definitions with glossary terms
-
-**What they MUST contain:**
-- Normative schemas and required fields
-- Validation rules and pass/fail criteria
-- Allowed enums and formats
-- Breaking change rules
-- Compliance checklists
-
-### 4.3 Process Documents (docs/process/) MUST NOT Contain:
-
-- Normative schemas (use standards docs)
-- Tool command syntax (use ops docs)
-- Redefined terms (use glossary)
-- Embedded templates that compete with standards
-
-**What they SHOULD contain:**
-- Step-by-step execution guidance
-- Entry and exit criteria
-- Approval gate procedures
-- Escalation triggers
-- Iteration patterns
-- References to relevant standards
-
-### 4.4 Operational Reference Documents (docs/ops/) MUST NOT Contain:
-
-- Normative schemas or contract definitions
-- Business rationale or principles
-- Workflow approval gates
-- Standard definitions
-
-**What they SHOULD contain:**
-- Tool command syntax and parameters
-- Troubleshooting procedures
-- CI/automation configuration
-- Version compatibility notes
-- Output interpretation guides
-
-### 4.5 Living Catalogs (docs/catalogs/) MUST NOT Contain:
-
-- Schema definitions (reference standards instead)
-- Tool usage instructions
-- Workflow procedures
-- Business rationale for individual entries
-
-**What they MUST contain:**
-- Compiled entries conforming to relevant specs
-- References to canonical sources
-- Status/lifecycle indicators
-- Index/navigation structure
-
-### 4.6 Per-Job Documentation MUST NOT Contain:
-
-**Job Manifests (job_manifest.yaml) MUST NOT contain:**
-- Business rationale or "why" explanations (use business description)
-- Operational troubleshooting (reference script card or ops docs)
-- Global definitions (use glossary)
-- Per-job-instance values (use placeholders for runtime values)
-
-**Implementation Code (glue_script.py) MUST NOT contain:**
-- This specification does not govern code content (see development standards if they exist)
-
-**Business Descriptions MUST NOT contain:**
-- Operational run instructions (use script card)
-- Technical interface details already in manifest (reference manifest instead)
-- Global definitions applicable across jobs (use glossary)
-
-**Script Cards MUST NOT contain:**
-- Global definitions applicable across jobs (use glossary)
-- Business justification (use business description)
-- Normative contract schemas already defined elsewhere (reference standards)
-- Duplicated metadata already in manifests (reference manifest instead)
+This specification focuses exclusively on **format, structure, and presentation** requirements.
 
 ---
 
-## 5) Prohibited Patterns (MUST NOT)
+## 5) Prohibited Structural Patterns (MUST NOT)
 
-These patterns violate separation of concerns or create double truth and are PROHIBITED in all documentation:
+These patterns violate formatting, structure, or versioning discipline and are PROHIBITED:
 
-### 5.1 "Open Items" or "TODO" Sections in Standards
+### 5.1 "Open Items" or "TODO" Sections in Committed Documents
 
 **Prohibited:**
 ```markdown
@@ -434,59 +350,26 @@ These patterns violate separation of concerns or create double truth and are PRO
 - [ ] Define error handling
 ```
 
-**Rationale:** Standards documents are normative contracts. Incomplete standards should not be committed. Use `TBD` fields within the schema with explanations in `notes`, or use git issues/branches for work in progress.
+**Rationale:** This is a STRUCTURAL anti-pattern. Committed documents should be complete. Use git branches for work-in-progress, or use `TBD` fields within schemas (as defined in individual specs).
 
 **Allowed alternative:**
 - Use `TBD` as a field value with explanation (as defined in each standard spec)
-- Use decision records to track unresolved decisions
 - Use git issues for tracking future enhancements
+- Keep work-in-progress on feature branches
 
-### 5.2 Embedded Competing Authority
+### 5.2 Multiple H1 Headings
 
-**Prohibited:** Redefining schemas, templates, or rules that are defined authoritatively elsewhere.
+**Prohibited:** More than one H1 (`#`) heading in a document.
 
-**Example of violation:**
-A process guide contains a complete job manifest template with required fields, competing with `job_manifest_spec.md`.
+**Rationale:** Document structure requires exactly one H1 title at the top.
 
-**Correct approach:**
-Process guide references the standard: "See `docs/standards/job_manifest_spec.md` for required fields."
-
-### 5.3 Shadow Specifications
-
-**Prohibited:** Embedding normative requirements in documents of the wrong type.
-
-**Examples:**
-- Tool command syntax in context documents
-- Approval gate procedures in standards documents
-- Schema definitions in process guides
-- Business rationale in operational references
-
-### 5.4 Undocumented Version Changes
+### 5.3 Undocumented Version Changes
 
 **Prohibited:** Changing version numbers or timestamps without corresponding content changes in a commit.
 
 **Rule:** Version/timestamp changes MUST occur in the same commit as the content changes that necessitate them.
 
-### 5.5 Subjective "Verified" Claims
-
-**Prohibited:** Using "verified", "confirmed", "validated" without explicit evidence reference.
-
-**Example violation:**
-```markdown
-The job correctly handles all edge cases. (verified)
-```
-
-**Correct approach:**
-```markdown
-The job correctly handles all edge cases (verified via test execution 2026-01-28, see test_results.log).
-```
-
-Or use `TBD`:
-```markdown
-Edge case handling: TBD (requires integration testing in staging environment)
-```
-
-### 5.6 Hardcoded Timestamps in Body Text
+### 5.4 Hardcoded Timestamps in Body Text
 
 **Prohibited:** Including update timestamps or "last modified" statements in document body.
 
@@ -498,6 +381,24 @@ Edge case handling: TBD (requires integration testing in staging environment)
 ```
 
 **Correct approach:** Use metadata header only; rely on git history for detailed change tracking.
+
+### 5.5 Hybrid Version/Timestamp Markers
+
+**Prohibited:** Using both version number and timestamp in the same document header.
+
+**Example violation:**
+```markdown
+UPD 2026-01-28 14:20
+**Version:** 1.0.0
+```
+
+**Correct approach:** Choose ONE versioning approach (see section 3).
+
+### 5.6 Incorrect Heading Hierarchy
+
+**Prohibited:** Skipping heading levels (e.g., H1 → H3 without H2).
+
+**Correct:** Use sequential heading levels: H1 → H2 → H3 → H4
 
 ---
 
@@ -569,11 +470,31 @@ Existing documents that violate this specification:
 
 ## 8) Relationship to Other Documents
 
-This specification:
-- **Builds on** `documentation_system_catalog.md` (which defines document types and purposes)
-- **Aligns with** `target_agent_system.md` (separation of concerns, no double truth)
-- **Is enforced by** `validation_standard.md` (compliance checking)
-- **Guides** all documentation authors and agents in producing consistent documentation
+This specification addresses **format and structure**.
+
+**Division of responsibility:**
+
+- **`documentation_system_catalog.md`** (SEMANTIC CONTENT):
+  - Defines document types and their purposes
+  - Specifies what content belongs in each document type
+  - Provides "Must contain" and "Must not contain" rules
+  - THIS IS THE AUTHORITATIVE SOURCE FOR CONTENT RULES
+
+- **`documentation_spec.md`** (FORMAT AND STRUCTURE - this document):
+  - Defines formatting conventions (Markdown, headings, lists)
+  - Specifies metadata header formats
+  - Defines versioning discipline
+  - Provides structural anti-patterns
+
+- **`target_agent_system.md`**:
+  - Defines separation of concerns principles
+  - Specifies no double truth rule
+  - This spec aligns with those principles
+
+- **`validation_standard.md`**:
+  - May enforce rules from both catalog (content) and spec (format)
+
+**Key principle:** Semantic content rules live in ONE place (documentation_system_catalog.md). Format rules live in ONE place (this document). This prevents double truth.
 
 ---
 
@@ -669,39 +590,40 @@ jobs/vendor_input_processing/preprocessIncomingBmecat/
 
 ## 10) Summary: Key Rules
 
-**Universal rules (all documents):**
-1. Use consistent Markdown formatting
-2. Single H1 title
-3. No hardcoded timestamps in body text
-4. Valid cross-references
+**Universal formatting rules (all documents):**
+1. Use consistent Markdown formatting (snake_case filenames, UTF-8 encoding)
+2. Single H1 title at document start
+3. Sequential heading hierarchy (H1 → H2 → H3, no skipping)
+4. No hardcoded timestamps in body text (use metadata headers only)
+5. Valid cross-references using relative paths
+6. Consistent list markers (`-` for unordered, `1.` for ordered)
 
 **Metadata rules (by document type):**
 - Standards: Full metadata block + version OR timestamp (not both)
-- Context: Purpose only, no version markers
-- Process: Purpose and scope, no version markers
+- Context: Purpose section only, no version markers
+- Process: Purpose and scope sections, no version markers
 - Catalogs: Full metadata block + optional update timestamp
-- Ops: Minimal metadata, optional tool version
-- Per-job manifests: YAML schema, no metadata header
-- Per-job business descriptions: Follow business_job_description_spec
-- Per-job script cards: Follow script_card_spec (when they exist)
+- Ops: Minimal metadata, optional tool version tracking
+- Per-job manifests: YAML schema per job_manifest_spec
+- Per-job business descriptions: Follow business_job_description_spec structure
+- Per-job script cards: Follow script_card_spec structure (when they exist)
 
-**Content boundaries (prevent double truth):**
-- Context: principles, not tools/schemas
-- Standards: schemas, not tools/procedures
-- Process: procedures, not schemas
-- Ops: tools, not contracts/schemas
-- Catalogs: indexes, not definitions
-- Per-job manifests: interface facts only, not business rationale
-- Per-job business descriptions: intent/scope, not technical interface details
-- Per-job script cards: operational behavior, not business justification
+**Versioning discipline:**
+- Semantic versions (X.Y.Z) for stable standards with breaking change tracking
+- Timestamps (UPD YYYY-MM-DD) for evolving standards
+- Never mix both in same document
+- Version/timestamp changes only in same commit as content changes
 
-**Prohibited patterns:**
-- Open items sections in standards
-- Competing authority (shadow specs)
-- Unsubstantiated "verified" claims
+**Prohibited structural patterns:**
+- Open items/TODO sections in committed documents
+- Multiple H1 headings in one document
+- Hardcoded timestamps in body text
 - Hybrid version/timestamp markers
-- Tool syntax in context/standards
-- Schemas in process/ops
+- Incorrect heading hierarchy (skipping levels)
+- Undocumented version changes
+
+**For semantic content rules (what belongs in each document type):**
+- See `docs/context/documentation_system_catalog.md`
 
 ---
 

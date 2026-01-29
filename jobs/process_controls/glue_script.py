@@ -14,7 +14,7 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, expr, trim
+from pyspark.sql.functions import col, expr, trim, udf
 from pyspark.sql.types import StringType
 
 # =========================
@@ -154,6 +154,13 @@ def make_safe_name_map(columns: List[str]) -> Dict[str, str]:
         seen.add(safe)
         mapping[c] = safe
     return mapping
+
+def reverse_safe_name_map(original_to_safe_map: Dict[str, str]) -> Dict[str, str]:
+    """
+    Reverse the original-to-safe mapping to create a safe-to-original lookup.
+    Returns a dict mapping safe names back to original names.
+    """
+    return {safe: original for original, safe in original_to_safe_map.items()}
 
 def apply_safe_columns(df: DataFrame, mapping: Dict[str, str]) -> DataFrame:
     return df.select([col(orig).alias(safe) for orig, safe in mapping.items()])
@@ -484,6 +491,28 @@ try:
     missing_in_b = ids_a.subtract(ids_b).withColumnRenamed(KEY_SAFE, "xmedia ID")
 
     # -------------------------
+    # Create reverse mapping (safe -> original) for field name restoration
+    # -------------------------
+    reverse_map_a = reverse_safe_name_map(map_a)
+    reverse_map_b = reverse_safe_name_map(map_b)
+    
+    # Combine both reverse mappings (safe -> original) with collision detection
+    combined_reverse_map = {}
+    for safe, original in reverse_map_a.items():
+        combined_reverse_map[safe] = original
+    
+    for safe, original in reverse_map_b.items():
+        if safe in combined_reverse_map and combined_reverse_map[safe] != original:
+            print(f"[WARN] Safe name collision detected: '{safe}' maps to both '{combined_reverse_map[safe]}' (file A) and '{original}' (file B)")
+        combined_reverse_map[safe] = original
+    
+    # Log column mappings for auditability
+    print(f"[INFO] Column mappings created for {len(combined_reverse_map)} columns")
+    print(f"[DEBUG] Sample reverse mappings (first 5):")
+    for safe, original in list(combined_reverse_map.items())[:5]:
+        print(f"[DEBUG]   {safe} -> {original}")
+
+    # -------------------------
     # 6) Field differences (long format)
     # -------------------------
     a_pref = "a__"
@@ -515,6 +544,21 @@ try:
             )
             .filter(col("value_a") != col("value_b"))
         )
+        
+        # Broadcast the reverse mapping for efficient distribution to executors
+        broadcast_reverse_map = sc.broadcast(combined_reverse_map)
+        
+        # Apply reverse mapping UDF to restore original column names
+        def reverse_field_name(safe_name: str) -> str:
+            """UDF to reverse safe column names back to original names."""
+            return broadcast_reverse_map.value.get(safe_name, safe_name)
+        
+        reverse_field_name_udf = udf(reverse_field_name, StringType())
+        
+        # Replace safe column names with original names in the 'field' column
+        diffs_long = diffs_long.withColumn("field", reverse_field_name_udf(col("field")))
+        
+        print(f"[INFO] Applied reverse mapping to restore original column names in field_differences output")
     else:
         diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
 

@@ -31,6 +31,15 @@ An assumption is permitted only if it is:
 
 ---
 
+## B
+
+### BMEcat
+An XML-based standard for product catalog data exchange, commonly used by vendors in B2B contexts.
+In this system, BMEcat files are ingested as input to the vendor_input_processing pipeline.
+Reference: `jobs/vendor_input_processing/preprocessIncomingBmecat/`.
+
+---
+
 ## C
 
 ### Capability
@@ -116,6 +125,16 @@ Iteration is allowed and expected; it does not advance the system state unless a
 
 ---
 
+## J
+
+### Job manifest
+A machine-readable YAML file (`job_manifest.yaml`) that serves as the source of truth for a job's interface contract: parameters, inputs, outputs, side effects, and run receipt behavior.
+Location: `jobs/<job_group>/<job_id>/job_manifest.yaml`
+Specification: `docs/standards/job_manifest_spec.md`
+The manifest is evidence-based (derived from script analysis) and supports automation-friendly job discovery and orchestration.
+
+---
+
 ## L
 
 ### Layer (documentation layer)
@@ -129,7 +148,23 @@ Canonical layers:
 
 ---
 
+## M
+
+### Manifest generator (tool)
+A scaffolding tool that performs static analysis on `glue_script.py` to extract job interface facts and produce a draft `job_manifest.yaml`.
+Tool category: Scaffolding (per target agent system).
+Used by humans and agents to reduce manual manifest authoring.
+Location: `tools/manifest-generator/` (if implemented).
+
+---
+
 ## N
+
+### NDJSON (newline-delimited JSON)
+Also known as JSON Lines.
+A format where each line is a complete, valid JSON object, with lines separated by newline characters.
+Used as the default JSON output format for Spark/Glue DataFrame writes.
+Distinguished from `json` (single JSON document) in job manifests per format semantic rules.
 
 ### No hidden authority
 A rule that agents and tools must not imply outputs are “true” because an agent produced them or a tool reported them.
@@ -138,6 +173,12 @@ Truth is grounded in:
 - enforceable standards/governance,
 - runtime behavior of implemented artifacts,
 - deterministic evidence outputs.
+
+
+### Normalized placeholder
+A manifest placeholder convention (e.g., `${X_norm}`) indicating that parameter `X` has been normalized by the script to ensure a trailing slash for S3 prefix operations.
+Example: `${prepared_output_prefix_norm}` means the `prepared_output_prefix` parameter value with exactly one trailing `/`.
+Definition: Section 6.4 of `docs/standards/job_manifest_spec.md`.
 
 ---
 
@@ -157,6 +198,23 @@ An objective sets:
 ### Pipeline
 An ordered set of capabilities required to achieve an objective, including dependencies/decision points where relevant.
 
+
+### Placeholder (manifest)
+A template variable in a job manifest's `bucket` or `key_pattern` field, represented as `${NAME}`.
+Placeholders are substituted at job invocation time with actual parameter values or runtime-generated values.
+Types: parameter placeholders (match parameter names exactly) and runtime-generated placeholders (computed by the job).
+
+### PySpark
+The Python API for Apache Spark, enabling large-scale data processing using Spark's distributed computing engine.
+In this system, PySpark jobs run on AWS Glue with access to `SparkContext`, `GlueContext`, and Spark DataFrames.
+Runtime type in job manifests: `pyspark`.
+
+### Python Shell (AWS Glue)
+A lightweight Glue job type that runs standard Python code without Spark overhead.
+Used for tasks that process smaller datasets or orchestrate S3 operations using boto3.
+Runtime type in job manifests: `python_shell`.
+Distinguished from `pyspark` by absence of SparkContext/GlueContext Spark features.
+
 ### Process (workflow step)
 A named stage in the development approach (e.g., Define Objective → Plan Pipeline → Define Capabilities → Execute Tasks → Validate/Document).
 Step transitions require approval gates; iteration within a step is permitted.
@@ -169,6 +227,12 @@ Note: "Stage" and "step" are used interchangeably in this system.
 ### Rules truth
 The “must conform to” layer:
 standards, governance constraints, and enforceable schemas that define how artifacts must be structured and validated.
+
+
+### Run receipt
+A structured JSON artifact written by a job to S3 that records execution metadata: run ID, timestamp, input/output locations, record counts, validation status, and notes.
+Run receipts serve as audit trails and enable downstream jobs to verify upstream completion.
+Declared in job manifests under `logging_and_receipt.writes_run_receipt`.
 
 ### Runtime truth
 The “what actually runs” layer:
@@ -189,6 +253,14 @@ A rule that documentation and artifacts must not mix layers:
 - operational references.
 This prevents shadow specs and double truth.
 
+
+### Side effect (job)
+A job behavior that modifies S3 state beyond its declared outputs.
+Types:
+- `deletes_inputs`: Job deletes input objects after successful processing
+- `overwrites_outputs`: Job overwrites existing output objects (vs. fail-on-exists)
+Declared in job manifests under `side_effects` to inform orchestration and recovery logic.
+
 ### Single source per contract type
 A governance rule:
 each contract type (e.g., “format rules”, “workflow gates”, “tool usage”, “templates”) must have exactly one authoritative home.
@@ -205,6 +277,11 @@ Success criteria inform capability planning and validation evidence.
 ### TBD (explicit unknown)
 A deliberately marked unknown that blocks implicit assumptions.
 TBDs must be either resolved later or explicitly approved as controlled assumptions before implementation depends on them.
+
+**In job manifests:** Use `TBD` ONLY for values that are truly unknowable from static code analysis (e.g., dynamic runtime behavior, external config dependencies).
+- Use `null` for "not applicable" (e.g., receipt bucket when no receipt is written)
+- Use `[]` for "provably empty" (e.g., counters when none exist)
+- Reserve `TBD` for "cannot determine without runtime/deployment data"
 
 ### Tool
 A deterministic instrument used by humans and agents to scaffold, validate, and produce evidence.

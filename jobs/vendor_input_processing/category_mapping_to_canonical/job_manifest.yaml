@@ -1,0 +1,65 @@
+schema_version: "1.0"
+job_id: category_mapping_to_canonical
+glue_job_name: TBD
+runtime: pyspark
+entrypoint: glue_script.py
+
+parameters:
+  - JOB_NAME
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - preprocessed_input_key
+  - prepared_output_prefix
+
+inputs:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key_norm}${vendor_name}_vendor_products.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key_norm}${vendor_name}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${preprocessed_input_key_norm}${vendor_name}_vendor_categories.json
+    format: ndjson
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: canonical_mappings/Category_Mapping_Reference_*.json
+    format: json
+    required: true
+
+outputs:
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_forMapping_products.ndjson
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_forMapping_products
+    format: ndjson
+    required: true
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: TBD
+  run_receipt_key_pattern: TBD
+  counters_observed: TBD
+
+notes:
+  - "TBD_EXPLANATIONS:"
+  - "glue_job_name: TBD — Not yet deployed to AWS Glue (no deployment config found in repo). Needs deployment config from DevOps team."
+  - "logging_and_receipt.run_receipt_bucket: TBD — Script does not write a run receipt file to S3, only calls job.commit() at line 1418 for Glue bookkeeping."
+  - "logging_and_receipt.run_receipt_key_pattern: TBD — Script does not write a run receipt file to S3. See run_receipt_bucket explanation."
+  - "logging_and_receipt.counters_observed: TBD — Script may emit Spark metrics to CloudWatch but does not write structured counters to a receipt file. Need to review CloudWatch metrics to identify emitted counter names."
+  - "Evidence source: Analyzed glue_script.py lines 1-1418, checked getResolvedOptions (lines 309-318), S3 I/O patterns (lines 271-1411), Spark read.json and DataFrame operations, and output writes via toJSON().saveAsTextFile()."
+  - "preprocessed_input_key normalization: Script normalizes prefix by ensuring trailing slash (checked script), so manifest uses ${preprocessed_input_key_norm} placeholder."
+  - "prepared_output_prefix normalization: Script normalizes prefix by ensuring trailing slash (checked script), so manifest uses ${prepared_output_prefix_norm} placeholder."
+  - "Input format: Script uses spark.read.json() which reads line-delimited JSON (ndjson) by default. Mapping reference uses multiLine=true (line 589), so it's single JSON document format (json)."
+  - "Output format: Script writes via toJSON().saveAsTextFile() which produces line-delimited JSON (ndjson), per Spark default behavior (lines 508, 1372)."
+  - "Duplicate outputs: Script writes both .ndjson extension (primary, line 530) and no extension (legacy, line 533) versions of the same data for backward compatibility."
+  - "Temporary outputs: Script creates temporary S3 paths (lines 499-510, 1363-1375) which are deleted after final output is written (lines 562, 1415). These are not listed as outputs since they are internal/transient."

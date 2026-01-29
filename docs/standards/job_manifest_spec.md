@@ -36,6 +36,8 @@ A job manifest is the **source of truth for automation-relevant interface facts*
 
 Manifests MUST be **evidence-based** (derived from the script and/or declared deployment configuration). No guessing.
 
+**Tool support:** A scaffolding tool (`tools/manifest-generator/`) is available to accelerate manifest creation by extracting interface facts from `glue_script.py` via static analysis. The tool produces draft manifests requiring human review. See `docs/ops/tooling_reference.md` for usage details.
+
 ### 1.2 Primary consumer alignment
 
 The manifest schema is aligned to `docs/standards/job_inventory_spec.md` in that `job_inventory` automation expects these manifest keys to exist and be stable:

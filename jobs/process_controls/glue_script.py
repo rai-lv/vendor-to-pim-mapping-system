@@ -155,12 +155,12 @@ def make_safe_name_map(columns: List[str]) -> Dict[str, str]:
         mapping[c] = safe
     return mapping
 
-def reverse_safe_name_map(safe_to_original_map: Dict[str, str]) -> Dict[str, str]:
+def reverse_safe_name_map(original_to_safe_map: Dict[str, str]) -> Dict[str, str]:
     """
-    Reverse the safe-to-original mapping to create an original-to-safe lookup.
+    Reverse the original-to-safe mapping to create a safe-to-original lookup.
     Returns a dict mapping safe names back to original names.
     """
-    return {safe: original for original, safe in safe_to_original_map.items()}
+    return {safe: original for original, safe in original_to_safe_map.items()}
 
 def apply_safe_columns(df: DataFrame, mapping: Dict[str, str]) -> DataFrame:
     return df.select([col(orig).alias(safe) for orig, safe in mapping.items()])
@@ -496,13 +496,20 @@ try:
     reverse_map_a = reverse_safe_name_map(map_a)
     reverse_map_b = reverse_safe_name_map(map_b)
     
-    # Combine both reverse mappings (safe -> original)
-    combined_reverse_map = {**reverse_map_a, **reverse_map_b}
+    # Combine both reverse mappings (safe -> original) with collision detection
+    combined_reverse_map = {}
+    for safe, original in reverse_map_a.items():
+        combined_reverse_map[safe] = original
+    
+    for safe, original in reverse_map_b.items():
+        if safe in combined_reverse_map and combined_reverse_map[safe] != original:
+            print(f"[WARN] Safe name collision detected: '{safe}' maps to both '{combined_reverse_map[safe]}' (file A) and '{original}' (file B)")
+        combined_reverse_map[safe] = original
     
     # Log column mappings for auditability
     print(f"[INFO] Column mappings created for {len(combined_reverse_map)} columns")
     print(f"[DEBUG] Sample reverse mappings (first 5):")
-    for i, (safe, original) in enumerate(list(combined_reverse_map.items())[:5]):
+    for _, (safe, original) in enumerate(list(combined_reverse_map.items())[:5]):
         print(f"[DEBUG]   {safe} -> {original}")
 
     # -------------------------

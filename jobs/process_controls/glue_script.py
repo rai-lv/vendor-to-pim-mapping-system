@@ -372,6 +372,7 @@ try:
     # 3) Identify key and excluded columns by normalized header name
     # -------------------------
     KEY_NORM = "xmedia id"
+    NAME_NORM = "xmedia name"
     PATH_NORM = "path"
 
     # Debug: Log raw columns from input files
@@ -385,10 +386,14 @@ try:
     if not key_col_b:
         raise RuntimeError(f"Key column 'xmedia ID' not found in B. Columns: {df_b_raw.columns}")
 
+    name_col_a = find_column_by_normalized_name(df_a_raw.columns, NAME_NORM)
+    name_col_b = find_column_by_normalized_name(df_b_raw.columns, NAME_NORM)
+
     path_col_a = find_column_by_normalized_name(df_a_raw.columns, PATH_NORM)
     path_col_b = find_column_by_normalized_name(df_b_raw.columns, PATH_NORM)
 
     print(f"[INFO] Key column A: '{key_col_a}', Key column B: '{key_col_b}'")
+    print(f"[INFO] Name column A: '{name_col_a}', Name column B: '{name_col_b}'")
     print(f"[INFO] Path column A: '{path_col_a}', Path column B: '{path_col_b}'")
 
     # -------------------------
@@ -412,6 +417,15 @@ try:
 
     df_a = df_a.withColumn(key_safe_a, trim(col(key_safe_a)).cast(StringType()))
     df_b = df_b.withColumn(key_safe_b, trim(col(key_safe_b)).cast(StringType()))
+
+    name_safe_a = map_a[name_col_a] if name_col_a else None
+    name_safe_b = map_b[name_col_b] if name_col_b else None
+
+    # Normalize xmedia name columns if they exist
+    if name_safe_a:
+        df_a = df_a.withColumn(name_safe_a, trim(col(name_safe_a)).cast(StringType()))
+    if name_safe_b:
+        df_b = df_b.withColumn(name_safe_b, trim(col(name_safe_b)).cast(StringType()))
 
     null_key_a = df_a.filter(col(key_safe_a).isNull() | (col(key_safe_a) == "")).limit(1).count()
     null_key_b = df_b.filter(col(key_safe_b).isNull() | (col(key_safe_b) == "")).limit(1).count()
@@ -438,6 +452,12 @@ try:
     df_a = df_a.withColumnRenamed(key_safe_a, KEY_SAFE)
     df_b = df_b.withColumnRenamed(key_safe_b, KEY_SAFE)
 
+    NAME_SAFE = "xmedia_name"
+    # Rename xmedia name columns to a common name if both exist
+    if name_safe_a and name_safe_b:
+        df_a = df_a.withColumnRenamed(name_safe_a, NAME_SAFE)
+        df_b = df_b.withColumnRenamed(name_safe_b, NAME_SAFE)
+
     path_safe_a = map_a[path_col_a] if path_col_a else None
     path_safe_b = map_b[path_col_b] if path_col_b else None
 
@@ -447,6 +467,9 @@ try:
     print(f"[DEBUG]   - path_col_b (original): '{path_col_b}', path_safe_b (safe): '{path_safe_b}'")
 
     excluded = {KEY_SAFE}
+    # Exclude xmedia_name from field comparison - it's preserved separately
+    if name_safe_a and name_safe_b:
+        excluded.add(NAME_SAFE)
     if path_safe_a and path_safe_b:
         # Validate path columns exist in both DataFrames before renaming
         cols_before_a = set(df_a.columns)
@@ -490,6 +513,16 @@ try:
     missing_in_a = ids_b.subtract(ids_a).withColumnRenamed(KEY_SAFE, "xmedia ID")
     missing_in_b = ids_a.subtract(ids_b).withColumnRenamed(KEY_SAFE, "xmedia ID")
 
+    # Join xmedia name if available
+    if name_safe_a and name_safe_b:
+        # Get name mappings from original dataframes
+        name_map_a = df_a.select(col(KEY_SAFE).alias("xmedia ID"), col(NAME_SAFE).alias("xmedia name")).distinct()
+        name_map_b = df_b.select(col(KEY_SAFE).alias("xmedia ID"), col(NAME_SAFE).alias("xmedia name")).distinct()
+        
+        # Join missing IDs with their corresponding names
+        missing_in_a = missing_in_a.join(name_map_b, on="xmedia ID", how="left")
+        missing_in_b = missing_in_b.join(name_map_a, on="xmedia ID", how="left")
+
     # -------------------------
     # Create reverse mapping (safe -> original) for field name restoration
     # -------------------------
@@ -518,13 +551,26 @@ try:
     a_pref = "a__"
     b_pref = "b__"
 
-    proj_a = [col(KEY_SAFE)] + [col(c).alias(a_pref + c) for c in comparable_cols]
-    proj_b = [col(KEY_SAFE)] + [col(c).alias(b_pref + c) for c in comparable_cols]
+    # Include xmedia_name in the projection if available
+    proj_a = [col(KEY_SAFE)]
+    proj_b = [col(KEY_SAFE)]
+    
+    if name_safe_a and name_safe_b:
+        proj_a.append(col(NAME_SAFE))
+        proj_b.append(col(NAME_SAFE))
+    
+    proj_a.extend([col(c).alias(a_pref + c) for c in comparable_cols])
+    proj_b.extend([col(c).alias(b_pref + c) for c in comparable_cols])
 
     ja = df_a.select(*proj_a)
     jb = df_b.select(*proj_b)
 
-    joined = ja.join(jb, on=KEY_SAFE, how="inner")
+    # Join on KEY_SAFE and NAME_SAFE (if present) to avoid duplicate columns
+    join_keys = [KEY_SAFE]
+    if name_safe_a and name_safe_b:
+        join_keys.append(NAME_SAFE)
+    
+    joined = ja.join(jb, on=join_keys, how="inner")
 
     NULL_MARK = "<NULL>"
 
@@ -536,12 +582,16 @@ try:
 
     if stack_parts:
         stack_expr = f"stack({len(comparable_cols)}, {', '.join(stack_parts)}) as (field, value_a, value_b)"
+        
+        # Build select columns list - include xmedia name if available
+        select_cols = [col(KEY_SAFE).alias("xmedia ID")]
+        if name_safe_a and name_safe_b:
+            select_cols.append(col(NAME_SAFE).alias("xmedia name"))
+        select_cols.append(expr(stack_expr))
+        
         diffs_long = (
             joined
-            .select(
-                col(KEY_SAFE).alias("xmedia ID"),
-                expr(stack_expr)
-            )
+            .select(*select_cols)
             .filter(col("value_a") != col("value_b"))
         )
         
@@ -560,7 +610,11 @@ try:
         
         print(f"[INFO] Applied reverse mapping to restore original column names in field_differences output")
     else:
-        diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
+        # Create empty schema with xmedia name if available
+        if name_safe_a and name_safe_b:
+            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
+        else:
+            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
 
     # -------------------------
     # 7) Write outputs as single TSV objects (still .csv extension)
@@ -610,6 +664,8 @@ try:
         },
         "notes": {
             "comparison_key_header_normalized": KEY_NORM,
+            "comparison_name_header_normalized": NAME_NORM,
+            "name_column_present": name_col_a is not None and name_col_b is not None,
             "excluded_header_normalized": PATH_NORM,
             "diff_compares_intersection_only": True,
             "null_marker_in_diff": NULL_MARK,

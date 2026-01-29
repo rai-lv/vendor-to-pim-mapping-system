@@ -211,35 +211,18 @@ Standards documents define normative rules and schemas. They MUST include:
 ```markdown
 # [Document Title]
 
-**Version:** X.Y.Z  (OR)  UPD YYYY-MM-DD
-
 ## Purpose
 
 [2-3 sentences: what this standard defines and why it exists]
 ```
 
-**Version and Update Tracking:**
+**Change Tracking:**
 
-Standards documents MUST include ONE of the following versioning approaches:
-
-**Option A: Semantic Version (for stable, published standards):**
-- Use when the standard has reached a stable state and changes require explicit version bumps
-- Format: `**Version:** X.Y.Z` where X.Y.Z follows semantic versioning
-  - Major version (X): Breaking changes to schema/format/requirements
-  - Minor version (Y): Backward-compatible additions
-  - Patch version (Z): Clarifications, typo fixes, non-normative changes
-- Example: `**Version:** 1.2.0`
-
-**Option B: Update Timestamp (for evolving standards):**
-- Use when the standard is still evolving and frequent updates are expected
-- Format: `**Last Updated:** YYYY-MM-DD` or `UPD YYYY-MM-DD` or `UPD YYYY-MM-DD HH:MM`
-- Example: `UPD 2026-01-28 14:20`
-
-**Rule:** Do NOT use both version number and update timestamp in the same document. Choose one approach based on the standard's maturity.
+Standards documents do NOT include version numbers or timestamps in metadata. Change tracking is managed through git history, which provides comprehensive tracking of all changes, authors, dates, and context through commit messages.
 
 **Purpose Section:**
 
-Standards documents MUST include a "Purpose" section (as H2) immediately after the version/timestamp, providing 2-3 sentences explaining what the standard defines and why it exists. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
+Standards documents MUST include a "Purpose" section (as H2) immediately after the title, providing 2-3 sentences explaining what the standard defines and why it exists. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
 
 ### 3.2 Context Documents (docs/context/)
 
@@ -281,16 +264,19 @@ Process documents MUST NOT:
 
 ### 3.4 Operational Reference Documents (docs/ops/)
 
-Operational documents provide technical tool manuals. They SHOULD include:
+Operational documents provide technical tool manuals. They MUST include:
 
 ```markdown
 # [Document Title]
 
-**Purpose:** [One sentence: what this reference covers]
-**Scope:** [What tools/systems are covered]
+## Purpose
+[One sentence: what this reference covers]
+
+## Scope
+[What tools/systems are covered]
 ```
 
-Operational documents MAY include version numbers if they track specific tool versions, but this is optional.
+Operational documents do NOT include version numbers or timestamps. Change tracking is managed through git history.
 
 ### 3.5 Living Catalogs (docs/catalogs/)
 
@@ -299,20 +285,14 @@ Living catalogs are compiled views. They MUST include:
 ```markdown
 # [Document Title]
 
-UPD YYYY-MM-DD  (optional: showing last compilation date)
-
 ## Purpose
 
 [2-3 sentences: what this catalog indexes and why it exists]
 ```
 
-**Update Timestamp (optional):**
+**Change Tracking:**
 
-Catalogs MAY include an update timestamp showing last compilation:
-- Format: `UPD YYYY-MM-DD` (date only, no time)
-- Placed immediately after the title, before the Purpose section
-- Example: `UPD 2026-01-28`
-- Use this when the catalog is frequently updated and readers benefit from knowing compilation freshness
+Catalogs do NOT include timestamps or version numbers in metadata. Change tracking is managed through git history, which provides comprehensive tracking of all changes including when catalogs were last updated.
 
 **Purpose Section:**
 
@@ -380,53 +360,28 @@ This section defines ONLY the metadata formatting requirements for each file typ
 
 ---
 
-## 4) Versioning Discipline (Standards Documents Only)
+## 4) Change Tracking
 
-This section applies ONLY to documents in `docs/standards/`.
+**Unified Approach:** All documentation uses git history for change tracking.
 
-### 4.1 When to Increment Versions
+Documentation in this repository does NOT use explicit version numbers or timestamps in document metadata. Instead:
 
-**Major version (X.0.0):**
-- Change breaks existing tooling or validation
-- Required fields are removed or renamed
-- Enum values are removed
-- Schema structure changes incompatibly
+- **Git commits** track every change with author, date, and context
+- **Git history** provides complete audit trail  
+- **Git blame** shows line-by-line change history
+- **Git tags** can mark milestones when needed
+- **Git branches** support parallel development
 
-**Minor version (X.Y.0):**
-- New optional fields added
-- New enum values added
-- Backward-compatible clarifications that change interpretation
-- New sections added without changing existing requirements
+**Rationale:**
+- Eliminates duplication (don't maintain versions AND git history)
+- Provides comprehensive change tracking automatically
+- Consistent approach across all document types
+- Reduces maintenance overhead
+- Git is authoritative source of history
 
-**Patch version (X.Y.Z):**
-- Typo fixes
-- Grammar/clarity improvements
-- Example updates
-- Non-normative text changes
-- Formatting improvements
+**Exception:** Per-job documentation (job manifests, business descriptions) may include versioning when they represent versioned contracts between systems. See section 3.7 for per-job documentation requirements.
 
-### 4.2 Version Number Placement
-
-When using version numbers:
-- Place AFTER "Purpose statement" and "Why necessary"
-- Use format: `**Version:** X.Y.Z`
-- Do NOT use "v" prefix: use `1.0.0` not `v1.0.0`
-
-### 4.3 Timestamp Format (When Used Instead of Versions)
-
-When using timestamps instead of semantic versions:
-- Format: `UPD YYYY-MM-DD` or `UPD YYYY-MM-DD HH:MM`
-- Place immediately after title, before other metadata
-- Time portion (HH:MM) is optional
-- Use UTC timezone when including time
-
-### 4.4 Deprecated: Hybrid Approach
-
-**MUST NOT:** Use both version number and timestamp in the same document header.
-
-**Legacy documents with hybrid approach:** Migrate to single approach:
-- If standard is stable and widely referenced: keep version number, remove timestamp
-- If standard is evolving: keep timestamp, remove version number
+**Migration from versioned documents:** Existing documents with version numbers or timestamps should be migrated by removing the version/timestamp metadata. Git history preserves all historical version information.
 
 ---
 
@@ -507,13 +462,7 @@ These patterns violate formatting, structure, or versioning discipline and are P
 
 **Rationale:** Document structure requires exactly one H1 title at the top.
 
-#### 5.2.3 Undocumented Version Changes
-
-**Prohibited:** Changing version numbers or timestamps without corresponding content changes in a commit.
-
-**Rule:** Version/timestamp changes MUST occur in the same commit as the content changes that necessitate them.
-
-#### 5.2.4 Hardcoded Timestamps in Body Text
+#### 5.2.3 Hardcoded Timestamps in Body Text
 
 **Prohibited:** Including update timestamps or "last modified" statements in document body.
 
@@ -524,21 +473,9 @@ These patterns violate formatting, structure, or versioning discipline and are P
 ...
 ```
 
-**Correct approach:** Use metadata header only; rely on git history for detailed change tracking.
+**Correct approach:** Use git history for change tracking and timestamps.
 
-#### 5.2.5 Hybrid Version/Timestamp Markers
-
-**Prohibited:** Using both version number and timestamp in the same document header.
-
-**Example violation:**
-```markdown
-UPD 2026-01-28 14:20
-**Version:** 1.0.0
-```
-
-**Correct approach:** Choose ONE versioning approach (see section 4).
-
-#### 5.2.6 Incorrect Heading Hierarchy
+#### 5.2.4 Incorrect Heading Hierarchy
 
 **Prohibited:** Skipping heading levels (e.g., H1 → H3 without H2).
 
@@ -731,12 +668,10 @@ Existing documents that violate this specification:
 
 ## 8) Examples
 
-### 8.1 Correct Standards Document Header (with version)
+### 8.1 Correct Standards Document Header
 
 ```markdown
 # Example Standard Specification
-
-**Version:** 1.2.0
 
 ## Purpose
 
@@ -744,43 +679,30 @@ This standard defines the normative schema for example artifacts, ensuring
 consistent structure and validation across all example implementations.
 ```
 
-### 8.2 Correct Standards Document Header (with timestamp)
-
-```markdown
-# Example Standard Specification
-
-UPD 2026-01-28
-
-## Purpose
-
-This standard defines the normative schema for example artifacts, ensuring 
-consistent structure and validation across all example implementations.
-```
-
-### 8.3 Correct Context Document Header
+### 8.2 Correct Context Document Header
 
 ```markdown
 # Example Context Document
 
 ## Purpose
+
 This document defines the conceptual framework for the example subsystem.
 It explains intent, roles, and operating principles without specifying
 normative schemas or tool usage.
 ```
 
-### 8.4 Incorrect: Hybrid Version/Timestamp (PROHIBITED)
+### 8.3 Correct Catalog Document Header
 
 ```markdown
-# Example Specification (v1.0)
+# Job Inventory Catalog
 
-UPD 2026-01-28 14:20
-**Version:** 1.0.0
-...
+## Purpose
+
+This catalog provides a living index of all jobs in the system, tracking
+their status, dependencies, and ownership for governance and discoverability.
 ```
 
-**Problem:** Uses both timestamp and version number. Choose ONE approach only.
-
-### 8.5 Incorrect: Open Items Section (PROHIBITED)
+### 8.4 Incorrect: Open Items Section (PROHIBITED)
 
 ```markdown
 # Example Specification
@@ -797,7 +719,7 @@ UPD 2026-01-28 14:20
 
 **Problem:** Committed standard contains incomplete "open items" section.
 
-### 8.6 Per-Job File Structure Example
+### 8.5 Per-Job File Structure Example
 
 For a job `preprocessIncomingBmecat` in the `vendor_input_processing` group:
 

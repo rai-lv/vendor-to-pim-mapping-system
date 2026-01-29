@@ -1,13 +1,5 @@
 # Documentation Specification
 
-**Canonical location:** `docs/standards/`  
-**Purpose statement:** Defines how documentation in this repository must be formatted, structured, and versioned to maintain consistency.  
-**Why necessary:** Eliminates inconsistencies in document formatting, structure, versioning, and metadata; ensures uniform presentation across all documentation types.  
-**Must contain:** Formatting rules; metadata requirements; versioning discipline; file naming conventions; structural anti-patterns.  
-**Must not contain:** Semantic content rules (see documentation_system_catalog.md); tool command syntax; operational procedures.
-
----
-
 ## 0) Purpose and Scope
 
 This specification defines **how documents must be formatted, structured, and versioned** to maintain consistency across the documentation system.

@@ -1,13 +1,7 @@
-# Naming Standard (v2.0)
+# Naming Standard (v2.1)
 
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
-**Why necessary:** Prevents drift and enables consistent validation and tooling.
-**Must contain:** Naming conventions; identifier rules; compatibility expectations.
-**Must not contain:** Tool instructions or job-specific business logic.
-
+**Version:** 2.1  
 **Last Updated:** 2026-01-29
-**Version:** 2.0
 
 ---
 
@@ -641,6 +635,7 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 2.1     | 2026-01-29 | Removed redundant metadata stub (lines 3-7); all content already in Section 1. Canonical metadata lives in documentation_system_catalog.md |
 | 2.0     | 2026-01-29 | Removed Section 7 (TBD resolution history); specification now contains only normative rules. All resolved items already incorporated into appropriate sections. |
 | 1.3     | 2026-01-29 | Closed TBD-3: Temp artifacts explicitly excluded from scope; all 4 TBDs now resolved |
 | 1.2     | 2026-01-29 | Closed TBD-2: No filename versioning needed, use PR/breaking change process; 1 TBD remains open (TBD-3) |

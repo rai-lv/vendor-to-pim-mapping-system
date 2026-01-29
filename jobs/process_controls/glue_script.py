@@ -32,21 +32,16 @@ MAX_DUPLICATE_SAMPLE_COUNT = 20
 
 def validate_s3_key(key: str) -> None:
     """
-    Validate S3 key format to prevent path traversal and injection attacks.
+    Validate S3 key format for basic security checks.
     Raises ValueError if key is invalid.
     """
     if not key:
         raise ValueError("S3 key cannot be empty")
     
-    # Check for path traversal attempts
-    if ".." in key or key.startswith("/"):
-        raise ValueError(f"Invalid S3 key format (path traversal detected): {key}")
-    
-    # Check for invalid characters (basic validation)
-    invalid_chars = ['\0', '\n', '\r']
-    for char in invalid_chars:
-        if char in key:
-            raise ValueError(f"Invalid S3 key format (contains invalid character): {key}")
+    # Check for invalid null characters
+    if '\0' in key:
+        raise ValueError(f"Invalid S3 key format (contains null character)")
+
 
 def ensure_prefix_uri(uri: str) -> str:
     if uri.endswith("/"):
@@ -548,24 +543,13 @@ except Exception as e:
     error_type = type(e).__name__
     error_msg = str(e)
 
-    # Sanitize error messages to avoid exposing sensitive information
-    sensitive_patterns = [
-        (r's3://[^/]+/[^\s]+', 's3://[REDACTED]/[REDACTED]'),  # S3 URIs
-        (r'Bucket["\']?\s*[:=]\s*["\']?[^,\s"\']+', 'Bucket=[REDACTED]'),  # Bucket names
-        (r'Key["\']?\s*[:=]\s*["\']?[^,\s"\']+', 'Key=[REDACTED]'),  # S3 Keys
-    ]
-    
-    sanitized_msg = error_msg
-    for pattern, replacement in sensitive_patterns:
-        sanitized_msg = re.sub(pattern, replacement, sanitized_msg)
-
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
     is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
 
     if is_aws_error:
-        print(f"[ERROR] AWS Service Error ({error_type}): {sanitized_msg}")
+        print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")
     else:
-        print(f"[ERROR] Runtime Error ({error_type}): {sanitized_msg}")
+        print(f"[ERROR] Runtime Error ({error_type}): {error_msg}")
 
     print("[ERROR] Full traceback:")
     traceback.print_exc()

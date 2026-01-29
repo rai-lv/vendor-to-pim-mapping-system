@@ -211,11 +211,64 @@ description: One sentence describing agent purpose
 ---
 ```
 
-### 2.7 Per-Job Documentation (docs/jobs/<job_id>/)
+### 2.7 Per-Job Documentation (jobs/<job_group>/<job_id>/)
 
-Job-specific documentation follows the relevant standard spec:
-- Business descriptions: see `business_job_description_spec.md`
-- Script cards: see `script_card_spec.md`
+Per-job documentation lives in the job folder structure `jobs/<job_group>/<job_id>/` and includes multiple document types with different purposes:
+
+#### 2.7.1 Job Manifest (REQUIRED)
+
+**File:** `job_manifest.yaml`
+
+**Purpose:** Machine-readable interface contract defining parameters, inputs, outputs, side effects, and observability.
+
+**Specification:** `docs/standards/job_manifest_spec.md`
+
+**Metadata requirements:**
+- YAML format
+- Must conform to job_manifest_spec schema
+- Version/timestamp NOT required (follows deployment versioning)
+- Required fields defined in spec (job_id, glue_job_name, runtime, parameters, inputs, outputs, side_effects, logging_and_receipt)
+
+#### 2.7.2 Implementation Code (REQUIRED)
+
+**File:** `glue_script.py` (or other entrypoint as declared in manifest)
+
+**Purpose:** The executable job implementation.
+
+**Format:** Python code (PySpark or Python Shell)
+
+**Metadata requirements:**
+- Standard Python file conventions
+- Shebang optional
+- Docstrings recommended but not enforced by this spec
+
+#### 2.7.3 Business Job Description (REQUIRED)
+
+**File:** `bus_description_<job_id>.md`
+
+**Purpose:** Human-readable business intent, scope, and rules.
+
+**Specification:** `docs/standards/business_job_description_spec.md`
+
+**Metadata requirements:**
+- Follow business_job_description_spec structure
+- No version numbers or timestamps
+- Use git history for change tracking
+
+#### 2.7.4 Script Card (DEFINED, may not exist yet)
+
+**File:** `script_card_<job_id>.md`
+
+**Purpose:** Operational behavior documentation (how it runs, invariants, failure modes).
+
+**Specification:** `docs/standards/script_card_spec.md`
+
+**Metadata requirements:**
+- Follow script_card_spec structure
+- No version numbers or timestamps
+- Use git history for change tracking
+
+**Note:** Script cards are defined in the standard but may not yet exist for all jobs. The specification exists to guide future documentation efforts.
 
 ---
 
@@ -346,10 +399,25 @@ When using timestamps instead of semantic versions:
 
 ### 4.6 Per-Job Documentation MUST NOT Contain:
 
+**Job Manifests (job_manifest.yaml) MUST NOT contain:**
+- Business rationale or "why" explanations (use business description)
+- Operational troubleshooting (reference script card or ops docs)
+- Global definitions (use glossary)
+- Per-job-instance values (use placeholders for runtime values)
+
+**Implementation Code (glue_script.py) MUST NOT contain:**
+- This specification does not govern code content (see development standards if they exist)
+
+**Business Descriptions MUST NOT contain:**
+- Operational run instructions (use script card)
+- Technical interface details already in manifest (reference manifest instead)
 - Global definitions applicable across jobs (use glossary)
-- Normative schemas (reference standards)
-- Tool usage instructions (reference ops docs)
-- Duplicated metadata already in manifests
+
+**Script Cards MUST NOT contain:**
+- Global definitions applicable across jobs (use glossary)
+- Business justification (use business description)
+- Normative contract schemas already defined elsewhere (reference standards)
+- Duplicated metadata already in manifests (reference manifest instead)
 
 ---
 
@@ -578,6 +646,25 @@ UPD 2026-01-28 14:20
 
 **Problem:** Committed standard contains incomplete "open items" section.
 
+### 9.6 Per-Job Documentation Structure (CORRECT)
+
+For a job `preprocessIncomingBmecat` in the `vendor_input_processing` group:
+
+```
+jobs/vendor_input_processing/preprocessIncomingBmecat/
+├── job_manifest.yaml              # Machine-readable interface contract (REQUIRED)
+├── glue_script.py                 # Implementation code (REQUIRED)
+├── bus_description_preprocessIncomingBmecat.md  # Business intent (REQUIRED)
+└── script_card_preprocessIncomingBmecat.md      # Operational behavior (defined in spec, may not exist yet)
+```
+
+**Key points:**
+- All four document types serve different purposes and are not redundant
+- job_manifest.yaml is the source of truth for interface facts
+- Business descriptions explain "why" and scope
+- Script cards explain "how" and failure modes
+- glue_script.py is the actual implementation
+
 ---
 
 ## 10) Summary: Key Rules
@@ -594,6 +681,9 @@ UPD 2026-01-28 14:20
 - Process: Purpose and scope, no version markers
 - Catalogs: Full metadata block + optional update timestamp
 - Ops: Minimal metadata, optional tool version
+- Per-job manifests: YAML schema, no metadata header
+- Per-job business descriptions: Follow business_job_description_spec
+- Per-job script cards: Follow script_card_spec (when they exist)
 
 **Content boundaries (prevent double truth):**
 - Context: principles, not tools/schemas
@@ -601,6 +691,9 @@ UPD 2026-01-28 14:20
 - Process: procedures, not schemas
 - Ops: tools, not contracts/schemas
 - Catalogs: indexes, not definitions
+- Per-job manifests: interface facts only, not business rationale
+- Per-job business descriptions: intent/scope, not technical interface details
+- Per-job script cards: operational behavior, not business justification
 
 **Prohibited patterns:**
 - Open items sections in standards

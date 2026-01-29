@@ -299,17 +299,24 @@ Living catalogs are compiled views. They MUST include:
 ```markdown
 # [Document Title]
 
-**Canonical location:** `docs/catalogs/`
-**Purpose statement:** [What this catalog indexes]
-**Why necessary:** [Why this catalog exists]
-**Must contain:** [What entries must include]
-**Must not contain:** [What should not be here]
+UPD YYYY-MM-DD  (optional: showing last compilation date)
+
+## Purpose
+
+[2-3 sentences: what this catalog indexes and why it exists]
 ```
+
+**Update Timestamp (optional):**
 
 Catalogs MAY include an update timestamp showing last compilation:
 - Format: `UPD YYYY-MM-DD` (date only, no time)
-- Placed immediately after the title, before other metadata
+- Placed immediately after the title, before the Purpose section
 - Example: `UPD 2026-01-28`
+- Use this when the catalog is frequently updated and readers benefit from knowing compilation freshness
+
+**Purpose Section:**
+
+Catalogs MUST include a "Purpose" section (as H2) providing 2-3 sentences explaining what the catalog indexes and why. This provides essential orientation without duplicating the detailed metadata maintained in `documentation_system_catalog.md`.
 
 ### 3.6 Agent Documentation (docs/agents/ and .github/agents/)
 

@@ -1,0 +1,113 @@
+job_id: preprocessIncomingBmecat
+glue_job_name: preprocessIncomingBmecat
+runtime: python_shell
+entrypoint: glue_script.py
+
+parameters:
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - bmecat_input_key
+  - bmecat_output_prefix
+
+inputs:
+  - bucket: ${bucket}
+    key_pattern: ${key}
+    format: TBD
+    required: true
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${BMECAT_INPUT_KEY}
+    format: TBD
+    required: true
+
+outputs:
+  - bucket: ${bucket}
+    key_pattern: ${key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${vp_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${pf_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${pcl_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${pm_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${pr_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${pp_key}
+    format: ndjson
+    required: true
+  - bucket: ${OUTPUT_BUCKET}
+    key_pattern: ${vc_key}
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_vendor_products.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_product_features.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_product_category_links.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_product_mimes.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_product_relations.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_product_prices.json
+    format: ndjson
+    required: true
+  - bucket: TBD
+    key_pattern: ${BMECAT_OUTPUT_PREFIX}${VENDOR_NAME}_vendor_categories.json
+    format: ndjson
+    required: true
+
+config_files:
+  - bucket: ${INPUT_BUCKET}
+    key_pattern: ${config_key}
+    format: TBD
+    required: true
+    repo_path: None
+
+side_effects:
+  deletes_inputs: false
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: None
+  run_receipt_key_pattern: None
+  counters_observed: []
+
+notes:
+  - "job_id: Derived from folder name 'preprocessIncomingBmecat'"
+  - "runtime: Detected 'python_shell' from awsglue.utils without Spark imports (line 8)"
+  - "parameters: Extracted 5 parameters from getResolvedOptions call (line 22)"
+  - "S3 operations: Found 3 read operations and 15 write operations"
+  - "side_effects.deletes_inputs: No delete operations found"
+  - "side_effects.overwrites_outputs: Defaulting to true (conservative - script does not check existence before write)"
+  - "S3 operations: Found 3 read operations and 15 write operations"
+  - "logging_and_receipt.writes_run_receipt: No receipt write detected (no S3 put_object with 'receipt' in key)"
+  - "logging_and_receipt.counters_observed: No structured counters detected (would need runtime analysis)"
+  - "S3 operations: Found 3 read operations and 15 write operations"
+  - "config_files: Detected 1 config file references"

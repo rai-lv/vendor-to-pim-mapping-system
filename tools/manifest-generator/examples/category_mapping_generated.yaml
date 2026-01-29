@@ -1,0 +1,42 @@
+job_id: category_mapping_to_canonical
+glue_job_name: category_mapping_to_canonical
+runtime: pyspark
+entrypoint: glue_script.py
+
+parameters:
+  - INPUT_BUCKET
+  - OUTPUT_BUCKET
+  - vendor_name
+  - preprocessed_input_key
+  - prepared_output_prefix
+
+inputs:
+  - bucket: None
+    key_pattern: TBD
+    format: TBD
+    required: true
+
+outputs:
+  []
+
+side_effects:
+  deletes_inputs: true
+  overwrites_outputs: true
+
+logging_and_receipt:
+  writes_run_receipt: false
+  run_receipt_bucket: None
+  run_receipt_key_pattern: None
+  counters_observed: []
+
+notes:
+  - "job_id: Derived from folder name 'category_mapping_to_canonical'"
+  - "runtime: Detected 'pyspark' from SparkContext/GlueContext imports (lines 10, 11, 12, 13, 15, 26, 27)"
+  - "parameters: Extracted 5 parameters from getResolvedOptions call (line 309)"
+  - "S3 operations: Found 5 read operations and 0 write operations"
+  - "side_effects.deletes_inputs: Detected delete_object calls (lines 562, 1415)"
+  - "side_effects.overwrites_outputs: Defaulting to true (conservative - script does not check existence before write)"
+  - "S3 operations: Found 5 read operations and 0 write operations"
+  - "logging_and_receipt.writes_run_receipt: No receipt write detected (no S3 put_object with 'receipt' in key)"
+  - "logging_and_receipt.counters_observed: No structured counters detected (would need runtime analysis)"
+  - "S3 operations: Found 5 read operations and 0 write operations"

@@ -367,6 +367,10 @@ try:
     KEY_NORM = "xmedia id"
     PATH_NORM = "path"
 
+    # Debug: Log raw columns from input files
+    print(f"[DEBUG] Raw columns from input A: {df_a_raw.columns}")
+    print(f"[DEBUG] Raw columns from input B: {df_b_raw.columns}")
+
     key_col_a = find_column_by_normalized_name(df_a_raw.columns, KEY_NORM)
     key_col_b = find_column_by_normalized_name(df_b_raw.columns, KEY_NORM)
     if not key_col_a:
@@ -385,6 +389,13 @@ try:
     # -------------------------
     map_a = make_safe_name_map(df_a_raw.columns)
     map_b = make_safe_name_map(df_b_raw.columns)
+
+    # Debug: Log safe name mappings for Path columns
+    print(f"[DEBUG] Safe name mappings:")
+    if path_col_a:
+        print(f"[DEBUG]   - A: '{path_col_a}' -> '{map_a.get(path_col_a, 'NOT_FOUND')}'")
+    if path_col_b:
+        print(f"[DEBUG]   - B: '{path_col_b}' -> '{map_b.get(path_col_b, 'NOT_FOUND')}'")
 
     df_a = apply_safe_columns(df_a_raw, map_a)
     df_b = apply_safe_columns(df_b_raw, map_b)
@@ -423,14 +434,36 @@ try:
     path_safe_a = map_a[path_col_a] if path_col_a else None
     path_safe_b = map_b[path_col_b] if path_col_b else None
 
+    # Debug: Log raw and normalized column info for Path
+    print(f"[DEBUG] Path column normalization:")
+    print(f"[DEBUG]   - path_col_a (original): '{path_col_a}', path_safe_a (safe): '{path_safe_a}'")
+    print(f"[DEBUG]   - path_col_b (original): '{path_col_b}', path_safe_b (safe): '{path_safe_b}'")
+
+    excluded = {KEY_SAFE}
+    if path_safe_a and path_safe_b:
+        # Validate path columns exist in both DataFrames before renaming
+        cols_before_a = set(df_a.columns)
+        cols_before_b = set(df_b.columns)
+        
+        if path_safe_a in cols_before_a and path_safe_b in cols_before_b:
+            print(f"[DEBUG] Renaming path columns to 'path__tmp' to exclude from comparison")
+            df_a = df_a.withColumnRenamed(path_safe_a, "path__tmp")
+            df_b = df_b.withColumnRenamed(path_safe_b, "path__tmp")
+            excluded.add("path__tmp")
+        else:
+            print(f"[WARN] Path column validation failed:")
+            print(f"[WARN]   - path_safe_a '{path_safe_a}' in df_a: {path_safe_a in cols_before_a}")
+            print(f"[WARN]   - path_safe_b '{path_safe_b}' in df_b: {path_safe_b in cols_before_b}")
+
+    # Capture column sets AFTER all renames to ensure accurate column names
     cols_a_safe = set(df_a.columns)
     cols_b_safe = set(df_b.columns)
 
-    excluded = {KEY_SAFE}
-    if path_safe_a and path_safe_a in cols_a_safe and path_safe_b and path_safe_b in cols_b_safe:
-        df_a = df_a.withColumnRenamed(path_safe_a, "path__tmp")
-        df_b = df_b.withColumnRenamed(path_safe_b, "path__tmp")
-        excluded.add("path__tmp")
+    # Debug: Log column sets for troubleshooting
+    print(f"[DEBUG] Column sets after normalization and renaming:")
+    print(f"[DEBUG]   - cols_a_safe: {sorted(cols_a_safe)}")
+    print(f"[DEBUG]   - cols_b_safe: {sorted(cols_b_safe)}")
+    print(f"[DEBUG]   - excluded: {excluded}")
 
     comparable_cols = sorted(list((cols_a_safe & cols_b_safe) - excluded))
 

@@ -1,13 +1,5 @@
 # Documentation Specification
 
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines how documentation must be structured, formatted, and governed to maintain consistency, clarity, and single source of truth across the documentation system.
-**Why necessary:** Ensures documentation is reliable, maintainable, discoverable, and aligned with foundational principles that prevent duplication and confusion.
-**Must contain:** Foundational principles, formatting rules, metadata requirements, versioning discipline, quality criteria, anti-patterns, examples, and governance procedures.
-**Must not contain:** Tool command syntax (belongs in docs/ops/), workflow procedures (belongs in docs/process/), or specific document type schemas (belongs in individual specs).
-
----
-
 ## 0) Purpose and Principles
 
 ### 0.1 What This Specification Addresses
@@ -214,17 +206,9 @@ All documents MUST include a metadata header block immediately after the H1 titl
 
 ### 3.1 Standards Documents (docs/standards/)
 
-Standards documents define normative rules and schemas. They MUST include ALL of the following metadata fields, in this order:
+Standards documents define normative rules and schemas.
 
-```markdown
-# [Document Title]
-
-**Canonical location:** `docs/standards/`
-**Purpose statement:** [One sentence: what this standard defines]
-**Why necessary:** [One sentence: why this standard exists]
-**Must contain:** [Brief list of required content]
-**Must not contain:** [Brief list of prohibited content]
-```
+**Metadata:** Standards documents do NOT require metadata headers (Canonical location, Purpose statement, Why necessary, Must contain, Must not contain). This information is authoritatively defined in `documentation_system_catalog.md` for each standard to maintain Single Source of Truth. See principle 1.1.
 
 **Version and Update Tracking:**
 
@@ -738,13 +722,10 @@ Existing documents that violate this specification:
 ```markdown
 # Example Standard Specification
 
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative schema for example artifacts.
-**Why necessary:** Ensures consistent structure across example artifacts.
-**Must contain:** Required fields, validation rules, compliance checklist.
-**Must not contain:** Tool command syntax, workflow procedures.
 **Version:** 1.2.0
 ```
+
+**Note:** Standards documents do NOT include metadata headers (Canonical location, Purpose statement, etc.). This information is maintained in `documentation_system_catalog.md`.
 
 ### 8.2 Correct Standards Document Header (with timestamp)
 
@@ -752,12 +733,9 @@ Existing documents that violate this specification:
 # Example Standard Specification
 
 UPD 2026-01-28
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative schema for example artifacts.
-**Why necessary:** Ensures consistent structure across example artifacts.
-**Must contain:** Required fields, validation rules, compliance checklist.
-**Must not contain:** Tool command syntax, workflow procedures.
 ```
+
+**Note:** Standards documents do NOT include metadata headers. Only version OR timestamp is included.
 
 ### 8.3 Correct Context Document Header
 
@@ -777,11 +755,10 @@ normative schemas or tool usage.
 
 UPD 2026-01-28 14:20
 **Version:** 1.0.0
-**Canonical location:** `docs/standards/`
 ...
 ```
 
-**Problem:** Uses both timestamp and version number.
+**Problem:** Uses both timestamp and version number. Choose ONE approach only.
 
 ### 8.5 Incorrect: Open Items Section (PROHIBITED)
 

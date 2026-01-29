@@ -509,7 +509,7 @@ try:
     # Log column mappings for auditability
     print(f"[INFO] Column mappings created for {len(combined_reverse_map)} columns")
     print(f"[DEBUG] Sample reverse mappings (first 5):")
-    for _, (safe, original) in enumerate(list(combined_reverse_map.items())[:5]):
+    for safe, original in list(combined_reverse_map.items())[:5]:
         print(f"[DEBUG]   {safe} -> {original}")
 
     # -------------------------
@@ -545,10 +545,13 @@ try:
             .filter(col("value_a") != col("value_b"))
         )
         
+        # Broadcast the reverse mapping for efficient distribution to executors
+        broadcast_reverse_map = sc.broadcast(combined_reverse_map)
+        
         # Apply reverse mapping UDF to restore original column names
         def reverse_field_name(safe_name: str) -> str:
             """UDF to reverse safe column names back to original names."""
-            return combined_reverse_map.get(safe_name, safe_name)
+            return broadcast_reverse_map.value.get(safe_name, safe_name)
         
         reverse_field_name_udf = udf(reverse_field_name, StringType())
         

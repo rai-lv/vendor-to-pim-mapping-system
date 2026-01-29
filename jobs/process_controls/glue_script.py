@@ -14,8 +14,8 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, expr, trim, udf
-from pyspark.sql.types import StringType
+from pyspark.sql.functions import col, expr, trim, udf, lit, sum as spark_sum, when
+from pyspark.sql.types import StringType, StructType, StructField, LongType
 
 # =========================
 # Configuration Constants
@@ -513,7 +513,8 @@ try:
     missing_in_a = ids_b.subtract(ids_a).withColumnRenamed(KEY_SAFE, "xmedia ID")
     missing_in_b = ids_a.subtract(ids_b).withColumnRenamed(KEY_SAFE, "xmedia ID")
 
-    # Join xmedia name if available
+    # Always include xmedia name column for schema consistency
+    # Join xmedia name if available in both files, otherwise add as null column
     if name_safe_a and name_safe_b:
         # Get name mappings from original dataframes
         name_map_a = df_a.select(col(KEY_SAFE).alias("xmedia ID"), col(NAME_SAFE).alias("xmedia name")).distinct()
@@ -522,6 +523,12 @@ try:
         # Join missing IDs with their corresponding names
         missing_in_a = missing_in_a.join(name_map_b, on="xmedia ID", how="left")
         missing_in_b = missing_in_b.join(name_map_a, on="xmedia ID", how="left")
+        print("[INFO] Added xmedia name to missing_in outputs from source data")
+    else:
+        # Add xmedia name column as null to maintain consistent output schema
+        missing_in_a = missing_in_a.withColumn("xmedia name", lit(None).cast(StringType()))
+        missing_in_b = missing_in_b.withColumn("xmedia name", lit(None).cast(StringType()))
+        print("[INFO] Added xmedia name as null column to missing_in outputs for schema consistency")
 
     # -------------------------
     # Create reverse mapping (safe -> original) for field name restoration
@@ -583,10 +590,15 @@ try:
     if stack_parts:
         stack_expr = f"stack({len(comparable_cols)}, {', '.join(stack_parts)}) as (field, value_a, value_b)"
         
-        # Build select columns list - include xmedia name if available
+        # Build select columns list - always include xmedia name for schema consistency
         select_cols = [col(KEY_SAFE).alias("xmedia ID")]
         if name_safe_a and name_safe_b:
             select_cols.append(col(NAME_SAFE).alias("xmedia name"))
+            print("[INFO] Added xmedia name to field_differences output from source data")
+        else:
+            # Add xmedia name column as null to maintain consistent output schema
+            select_cols.append(lit(None).cast(StringType()).alias("xmedia name"))
+            print("[INFO] Added xmedia name as null column to field_differences output for schema consistency")
         select_cols.append(expr(stack_expr))
         
         diffs_long = (
@@ -610,29 +622,106 @@ try:
         
         print(f"[INFO] Applied reverse mapping to restore original column names in field_differences output")
     else:
-        # Create empty schema with xmedia name if available
-        if name_safe_a and name_safe_b:
-            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
-        else:
-            diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
+        # Create empty schema - always include xmedia name for consistency
+        diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, `xmedia name` string, field string, value_a string, value_b string")
 
     # -------------------------
-    # 7) Write outputs as single TSV objects (still .csv extension)
+    # 7) Column-level statistics
+    # -------------------------
+    print("[INFO] Calculating column-level statistics...")
+    
+    # Optimize: Calculate all column statistics in a single aggregation pass
+    # Build aggregate expressions for all columns at once
+    agg_exprs = []
+    for safe_col in comparable_cols:
+        a_col = f"{a_pref}{safe_col}"
+        b_col = f"{b_pref}{safe_col}"
+        
+        # both_differ: Both have values (not null/empty) but values differ
+        both_differ_expr = spark_sum(
+            when(
+                (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+                (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+                (trim(col(a_col)) != trim(col(b_col))),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__both_differ")
+        
+        # in_A_not_B: A has value but B is null/empty
+        in_a_not_b_expr = spark_sum(
+            when(
+                (col(a_col).isNotNull()) & (trim(col(a_col)) != "") &
+                ((col(b_col).isNull()) | (trim(col(b_col)) == "")),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__in_a_not_b")
+        
+        # in_B_not_A: B has value but A is null/empty
+        in_b_not_a_expr = spark_sum(
+            when(
+                (col(b_col).isNotNull()) & (trim(col(b_col)) != "") &
+                ((col(a_col).isNull()) | (trim(col(a_col)) == "")),
+                1
+            ).otherwise(0)
+        ).alias(f"{safe_col}__in_b_not_a")
+        
+        agg_exprs.extend([both_differ_expr, in_a_not_b_expr, in_b_not_a_expr])
+    
+    # Execute single aggregation for all columns
+    if agg_exprs:
+        stats_result = joined.agg(*agg_exprs).collect()[0]
+        
+        # Transform result into statistics rows
+        statistics_rows = []
+        for safe_col in comparable_cols:
+            # Get the original column name for the output
+            original_col = combined_reverse_map.get(safe_col, safe_col)
+            
+            both_differ_count = stats_result[f"{safe_col}__both_differ"]
+            in_a_not_b_count = stats_result[f"{safe_col}__in_a_not_b"]
+            in_b_not_a_count = stats_result[f"{safe_col}__in_b_not_a"]
+            
+            statistics_rows.append({
+                "column_name": original_col,
+                "both_differ": both_differ_count,
+                f"in_{tag_a}_not_{tag_b}": in_a_not_b_count,
+                f"in_{tag_b}_not_{tag_a}": in_b_not_a_count,
+            })
+        
+        statistics_df = spark.createDataFrame(statistics_rows)
+        print(f"[INFO] Generated statistics for {len(statistics_rows)} columns in single aggregation pass")
+    else:
+        # Empty dataframe with correct schema
+        schema = StructType([
+            StructField("column_name", StringType(), True),
+            StructField("both_differ", LongType(), True),
+            StructField(f"in_{tag_a}_not_{tag_b}", LongType(), True),
+            StructField(f"in_{tag_b}_not_{tag_a}", LongType(), True),
+        ])
+        statistics_df = spark.createDataFrame([], schema=schema)
+        print("[INFO] No comparable columns for statistics")
+
+
+    # -------------------------
+    # 8) Write outputs as single TSV objects (still .csv extension)
     # -------------------------
     out_missing_in_a_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_a}.csv"
     out_missing_in_b_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_b}.csv"
     out_diffs_key = f"{result_prefix.rstrip('/')}/field_differences.csv"
+    out_statistics_key = f"{result_prefix.rstrip('/')}/statistics.csv"
 
     tmp_missing_in_a = f"{result_prefix.rstrip('/')}/_tmp_missing_in_{tag_a}_{RUN_TS}/"
     tmp_missing_in_b = f"{result_prefix.rstrip('/')}/_tmp_missing_in_{tag_b}_{RUN_TS}/"
     tmp_diffs = f"{result_prefix.rstrip('/')}/_tmp_field_differences_{RUN_TS}/"
+    tmp_statistics = f"{result_prefix.rstrip('/')}/_tmp_statistics_{RUN_TS}/"
 
     write_single_csv(missing_in_a, output_bucket, out_missing_in_a_key, tmp_missing_in_a, s3_client)
     write_single_csv(missing_in_b, output_bucket, out_missing_in_b_key, tmp_missing_in_b, s3_client)
     write_single_csv(diffs_long, output_bucket, out_diffs_key, tmp_diffs, s3_client)
+    write_single_csv(statistics_df, output_bucket, out_statistics_key, tmp_statistics, s3_client)
 
     # -------------------------
-    # 8) Run receipt (JSON)
+    # 9) Run receipt (JSON)
     # -------------------------
     receipt = {
         "job_name": job_name,
@@ -656,6 +745,7 @@ try:
             "missing_in_a_key": out_missing_in_a_key,
             "missing_in_b_key": out_missing_in_b_key,
             "field_differences_key": out_diffs_key,
+            "statistics_key": out_statistics_key,
         },
         "schema": {
             "comparable_columns_count": len(comparable_cols),
@@ -666,6 +756,7 @@ try:
             "comparison_key_header_normalized": KEY_NORM,
             "comparison_name_header_normalized": NAME_NORM,
             "name_column_present": name_col_a is not None and name_col_b is not None,
+            "name_column_always_in_output": True,
             "excluded_header_normalized": PATH_NORM,
             "diff_compares_intersection_only": True,
             "null_marker_in_diff": NULL_MARK,

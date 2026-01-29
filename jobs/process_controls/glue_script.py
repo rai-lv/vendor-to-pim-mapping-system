@@ -1,12 +1,12 @@
 import sys
-import os
-import re
 import json
+import re
 import traceback
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Optional
 import csv
 from io import StringIO
+from os.path import basename
 
 import boto3
 from awsglue.utils import getResolvedOptions
@@ -14,12 +14,34 @@ from pyspark.context import SparkContext
 from awsglue.context import GlueContext
 from awsglue.job import Job
 from pyspark.sql import DataFrame
-from pyspark.sql.functions import col, lit, expr, trim, coalesce
+from pyspark.sql.functions import col, expr, trim
 from pyspark.sql.types import StringType
+
+# =========================
+# Configuration Constants
+# =========================
+
+SAMPLE_BUFFER_SIZE = 65536  # 64KB for CSV dialect detection
+MAX_DIALECT_SAMPLE_LINES = 200
+CSV_SEPARATORS = [";", ",", "\t", "|"]
+MAX_DUPLICATE_SAMPLE_COUNT = 20
 
 # =========================
 # Helpers (aligned pattern)
 # =========================
+
+def validate_s3_key(key: str) -> None:
+    """
+    Validate S3 key format for basic security checks.
+    Raises ValueError if key is invalid.
+    """
+    if not key:
+        raise ValueError("S3 key cannot be empty")
+    
+    # Check for invalid null characters
+    if '\0' in key:
+        raise ValueError(f"Invalid S3 key format (contains null character)")
+
 
 def ensure_prefix_uri(uri: str) -> str:
     if uri.endswith("/"):
@@ -49,7 +71,7 @@ def list_s3_objects(bucket: str, prefix: str) -> List[str]:
     print(f"[INFO] Found {len(keys)} object(s) under prefix '{prefix}'")
     return keys
 
-def _read_s3_head(bucket: str, key: str, max_bytes: int = 65536) -> bytes:
+def _read_s3_head(bucket: str, key: str, max_bytes: int = SAMPLE_BUFFER_SIZE) -> bytes:
     s3 = boto3.client("s3")
     resp = s3.get_object(Bucket=bucket, Key=key, Range=f"bytes=0-{max_bytes-1}")
     return resp["Body"].read()
@@ -59,9 +81,8 @@ def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     Detect separator + encoding using a small head sample.
     Returns (sep, encoding_name_for_spark).
     """
-    raw = _read_s3_head(bucket, key, 65536)
+    raw = _read_s3_head(bucket, key, SAMPLE_BUFFER_SIZE)
 
-    # Try decodes in a deterministic order
     decode_attempts = [
         ("utf-8-sig", "UTF-8"),
         ("utf-8", "UTF-8"),
@@ -84,13 +105,10 @@ def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     if text is None or chosen_encoding_for_spark is None:
         raise RuntimeError(f"Could not decode head sample of s3://{bucket}/{key}. Last error: {last_err}")
 
-    # Pick sep by maximum occurrence in the first ~200 lines
-    sample = "\n".join(text.splitlines()[:200])
-    candidates = [";", ",", "\t", "|"]
-    counts = {c: sample.count(c) for c in candidates}
+    sample = "\n".join(text.splitlines()[:MAX_DIALECT_SAMPLE_LINES])
+    counts = {c: sample.count(c) for c in CSV_SEPARATORS}
     sep = max(counts, key=counts.get)
 
-    # If everything is zero, fall back to ';' (German exports)
     if counts[sep] == 0:
         sep = ";"
 
@@ -141,18 +159,14 @@ def write_single_csv(
     and deletes tmp objects. Output is a single CSV object.
     Handles empty DataFrames by ensuring headers are written.
     """
-    # Check if DataFrame is empty using PySpark's built-in method
     try:
         is_empty = df.isEmpty()
     except AttributeError:
-        # Fallback for older PySpark versions that don't have isEmpty()
         is_empty = df.limit(1).count() == 0
-    
+
     if is_empty:
-        # For empty DataFrames, write CSV with headers only (properly escaped)
         print(f"[INFO] DataFrame is empty. Writing headers-only CSV to: s3://{output_bucket}/{final_key}")
-        
-        # Handle edge case: DataFrame with no columns
+
         if not df.columns:
             print("[WARN] DataFrame has no columns. Writing empty CSV file.")
             s3_client.put_object(
@@ -162,13 +176,12 @@ def write_single_csv(
                 ContentType="text/csv",
             )
             return
-        
-        # Use csv module to properly escape headers
+
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(df.columns)
         header_csv = output.getvalue()
-        
+
         s3_client.put_object(
             Bucket=output_bucket,
             Key=final_key,
@@ -176,7 +189,7 @@ def write_single_csv(
             ContentType="text/csv",
         )
         return
-    
+
     tmp_uri = f"s3://{output_bucket}/{tmp_prefix}"
     print(f"[INFO] Writing CSV to temporary prefix: {tmp_uri}")
 
@@ -204,7 +217,6 @@ def write_single_csv(
         Key=final_key,
     )
 
-    # Non-fatal cleanup: log warnings on failure instead of raising exceptions
     print(f"[INFO] Cleaning up tmp prefix: {tmp_prefix}")
     for k in tmp_keys:
         try:
@@ -213,7 +225,7 @@ def write_single_csv(
             print(f"[WARN] Failed to delete temporary file s3://{output_bucket}/{k}: {type(cleanup_err).__name__}: {cleanup_err}")
 
 # =========================
-# Glue entry point (same args)
+# Glue entry point (args)
 # =========================
 
 args = getResolvedOptions(
@@ -222,7 +234,7 @@ args = getResolvedOptions(
         "JOB_NAME",
         "INPUT_BUCKET",
         "OUTPUT_BUCKET",
-        "vendor_name",
+        "process_control_type",
         "preprocessed_input_key",
         "prepared_output_prefix",
     ],
@@ -232,8 +244,7 @@ job_name = args["JOB_NAME"]
 input_bucket = args["INPUT_BUCKET"]
 output_bucket = args["OUTPUT_BUCKET"]
 
-# kept for contract alignment; used only for naming/logging
-vendor_name = args["vendor_name"]
+process_control_type = args["process_control_type"]
 
 incoming_prefix = ensure_prefix_uri(args["preprocessed_input_key"])
 result_prefix = ensure_prefix_uri(args["prepared_output_prefix"])
@@ -241,7 +252,7 @@ result_prefix = ensure_prefix_uri(args["prepared_output_prefix"])
 print(f"[INFO] Job name: {job_name}")
 print(f"[INFO] INPUT_BUCKET: {input_bucket}")
 print(f"[INFO] OUTPUT_BUCKET: {output_bucket}")
-print(f"[INFO] vendor_name: {vendor_name}")
+print(f"[INFO] process_control_type: {process_control_type}")
 print(f"[INFO] incoming_prefix: {incoming_prefix}")
 print(f"[INFO] result_prefix: {result_prefix}")
 
@@ -262,7 +273,7 @@ try:
     all_keys = list_s3_objects(input_bucket, incoming_prefix)
     csv_keys = [
         k for k in all_keys
-        if k.lower().endswith(".csv") and not k.endswith("/")  # basic guard
+        if k.lower().endswith(".csv") and not k.endswith("/")
     ]
 
     if len(csv_keys) != 2:
@@ -273,21 +284,25 @@ try:
 
     csv_keys.sort()
     key_a, key_b = csv_keys[0], csv_keys[1]
-    base_a = os.path.basename(key_a)
-    base_b = os.path.basename(key_b)
+    
+    # Validate S3 keys before use
+    validate_s3_key(key_a)
+    validate_s3_key(key_b)
+    
+    base_a = basename(key_a)
+    base_b = basename(key_b)
 
-    # Optional tagging purely for output naming clarity
     def tag_from_name(name: str) -> str:
         n = name.lower()
         if "x1" in n:
             return "X1"
         if "x2" in n:
             return "X2"
-        return "A"  # fallback
+        return "A"
 
     tag_a = tag_from_name(base_a)
     tag_b = tag_from_name(base_b)
-    if tag_a == tag_b:  # avoid collision in filenames
+    if tag_a == tag_b:
         tag_a, tag_b = "A", "B"
 
     print(f"[INFO] Using input A: s3://{input_bucket}/{key_a} (tag={tag_a})")
@@ -329,7 +344,6 @@ try:
         .load(uri_b)
     )
 
-    # Strip column name whitespace
     df_a_raw = df_a_raw.toDF(*[str(c).strip() for c in df_a_raw.columns])
     df_b_raw = df_b_raw.toDF(*[str(c).strip() for c in df_b_raw.columns])
 
@@ -364,11 +378,9 @@ try:
     key_safe_a = map_a[key_col_a]
     key_safe_b = map_b[key_col_b]
 
-    # Normalize key by trimming (preserve null vs empty)
     df_a = df_a.withColumn(key_safe_a, trim(col(key_safe_a)).cast(StringType()))
     df_b = df_b.withColumn(key_safe_b, trim(col(key_safe_b)).cast(StringType()))
 
-    # Fail if key contains null/empty
     null_key_a = df_a.filter(col(key_safe_a).isNull() | (col(key_safe_a) == "")).limit(1).count()
     null_key_b = df_b.filter(col(key_safe_b).isNull() | (col(key_safe_b) == "")).limit(1).count()
     if null_key_a > 0:
@@ -376,44 +388,38 @@ try:
     if null_key_b > 0:
         raise RuntimeError("Found null/empty 'xmedia ID' values in input B.")
 
-    # Duplicates check (fast-fail)
     dup_a = df_a.groupBy(key_safe_a).count().filter(col("count") > 1)
     dup_b = df_b.groupBy(key_safe_b).count().filter(col("count") > 1)
 
     dup_a_exists = dup_a.limit(1).count() > 0
     dup_b_exists = dup_b.limit(1).count() > 0
     if dup_a_exists or dup_b_exists:
-        sample_a = [r[key_safe_a] for r in dup_a.select(key_safe_a).limit(20).collect()] if dup_a_exists else []
-        sample_b = [r[key_safe_b] for r in dup_b.select(key_safe_b).limit(20).collect()] if dup_b_exists else []
+        sample_a = [r[key_safe_a] for r in dup_a.select(key_safe_a).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_a_exists else []
+        sample_b = [r[key_safe_b] for r in dup_b.select(key_safe_b).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_b_exists else []
         raise RuntimeError(
             f"Duplicate xmedia IDs detected. "
             f"A sample={sample_a} | B sample={sample_b}. "
             f"Fix duplicates before diff (comparison requires 1 row per xmedia ID)."
         )
 
-    # Make both sides use same key name for joins
     KEY_SAFE = "xmedia_id"
     df_a = df_a.withColumnRenamed(key_safe_a, KEY_SAFE)
     df_b = df_b.withColumnRenamed(key_safe_b, KEY_SAFE)
 
-    # Exclude path if present on both sides (by normalized header name)
     path_safe_a = map_a[path_col_a] if path_col_a else None
     path_safe_b = map_b[path_col_b] if path_col_b else None
 
-    # Determine comparable columns = intersection only (excluding key + path)
     cols_a_safe = set(df_a.columns)
     cols_b_safe = set(df_b.columns)
 
     excluded = {KEY_SAFE}
     if path_safe_a and path_safe_a in cols_a_safe and path_safe_b and path_safe_b in cols_b_safe:
-        # rename path columns to a common internal name, then exclude
         df_a = df_a.withColumnRenamed(path_safe_a, "path__tmp")
         df_b = df_b.withColumnRenamed(path_safe_b, "path__tmp")
         excluded.add("path__tmp")
 
     comparable_cols = sorted(list((cols_a_safe & cols_b_safe) - excluded))
 
-    # For receipt: schema differences (safe names)
     cols_only_in_a = sorted(list(cols_a_safe - cols_b_safe))
     cols_only_in_b = sorted(list(cols_b_safe - cols_a_safe))
 
@@ -433,11 +439,9 @@ try:
     # -------------------------
     # 6) Field differences (long format)
     # -------------------------
-    # Join only IDs present in both
     a_pref = "a__"
     b_pref = "b__"
 
-    # Build projected dfs with prefixed columns for clean stack expression
     proj_a = [col(KEY_SAFE)] + [col(c).alias(a_pref + c) for c in comparable_cols]
     proj_b = [col(KEY_SAFE)] + [col(c).alias(b_pref + c) for c in comparable_cols]
 
@@ -448,8 +452,6 @@ try:
 
     NULL_MARK = "<NULL>"
 
-    # Build stack expression: field_name, value_a, value_b
-    # Values are trimmed; null preserved as "<NULL>"
     stack_parts = []
     for c in comparable_cols:
         a_expr = f"coalesce(trim(`{a_pref + c}`), '{NULL_MARK}')"
@@ -487,10 +489,9 @@ try:
     # -------------------------
     # 8) Run receipt (JSON)
     # -------------------------
-    # NOTE: counts require scans; kept minimal (distinct+diff sizes not computed here to avoid extra full passes)
     receipt = {
         "job_name": job_name,
-        "vendor_name": vendor_name,
+        "process_control_type": process_control_type,
         "run_ts": RUN_TS,
         "input": {
             "bucket": input_bucket,
@@ -524,7 +525,9 @@ try:
         },
     }
 
-    receipt_key = f"{result_prefix.rstrip('/')}/run_receipt_align_x1_to_x2_{RUN_TS}.json"
+    safe_pctype = re.sub(r"[^A-Za-z0-9_-]", "_", process_control_type.strip() or "process_control")
+    receipt_key = f"{result_prefix.rstrip('/')}/run_receipt_{safe_pctype}_{RUN_TS}.json"
+
     s3_client.put_object(
         Bucket=output_bucket,
         Key=receipt_key,
@@ -539,20 +542,17 @@ try:
 except Exception as e:
     error_type = type(e).__name__
     error_msg = str(e)
-    
-    # Categorize error types for better debugging
-    # Check for AWS-specific error types (exact matches for known AWS exceptions)
-    # Note: 'boto' substring check intentionally catches boto3/botocore-related errors
+
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
     is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
-    
+
     if is_aws_error:
         print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")
     else:
         print(f"[ERROR] Runtime Error ({error_type}): {error_msg}")
-    
+
     print("[ERROR] Full traceback:")
     traceback.print_exc()
-    
+
     job.commit()
     raise

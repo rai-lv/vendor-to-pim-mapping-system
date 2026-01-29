@@ -90,6 +90,8 @@ The workflow proceeds through the five steps defined in `development_approach.md
 
 Agents are defined as **functions** that may be implemented by one or multiple actual agents. Responsibilities describe what they may do; humans decide.
 
+**Implementation note:** The three planning agent functions below (Objective Support, Pipeline Support, Capability Support) are currently implemented by the Combined Planning Agent (see `.github/agents/combined-planning-agent.md`), which provides all three functions through explicit mode switching. The functional responsibilities defined below remain the canonical specification regardless of implementation approach.
+
 **Note:** The summaries below provide an overview of each agent role. For detailed, canonical role definitions including full responsibilities, non-responsibilities, escalation triggers, and typical outputs, see `docs/agents/agent_role_charter.md`.
 
 ### Objective Support Agent

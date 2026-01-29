@@ -90,7 +90,7 @@ Every step follows the same loop:
 
 ## 2) Step 1 — Define the Objective
 
-**Agent support:** Objective Support Agent (see `agent_role_charter.md`).
+**Agent support:** Combined Planning Agent in Objective Mode (see `.github/agents/combined-planning-agent.md`). Role definition: Objective Support Agent in `agent_role_charter.md`.
 
 ### Practical goal
 Produce an objective that is “implementable enough” to plan a pipeline.
@@ -125,7 +125,7 @@ Produce an objective that is “implementable enough” to plan a pipeline.
 
 ## 3) Step 2 — Plan the Pipeline
 
-**Agent support:** Pipeline Support Agent (see `agent_role_charter.md`).
+**Agent support:** Combined Planning Agent in Pipeline Mode (see `.github/agents/combined-planning-agent.md`). Role definition: Pipeline Support Agent in `agent_role_charter.md`.
 
 ### Practical goal
 Translate the objective into an ordered list of capabilities with clear boundaries.
@@ -156,7 +156,7 @@ Translate the objective into an ordered list of capabilities with clear boundari
 
 ## 4) Step 3 — Capability Planning (and codable tasks)
 
-**Agent support:** Capability Support Agent (see `agent_role_charter.md`).
+**Agent support:** Combined Planning Agent in Capability Mode (see `.github/agents/combined-planning-agent.md`). Role definition: Capability Support Agent in `agent_role_charter.md`.
 
 ### Practical goal
 Make one capability implementable without uncontrolled decomposition.

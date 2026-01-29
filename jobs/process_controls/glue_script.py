@@ -565,7 +565,12 @@ try:
     ja = df_a.select(*proj_a)
     jb = df_b.select(*proj_b)
 
-    joined = ja.join(jb, on=KEY_SAFE, how="inner")
+    # Join on KEY_SAFE and NAME_SAFE (if present) to avoid duplicate columns
+    join_keys = [KEY_SAFE]
+    if name_safe_a and name_safe_b:
+        join_keys.append(NAME_SAFE)
+    
+    joined = ja.join(jb, on=join_keys, how="inner")
 
     NULL_MARK = "<NULL>"
 

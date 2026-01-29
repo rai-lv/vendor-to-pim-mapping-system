@@ -1,6 +1,5 @@
-schema_version: "1.0"
 job_id: matching_proposals
-glue_job_name: TBD
+glue_job_name: matching_proposals
 runtime: pyspark
 entrypoint: glue_script.py
 
@@ -34,19 +33,15 @@ side_effects:
 
 logging_and_receipt:
   writes_run_receipt: false
-  run_receipt_bucket: TBD
-  run_receipt_key_pattern: TBD
-  counters_observed: TBD
+  run_receipt_bucket: null
+  run_receipt_key_pattern: null
+  counters_observed: []
 
 notes:
-  - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — Not yet deployed to AWS Glue (no deployment config found in repo). Needs deployment config from DevOps team."
-  - "logging_and_receipt.run_receipt_bucket: TBD — Script does not write a run receipt file to S3, only calls job.commit() for Glue bookkeeping (lines 165, 208, 221, 251, 352, 676 in glue_script.py)."
-  - "logging_and_receipt.run_receipt_key_pattern: TBD — Script does not write a run receipt file to S3. See run_receipt_bucket explanation."
-  - "logging_and_receipt.counters_observed: TBD — Script logs record counts to logger but does not emit structured counters to CloudWatch or a receipt file (e.g., lines 195-198, 229-234). Need to review CloudWatch metrics to identify emitted counters."
   - "Evidence source: Analyzed glue_script.py lines 1-710, checked getResolvedOptions (lines 24-34), S3 I/O patterns (lines 68-175, 689-705), Spark read.json (lines 183, 189), and write_json_dict_to_s3 helper (lines 689-705)."
   - "prepared_input_key normalization: Script normalizes prefix by rstrip('/') (line 68), so manifest uses ${prepared_input_key_norm} placeholder."
   - "prepared_output_prefix normalization: Script normalizes prefix by rstrip('/') (line 69), so manifest uses ${prepared_output_prefix_norm} placeholder."
   - "Input format: Script tries standard JSON read first (line 183), then multiLine=true as fallback (line 189). Primary read mode is line-delimited (ndjson), per Spark default behavior (see spec section 5.4.0.1)."
   - "Output format: Outputs are single JSON documents written via json.dumps with indent=2 (line 694), not line-delimited, so format is json."
   - "canonicalCategoryMapping subdirectory: Input is expected under ${prepared_input_key}/canonicalCategoryMapping/ subdirectory (lines 73, 81 in glue_script.py). This subdirectory is appended by the script, not part of the prepared_input_key parameter."
+  - "Script does not write run receipt file to S3, only calls job.commit() for Glue bookkeeping (lines 165, 208, 221, 251, 352, 676). No structured counters emitted to CloudWatch or receipt file."

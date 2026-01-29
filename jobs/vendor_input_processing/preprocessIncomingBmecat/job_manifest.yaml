@@ -1,6 +1,5 @@
-schema_version: "1.0"
 job_id: preprocessIncomingBmecat
-glue_job_name: TBD
+glue_job_name: preprocessIncomingBmecat
 runtime: python_shell
 entrypoint: glue_script.py
 
@@ -53,7 +52,7 @@ config_files:
     key_pattern: configuration-files/incomingVendorBmecatPreprocessing_configs/incomingVendorBmecatPreprocessing_config_${vendor_name}.json
     format: json
     required: true
-    repo_path: TBD
+    repo_path: null
 
 side_effects:
   deletes_inputs: false
@@ -61,16 +60,12 @@ side_effects:
 
 logging_and_receipt:
   writes_run_receipt: false
-  run_receipt_bucket: TBD
-  run_receipt_key_pattern: TBD
-  counters_observed: TBD
+  run_receipt_bucket: null
+  run_receipt_key_pattern: null
+  counters_observed: []
 
 notes:
-  - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — Not yet deployed to AWS Glue (no deployment config found in repo). Needs deployment config from DevOps team."
-  - "config_files[0].repo_path: TBD — Config file exists in S3 at configuration-files/incomingVendorBmecatPreprocessing_configs/ but not mirrored in repository. Team to decide if repo mirror is needed."
-  - "logging_and_receipt.run_receipt_bucket: TBD — Script does not write a run receipt file to S3 (only logs summary to stdout, lines 957-979 in glue_script.py). If future implementation adds S3 receipt, this field should be updated."
-  - "logging_and_receipt.run_receipt_key_pattern: TBD — Script does not write a run receipt file to S3. See run_receipt_bucket explanation."
-  - "logging_and_receipt.counters_observed: TBD — Script logs record counts to stdout but does not emit structured counters to CloudWatch or a receipt file. Need to review job execution logs to identify emitted metrics."
   - "Evidence source: Analyzed glue_script.py lines 1-979, checked getResolvedOptions REQUIRED_ARGS (lines 11-19), S3 I/O patterns (lines 50-979), and output writes via write_ndjson_to_s3 helper."
-  - "bmecat_output_prefix normalization: Script normalizes prefix by ensuring trailing slash (line 31-32), so manifest uses ${bmecat_output_prefix_norm} placeholder."
+  - "bmecat_output_prefix normalization: Script normalizes prefix by ensuring trailing slash (lines 35-36), so manifest uses ${bmecat_output_prefix_norm} placeholder."
+  - "Script does not write run receipt file to S3 (only logs summary to stdout, lines 957-979). No structured counters emitted to CloudWatch."
+  - "Config file exists in S3 only (configuration-files/incomingVendorBmecatPreprocessing_configs/), not mirrored in repository (verified: not in jobs/*/config/ or config/ directories)."

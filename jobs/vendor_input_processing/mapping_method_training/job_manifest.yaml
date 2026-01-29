@@ -1,6 +1,5 @@
-schema_version: "1.0"
 job_id: mapping_method_training
-glue_job_name: TBD
+glue_job_name: mapping_method_training
 runtime: python_shell
 entrypoint: glue_script.py
 
@@ -97,7 +96,7 @@ config_files:
     key_pattern: configuration-files/vendorInputProcessing_configs/categoryMapping_DenylistConfig.json
     format: json
     required: true
-    repo_path: TBD
+    repo_path: null
 
 side_effects:
   deletes_inputs: false
@@ -110,12 +109,10 @@ logging_and_receipt:
   counters_observed: TBD
 
 notes:
-  - "TBD_EXPLANATIONS:"
-  - "glue_job_name: TBD — Not yet deployed to AWS Glue (no deployment config found in repo). Needs deployment config from DevOps team."
-  - "config_files[0].repo_path: TBD — Config file exists in S3 at configuration-files/vendorInputProcessing_configs/ but not mirrored in repository. Team to decide if repo mirror is needed."
-  - "logging_and_receipt.counters_observed: TBD — Script writes run receipt with metadata but counter names are dynamic/internal. Need to review actual receipt structure to document emitted counter names."
   - "Evidence source: Analyzed glue_script.py, checked getResolvedOptions (required_args list), S3 I/O patterns including receipt writing, and boto3 put_object calls. No SparkContext or GlueContext usage detected, confirming python_shell runtime."
   - "Runtime-generated placeholders: ${run_id} is computed at runtime (not in parameters list), represents unique job run identifier. ${new_suffix} is dynamically generated for updated Category_Mapping_Reference files."
   - "prepared_output_prefix normalization: Script normalizes prefix to ensure proper S3 path structure, so manifest uses ${prepared_output_prefix_norm} placeholder."
   - "forMapping_products input: Script reads file without extension (line 2279: ${prepared_output_prefix}/${vendor_name}_forMapping_products). This matches the legacy output (no extension) written by category_mapping_to_canonical job, which writes both .ndjson and no-extension versions for backward compatibility."
   - "Outputs to INPUT_BUCKET: Some outputs (canonical mappings, training evidence, training sets) are written to INPUT_BUCKET to maintain shared reference data accessible to other jobs. These files serve dual roles as both inputs (read at job start) and outputs (updated/overwritten at job end), representing the job's update-in-place pattern for shared canonical references."
+  - "Config file exists in S3 only (configuration-files/vendorInputProcessing_configs/), not mirrored in repository (verified: not in jobs/*/config/ or config/ directories)."
+  - "counters_observed: TBD — Script writes run receipt with metadata but counter names are dynamic/internal. Need to review actual receipt structure to document emitted counter names."

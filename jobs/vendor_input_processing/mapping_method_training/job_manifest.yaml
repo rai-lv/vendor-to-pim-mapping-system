@@ -76,11 +76,11 @@ outputs:
     format: json
     required: true
   - bucket: ${INPUT_BUCKET}
-    key_pattern: canonical_mappings/StableTrainingEvidence_Unigrams_v1.json
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Unigrams_v1.json
     format: json
     required: true
   - bucket: ${INPUT_BUCKET}
-    key_pattern: canonical_mappings/StableTrainingEvidence_Pairs_v1.json
+    key_pattern: canonical_mappings/stable_training_sets/StableTrainingEvidence_Pairs_v1.json
     format: json
     required: true
   - bucket: ${INPUT_BUCKET}
@@ -117,4 +117,5 @@ notes:
   - "Evidence source: Analyzed glue_script.py, checked getResolvedOptions (required_args list), S3 I/O patterns including receipt writing, and boto3 put_object calls. No SparkContext or GlueContext usage detected, confirming python_shell runtime."
   - "Runtime-generated placeholders: ${run_id} is computed at runtime (not in parameters list), represents unique job run identifier. ${new_suffix} is dynamically generated for updated Category_Mapping_Reference files."
   - "prepared_output_prefix normalization: Script normalizes prefix to ensure proper S3 path structure, so manifest uses ${prepared_output_prefix_norm} placeholder."
-  - "Outputs to INPUT_BUCKET: Some outputs (canonical mappings, training evidence, training sets) are written to INPUT_BUCKET to maintain shared reference data accessible to other jobs."
+  - "forMapping_products input: Script reads file without extension (line 2279: ${prepared_output_prefix}/${vendor_name}_forMapping_products). This matches the legacy output (no extension) written by category_mapping_to_canonical job, which writes both .ndjson and no-extension versions for backward compatibility."
+  - "Outputs to INPUT_BUCKET: Some outputs (canonical mappings, training evidence, training sets) are written to INPUT_BUCKET to maintain shared reference data accessible to other jobs. These files serve dual roles as both inputs (read at job start) and outputs (updated/overwritten at job end), representing the job's update-in-place pattern for shared canonical references."

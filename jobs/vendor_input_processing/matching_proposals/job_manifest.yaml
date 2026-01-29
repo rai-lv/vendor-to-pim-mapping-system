@@ -49,3 +49,4 @@ notes:
   - "prepared_output_prefix normalization: Script normalizes prefix by rstrip('/') (line 69), so manifest uses ${prepared_output_prefix_norm} placeholder."
   - "Input format: Script tries standard JSON read first (line 183), then multiLine=true as fallback (line 189). Primary read mode is line-delimited (ndjson), per Spark default behavior (see spec section 5.4.0.1)."
   - "Output format: Outputs are single JSON documents written via json.dumps with indent=2 (line 694), not line-delimited, so format is json."
+  - "canonicalCategoryMapping subdirectory: Input is expected under ${prepared_input_key}/canonicalCategoryMapping/ subdirectory (lines 73, 81 in glue_script.py). This subdirectory is appended by the script, not part of the prepared_input_key parameter."

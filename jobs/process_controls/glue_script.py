@@ -21,10 +21,12 @@ from pyspark.sql.types import StringType
 # Configuration Constants
 # =========================
 
-SAMPLE_BUFFER_SIZE = 65536  # 64KB for CSV dialect detection
-MAX_DIALECT_SAMPLE_LINES = 200
-CSV_SEPARATORS = [";", ",", "\t", "|"]
+SAMPLE_BUFFER_SIZE = 65536  # 64KB for encoding detection
 MAX_DUPLICATE_SAMPLE_COUNT = 20
+
+# Fact (user-provided): delimiter is tabstop
+FORCED_INPUT_SEPARATOR = "\t"
+FORCED_OUTPUT_SEPARATOR = "\t"
 
 # =========================
 # Helpers (aligned pattern)
@@ -37,11 +39,10 @@ def validate_s3_key(key: str) -> None:
     """
     if not key:
         raise ValueError("S3 key cannot be empty")
-    
-    # Check for invalid null characters
-    if '\0' in key:
-        raise ValueError(f"Invalid S3 key format (contains null character)")
 
+    # Check for invalid null characters
+    if "\0" in key:
+        raise ValueError("Invalid S3 key format (contains null character)")
 
 def ensure_prefix_uri(uri: str) -> str:
     if uri.endswith("/"):
@@ -78,10 +79,22 @@ def _read_s3_head(bucket: str, key: str, max_bytes: int = SAMPLE_BUFFER_SIZE) ->
 
 def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     """
-    Detect separator + encoding using a small head sample.
+    Detect encoding using a small head sample.
+    Separator is forced to TAB (\t) as per user input.
     Returns (sep, encoding_name_for_spark).
     """
     raw = _read_s3_head(bucket, key, SAMPLE_BUFFER_SIZE)
+
+    # --- UTF-16 BOM detection (critical for Excel/Windows exports) ---
+    # FF FE => UTF-16LE BOM, FE FF => UTF-16BE BOM
+    if raw.startswith(b"\xff\xfe"):
+        # Validate decode works (debug safety); Spark should read with UTF-16LE
+        _ = raw.decode("utf-16", errors="strict")
+        return FORCED_INPUT_SEPARATOR, "UTF-16LE"
+
+    if raw.startswith(b"\xfe\xff"):
+        _ = raw.decode("utf-16", errors="strict")
+        return FORCED_INPUT_SEPARATOR, "UTF-16BE"
 
     decode_attempts = [
         ("utf-8-sig", "UTF-8"),
@@ -105,17 +118,15 @@ def detect_csv_dialect(bucket: str, key: str) -> Tuple[str, str]:
     if text is None or chosen_encoding_for_spark is None:
         raise RuntimeError(f"Could not decode head sample of s3://{bucket}/{key}. Last error: {last_err}")
 
-    sample = "\n".join(text.splitlines()[:MAX_DIALECT_SAMPLE_LINES])
-    counts = {c: sample.count(c) for c in CSV_SEPARATORS}
-    sep = max(counts, key=counts.get)
-
-    if counts[sep] == 0:
-        sep = ";"
-
-    return sep, chosen_encoding_for_spark
+    # Separator is forced by requirement; still return encoding discovered above
+    return FORCED_INPUT_SEPARATOR, chosen_encoding_for_spark
 
 def normalize_header(h: str) -> str:
-    return re.sub(r"\s+", " ", str(h).strip().lower())
+    s = str(h)
+    # Remove NULs from mis-decoded UTF-16 and remove BOM if present
+    s = s.replace("\x00", "")
+    s = s.replace("\ufeff", "")
+    return re.sub(r"\s+", " ", s.strip().lower())
 
 def find_column_by_normalized_name(columns: List[str], target_norm: str) -> Optional[str]:
     for c in columns:
@@ -156,7 +167,7 @@ def write_single_csv(
 ):
     """
     Spark writes CSV as a folder; this writes to tmp_prefix, copies the single part file to final_key,
-    and deletes tmp objects. Output is a single CSV object.
+    and deletes tmp objects. Output is a single TSV object (sep=TAB).
     Handles empty DataFrames by ensuring headers are written.
     """
     try:
@@ -165,38 +176,39 @@ def write_single_csv(
         is_empty = df.limit(1).count() == 0
 
     if is_empty:
-        print(f"[INFO] DataFrame is empty. Writing headers-only CSV to: s3://{output_bucket}/{final_key}")
+        print(f"[INFO] DataFrame is empty. Writing headers-only TSV to: s3://{output_bucket}/{final_key}")
 
         if not df.columns:
-            print("[WARN] DataFrame has no columns. Writing empty CSV file.")
+            print("[WARN] DataFrame has no columns. Writing empty file.")
             s3_client.put_object(
                 Bucket=output_bucket,
                 Key=final_key,
                 Body=b"",
-                ContentType="text/csv",
+                ContentType="text/tab-separated-values",
             )
             return
 
         output = StringIO()
-        writer = csv.writer(output)
+        writer = csv.writer(output, delimiter=FORCED_OUTPUT_SEPARATOR)
         writer.writerow(df.columns)
-        header_csv = output.getvalue()
+        header_tsv = output.getvalue()
 
         s3_client.put_object(
             Bucket=output_bucket,
             Key=final_key,
-            Body=header_csv.encode("utf-8"),
-            ContentType="text/csv",
+            Body=header_tsv.encode("utf-8"),
+            ContentType="text/tab-separated-values",
         )
         return
 
     tmp_uri = f"s3://{output_bucket}/{tmp_prefix}"
-    print(f"[INFO] Writing CSV to temporary prefix: {tmp_uri}")
+    print(f"[INFO] Writing TSV to temporary prefix: {tmp_uri}")
 
     (
         df.coalesce(1)
           .write.mode("overwrite")
           .option("header", True)
+          .option("sep", FORCED_OUTPUT_SEPARATOR)
           .csv(tmp_uri)
     )
 
@@ -255,6 +267,8 @@ print(f"[INFO] OUTPUT_BUCKET: {output_bucket}")
 print(f"[INFO] process_control_type: {process_control_type}")
 print(f"[INFO] incoming_prefix: {incoming_prefix}")
 print(f"[INFO] result_prefix: {result_prefix}")
+print(f"[INFO] Forced input separator: TAB")
+print(f"[INFO] Forced output separator: TAB")
 
 sc = SparkContext()
 glue_context = GlueContext(sc)
@@ -284,11 +298,11 @@ try:
 
     csv_keys.sort()
     key_a, key_b = csv_keys[0], csv_keys[1]
-    
+
     # Validate S3 keys before use
     validate_s3_key(key_a)
     validate_s3_key(key_b)
-    
+
     base_a = basename(key_a)
     base_b = basename(key_b)
 
@@ -309,13 +323,13 @@ try:
     print(f"[INFO] Using input B: s3://{input_bucket}/{key_b} (tag={tag_b})")
 
     # -------------------------
-    # 2) Detect dialect + read CSVs
+    # 2) Detect encoding + read CSVs (separator forced to TAB)
     # -------------------------
     sep_a, enc_a = detect_csv_dialect(input_bucket, key_a)
     sep_b, enc_b = detect_csv_dialect(input_bucket, key_b)
 
-    print(f"[INFO] Detected A sep='{sep_a}' encoding='{enc_a}'")
-    print(f"[INFO] Detected B sep='{sep_b}' encoding='{enc_b}'")
+    print(f"[INFO] Detected A sep='TAB' encoding='{enc_a}'")
+    print(f"[INFO] Detected B sep='TAB' encoding='{enc_b}'")
 
     uri_a = f"s3://{input_bucket}/{key_a}"
     uri_b = f"s3://{input_bucket}/{key_b}"
@@ -472,7 +486,7 @@ try:
         diffs_long = spark.createDataFrame([], schema="`xmedia ID` string, field string, value_a string, value_b string")
 
     # -------------------------
-    # 7) Write outputs as single CSV objects
+    # 7) Write outputs as single TSV objects (still .csv extension)
     # -------------------------
     out_missing_in_a_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_a}.csv"
     out_missing_in_b_key = f"{result_prefix.rstrip('/')}/missing_in_{tag_b}.csv"
@@ -498,11 +512,11 @@ try:
             "incoming_prefix": incoming_prefix,
             "file_a_key": key_a,
             "file_a_tag": tag_a,
-            "file_a_sep": sep_a,
+            "file_a_sep": "\\t",
             "file_a_encoding": enc_a,
             "file_b_key": key_b,
             "file_b_tag": tag_b,
-            "file_b_sep": sep_b,
+            "file_b_sep": "\\t",
             "file_b_encoding": enc_b,
         },
         "output": {
@@ -522,6 +536,8 @@ try:
             "excluded_header_normalized": PATH_NORM,
             "diff_compares_intersection_only": True,
             "null_marker_in_diff": NULL_MARK,
+            "forced_input_separator": "\\t",
+            "forced_output_separator": "\\t",
         },
     }
 
@@ -543,8 +559,8 @@ except Exception as e:
     error_type = type(e).__name__
     error_msg = str(e)
 
-    aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
-    is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
+    aws_error_types = ["ClientError", "BotoCoreError", "NoCredentialsError", "PartialCredentialsError"]
+    is_aws_error = error_type in aws_error_types or "boto" in error_type.lower()
 
     if is_aws_error:
         print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")

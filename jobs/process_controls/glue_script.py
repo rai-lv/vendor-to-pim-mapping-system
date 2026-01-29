@@ -2,8 +2,11 @@ import sys
 import os
 import re
 import json
+import traceback
 from datetime import datetime, timezone
 from typing import Dict, List, Tuple, Optional
+import csv
+from io import StringIO
 
 import boto3
 from awsglue.utils import getResolvedOptions
@@ -138,13 +141,23 @@ def write_single_csv(
     and deletes tmp objects. Output is a single CSV object.
     Handles empty DataFrames by ensuring headers are written.
     """
-    # Check if DataFrame is empty
-    is_empty = df.limit(1).count() == 0
+    # Check if DataFrame is empty using PySpark's built-in method
+    try:
+        is_empty = df.isEmpty()
+    except AttributeError:
+        # Fallback for older PySpark versions that don't have isEmpty()
+        is_empty = df.limit(1).count() == 0
     
     if is_empty:
-        # For empty DataFrames, write CSV with headers only
+        # For empty DataFrames, write CSV with headers only (properly escaped)
         print(f"[INFO] DataFrame is empty. Writing headers-only CSV to: s3://{output_bucket}/{final_key}")
-        header_csv = ",".join(df.columns) + "\n"
+        
+        # Use csv module to properly escape headers
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(df.columns)
+        header_csv = output.getvalue()
+        
         s3_client.put_object(
             Bucket=output_bucket,
             Key=final_key,
@@ -513,13 +526,13 @@ try:
     job.commit()
 
 except Exception as e:
-    import traceback
     error_type = type(e).__name__
     error_msg = str(e)
     
     # Categorize error types for better debugging
+    # Check for AWS-specific error types (exact matches for known AWS exceptions)
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
-    is_aws_error = any(aws_err in error_type for aws_err in aws_error_types) or 'boto' in error_type.lower()
+    is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
     
     if is_aws_error:
         print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")

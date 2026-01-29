@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import traceback
 from datetime import datetime, timezone
 from typing import List, Set
 
@@ -1424,13 +1425,13 @@ try:
     job.commit()
 
 except Exception as e:
-    import traceback
     error_type = type(e).__name__
     error_msg = str(e)
     
     # Categorize error types for better debugging
+    # Check for AWS-specific error types (exact matches for known AWS exceptions)
     aws_error_types = ['ClientError', 'BotoCoreError', 'NoCredentialsError', 'PartialCredentialsError']
-    is_aws_error = any(aws_err in error_type for aws_err in aws_error_types) or 'boto' in error_type.lower()
+    is_aws_error = error_type in aws_error_types or 'boto' in error_type.lower()
     
     if is_aws_error:
         print(f"[ERROR] AWS Service Error ({error_type}): {error_msg}")

@@ -43,6 +43,8 @@ This specification is grounded in foundational principles that prevent the most 
 
 These are the non-negotiable foundation of the documentation system. All other rules derive from these.
 
+**Note:** These principles are documentation-specific. For system-wide principles governing human-agent collaboration and approval gates, see `target_agent_system.md`.
+
 ### 1.1 Single Source of Truth (No Double Truth)
 
 **Principle:** Each fact, rule, definition, or contract must have exactly one authoritative source.
@@ -128,25 +130,7 @@ These are the non-negotiable foundation of the documentation system. All other r
 - ✅ "Validation status: UNVERIFIED - requires integration testing in staging"
 - ✅ "Complies with spec (validated by `validate_manifest.py` on 2025-12-15)"
 
-### 1.4 Human Authority, Agent Support
-
-**Principle:** Humans make decisions and approve outputs; agents assist, draft, and implement under human oversight.
-
-**Why:** Maintains accountability, ensures human judgment on critical decisions, prevents automation from making incorrect assumptions.
-
-**Rules:**
-- Agents may draft, suggest, implement when tasked
-- Agents MUST NOT advance workflow stages without explicit human approval
-- Agent-performed verification MUST NOT be treated as authoritative without human review
-- Human approvals must be captured in auditable form (git commits, decision records)
-
-**Application to documentation:**
-- Agents can draft documentation following templates
-- Agents cannot approve that documentation as "final" or "verified"
-- Humans review and approve documentation changes
-- Agent-generated content must be clearly marked as such if uncommitted
-
-### 1.5 Explicit Over Implicit
+### 1.4 Explicit Over Implicit
 
 **Principle:** Unknowns, assumptions, decisions, and boundaries must be stated explicitly, not left implicit.
 

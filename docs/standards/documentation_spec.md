@@ -702,31 +702,6 @@ their status, dependencies, and ownership for governance and discoverability.
 
 **Problem:** Committed standard contains incomplete "open items" section.
 
-### 8.5 Per-Job File Structure Example
-
-For a job `preprocessIncomingBmecat` in the `vendor_input_processing` group:
-
-```
-jobs/vendor_input_processing/preprocessIncomingBmecat/
-├── job_manifest.yaml
-├── glue_script.py
-├── bus_description_preprocessIncomingBmecat.md
-└── script_card_preprocessIncomingBmecat.md
-```
-
-**File naming follows conventions:**
-- Manifest: `job_manifest.yaml` (fixed name)
-- Script: `glue_script.py` (or as declared in manifest)
-- Business description: `bus_description_<job_id>.md`
-- Script card: `script_card_<job_id>.md`
-
-**Metadata formatting:**
-- YAML files: No metadata header
-- Python files: Standard Python conventions
-- Markdown files: Follow respective spec structure (business_job_description_spec.md or script_card_spec.md)
-
-**For semantic rules (what each file contains), see `documentation_system_catalog.md`.**
-
 ---
 
 ## 9) Relationship to Other Documents

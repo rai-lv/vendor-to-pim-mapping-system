@@ -696,43 +696,13 @@ their status, dependencies, and ownership for governance and discoverability.
 
 ---
 
-## 9) Relationship to Other Documents
+## 9) References
 
-This specification addresses **format, structure, and governance principles**.
-
-**Division of responsibility:**
-
-- **`documentation_system_catalog.md`** (SEMANTIC CONTENT):
-  - Defines document types and their purposes
-  - Specifies what content belongs in each document type
-  - Provides "Must contain" and "Must not contain" rules
-  - THIS IS THE AUTHORITATIVE SOURCE FOR CONTENT RULES
-
-- **`documentation_spec.md`** (FORMAT, STRUCTURE, GOVERNANCE - this document):
-  - Defines foundational principles (single source of truth, separation of concerns, evidence-based claims, human authority, explicit over implicit)
-  - Defines formatting conventions (Markdown, headings, lists)
-  - Specifies metadata header formats
-  - Defines versioning discipline
-  - Provides structural and semantic anti-patterns
-  - Defines quality criteria and governance procedures
-
-- **`target_agent_system.md`**:
-  - Defines separation of concerns principles for agent system
-  - Specifies no double truth rule
-  - This spec implements and extends those principles for documentation
-
-- **`development_approach.md`**:
-  - Defines development workflow
-  - Applies principles from this spec to development process
-
-- **`validation_standard.md`**:
-  - May enforce rules from both catalog (content) and spec (format/principles)
-
-- **`glossary.md`**:
-  - Single source of truth for term definitions
-  - Implements principle 1.1 (Single Source of Truth)
-
-**Key principle:** Semantic content rules live in ONE place (documentation_system_catalog.md). Format, structure, and governance principles live in ONE place (this document). This prevents double truth.
+- **`documentation_system_catalog.md`** - Document type definitions and semantic content rules
+- **`naming_standard.md`** - File and identifier naming conventions
+- **`target_agent_system.md`** - System-wide principles (separation of concerns, no double truth)
+- **`validation_standard.md`** - Validation and compliance enforcement
+- **`glossary.md`** - Term definitions
 
 ---
 
@@ -750,7 +720,7 @@ Good documentation:
 - ✅ States unknowns and assumptions explicitly
 - ✅ Minimizes duplication through references
 - ✅ Maintains clear ownership and authority
-- ✅ Tracks changes through versioning
+- ✅ Tracks changes through git history
 - ✅ Composes modularly
 - ✅ Follows consistent patterns
 
@@ -762,7 +732,7 @@ Bad documentation:
 - ❌ Hides unknowns or makes silent assumptions
 - ❌ Requires redundant updates in multiple places
 - ❌ Has unclear or competing authority
-- ❌ Lacks versioning or change tracking
+- ❌ Lacks change tracking
 - ❌ Is monolithic and hard to reference
 - ❌ Varies format unpredictably
 
@@ -772,40 +742,27 @@ Bad documentation:
 1. Use consistent Markdown formatting (snake_case filenames, UTF-8 encoding)
 2. Single H1 title at document start
 3. Sequential heading hierarchy (H1 → H2 → H3, no skipping)
-4. No hardcoded timestamps in body text (use metadata headers only)
+4. No hardcoded timestamps in body text
 5. Valid cross-references using relative paths
 6. Consistent list markers (`-` for unordered, `1.` for ordered)
 
 **Metadata rules (by document type):**
-- Standards: Full metadata block + version OR timestamp (not both)
-- Context: Purpose section only, no version markers
-- Process: Purpose and scope sections, no version markers
-- Catalogs: Full metadata block + optional update timestamp
-- Ops: Minimal metadata, optional tool version tracking
-- Per-job manifests: YAML schema per job_manifest_spec
-- Per-job business descriptions: Follow business_job_description_spec structure
-- Per-job script cards: Follow script_card_spec structure (when they exist)
+- Standards: Title + Purpose section (2-3 sentences)
+- Context: Title + Purpose section (2-3 sentences)
+- Process: Title + Purpose statement + Scope and non-goals
+- Catalogs: Title + Purpose section (2-3 sentences)
+- Ops: Title + Purpose + Scope
+- Agents: Title + Purpose/Scope (inline or frontmatter)
 
-**Versioning discipline:**
-- Semantic versions (X.Y.Z) for stable standards with breaking change tracking
-- Timestamps (UPD YYYY-MM-DD) for evolving standards
-- Never mix both in same document
-- Version/timestamp changes only in same commit as content changes
+**Change tracking:**
+- All documentation uses git history (no version numbers or timestamps in metadata)
+- Exception: Per-job manifests may use versioning when representing system contracts
 
 **Prohibited structural patterns:**
 - Open items/TODO sections in committed documents
 - Multiple H1 headings in one document
 - Hardcoded timestamps in body text
-- Hybrid version/timestamp markers
 - Incorrect heading hierarchy (skipping levels)
-- Undocumented version changes
-
-**Prohibited semantic patterns:**
-- Circular documentation (document defining format it uses)
-- Shadow specifications (normative requirements in wrong layer)
-- Competing authority (same rule defined differently in multiple places)
-- Implicit assumptions (unknowns treated as known)
-- Stale references (broken cross-document links)
 
 **For semantic content rules (what belongs in each document type):**
 - See [documentation_system_catalog.md](../context/documentation_system_catalog.md)

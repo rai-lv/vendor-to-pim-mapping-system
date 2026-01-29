@@ -688,7 +688,9 @@ try:
                 f"in_{tag_b}_not_{tag_a}": in_b_not_a_count,
             })
         
-        statistics_df = spark.createDataFrame(statistics_rows)
+        statistics_df = spark.createDataFrame(statistics_rows).select(
+            "column_name", "both_differ", f"in_{tag_a}_not_{tag_b}", f"in_{tag_b}_not_{tag_a}"
+        )
         print(f"[INFO] Generated statistics for {len(statistics_rows)} columns in single aggregation pass")
     else:
         # Empty dataframe with correct schema

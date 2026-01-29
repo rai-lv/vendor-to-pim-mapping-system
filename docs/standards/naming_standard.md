@@ -1,4 +1,4 @@
-# Naming Standard (v1.2)
+# Naming Standard (v1.3)
 
 **Canonical location:** `docs/standards/`
 **Purpose statement:** Defines naming rules for jobs, artifacts, identifiers, and placeholders to ensure stability and automation.
@@ -7,7 +7,7 @@
 **Must not contain:** Tool instructions or job-specific business logic.
 
 **Last Updated:** 2026-01-29
-**Version:** 1.2
+**Version:** 1.3
 
 ---
 
@@ -26,6 +26,11 @@ This standard governs the naming conventions for repository elements that are re
 - Tool command syntax or operational procedures (belongs in ops layer)
 - Data content schema or artifact contracts (belongs in artifact catalog spec)
 - Deployment-specific naming transforms (e.g., environment prefixes like `prod-{job_id}`)
+- **Temporary or intermediate artifacts** (within a job, not cross-job) that are:
+  - Not declared in job manifests (inputs/outputs/config_files)
+  - Not consumed by other jobs
+  - Ephemeral (deleted before job completion or managed with S3 lifecycle policies)
+  - Examples: checkpoint files, intermediate transforms, debug outputs, job-internal cache files
 
 ---
 
@@ -668,6 +673,26 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 - **Impact:** No new naming rules needed; existing governance is sufficient
 - **Resolved date:** 2026-01-29
 
+**TBD-3: Temporary/intermediate artifact naming — RESOLVED**
+- **Question:** Should temporary or intermediate outputs (within a job, not cross-job) follow the same snake_case rules?
+- **Resolution:** Temporary/intermediate artifacts are explicitly EXCLUDED from this naming standard
+- **Rationale:**
+  - This standard's scope is "elements referenced by automation, validation tools, and cross-job integration" (Section 1)
+  - Temp artifacts fail all three criteria: not referenced by automation, not validated as contracts, not integrated across jobs
+  - Temp artifacts are job-internal implementation details, not stable contracts
+  - Including them would significantly expand scope and validation burden without adding contract clarity
+  - Jobs need flexibility for performance optimization and third-party library compatibility
+- **Rule:** Temporary/intermediate artifacts are OUT OF SCOPE for this standard
+- **Boundary definition:** An artifact is temp/intermediate if it:
+  - Is NOT declared in the job's manifest (inputs/outputs/config_files sections)
+  - Is NOT consumed by other jobs
+  - Has ephemeral lifecycle (deleted before job completion or managed with S3 lifecycle policies)
+  - Examples: checkpoint files, intermediate transforms, debug outputs, job-internal cache files
+- **Conformance boundary:** If an artifact IS declared in a job manifest, it MUST conform to this standard. If not declared, conformance is optional.
+- **Reference:** See Section 1 "What this standard does NOT cover" for the exclusion list
+- **Impact:** Clear scope boundary; reduces validation complexity; allows job-internal flexibility
+- **Resolved date:** 2026-01-29
+
 **TBD-4: Multi-environment naming (dev, staging, prod) — RESOLVED**
 - **Question:** How should deployment-specific prefixes/suffixes be handled (e.g., `dev-preprocessIncomingBmecat` vs. `preprocessIncomingBmecat`)?
 - **Resolution:** This is already resolved in `docs/standards/job_manifest_spec.md` (v1.0) Section 2.2
@@ -677,21 +702,15 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 - **Impact:** No changes needed to this standard; manifests document canonical identity, deployment handles environment-specific transforms
 - **Resolved date:** 2026-01-29
 
-### 7.2 Unresolved naming decisions
+### 7.2 Next steps for resolution
 
-**TBD-3: Temporary/intermediate artifact naming**
-- **Question:** Should temporary or intermediate outputs (within a job, not cross-job) follow the same snake_case rules?
-- **Current state:** Jobs may write intermediate files to S3 (e.g., checkpoints, temp transforms); naming is ad-hoc
-- **Why TBD:** Current spec focuses on stable cross-job artifacts; temp artifacts are underspecified
-- **Decision needed:** Extend naming rules to cover temp artifacts OR explicitly exclude them from this standard
-- **Impact:** If included, need to define temp artifact pattern (e.g., `temp_<name>.json` or `<name>_temp.json`)
+**All TBDs resolved.** No open naming decisions remain.
 
-### 7.3 Next steps for resolution
+**Future extensions:**
+- If new naming categories emerge (e.g., new artifact types, new identifier classes), they will be added via versioned updates to this standard
+- Each addition requires explicit scope decision and approval before incorporation
 
-**Remaining open item:**
-- TBD-3: Decide on temp artifact naming inclusion (for completeness) — low impact, future-proofing
-
-**Resolution process:**
+**Resolution process (for reference):**
 - Each TBD requires a decision record once resolution is approved
 - TBDs MUST NOT block current naming enforcement; existing rules are sufficient for current automation
 - Future decisions will extend this standard via versioned updates
@@ -702,6 +721,7 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 | Version | Date       | Changes                                      |
 |---------|------------|----------------------------------------------|
+| 1.3     | 2026-01-29 | Closed TBD-3: Temp artifacts explicitly excluded from scope; all 4 TBDs now resolved |
 | 1.2     | 2026-01-29 | Closed TBD-2: No filename versioning needed, use PR/breaking change process; 1 TBD remains open (TBD-3) |
 | 1.1     | 2026-01-29 | Closed TBD-1 and TBD-4 by referencing existing approved standards (artifacts_catalog_spec.md, job_manifest_spec.md); 2 TBDs remain open |
 | 1.0     | 2026-01-29 | Initial release: all sections, 4 open TBDs   |

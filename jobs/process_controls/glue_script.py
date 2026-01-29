@@ -21,9 +21,7 @@ from pyspark.sql.types import StringType
 # Configuration Constants
 # =========================
 
-SAMPLE_BUFFER_SIZE = 65536  # 64KB for CSV dialect detection
-MAX_DIALECT_SAMPLE_LINES = 200
-CSV_SEPARATORS = [";", ",", "\t", "|"]
+SAMPLE_BUFFER_SIZE = 65536  # 64KB for encoding detection
 MAX_DUPLICATE_SAMPLE_COUNT = 20
 
 # Fact (user-provided): delimiter is tabstop

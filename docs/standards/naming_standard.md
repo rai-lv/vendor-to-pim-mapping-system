@@ -66,11 +66,11 @@ These rules apply to all naming across the repository unless explicitly overridd
 
 **Default convention: snake_case**
 - Use lowercase letters with underscores as separators
-- Applies to: artifact filenames, parameter names (when lowercase), placeholders (when lowercase), document filenames
+- Applies to: job IDs, job groups, artifact filenames, parameter names (when lowercase), placeholders (when lowercase), document filenames
 
 **Alternate convention: camelCase**
 - Start with lowercase, capitalize first letter of subsequent words
-- Applies to: job IDs, job group names
+- Applies to: legacy job IDs (see Section 4.1 for migration guidance)
 
 **Alternate convention: UPPER_SNAKE_CASE**
 - All uppercase with underscores
@@ -130,11 +130,11 @@ A `job_id` is the canonical identifier for a job. It serves as:
 
 #### Format rule (MUST)
 
-**Casing:** camelCase (start lowercase, capitalize subsequent words)
+**Casing:** snake_case (lowercase with underscores)
 
-**Pattern:** `^[a-z][a-zA-Z0-9]{2,62}$`
+**Pattern:** `^[a-z][a-z0-9_]{2,62}$`
 - Starts with a lowercase letter
-- Contains only letters and digits (no underscores, no hyphens)
+- Contains lowercase letters, digits, and underscores
 - Length: 3-63 characters
 
 **Consistency rule (normatively defined in `job_manifest_spec.md` Section 2.2):**
@@ -143,21 +143,27 @@ A `job_id` is the canonical identifier for a job. It serves as:
 
 #### Examples
 
-**Valid:**
-- `preprocessIncomingBmecat`
-- `matchingProposals`
-- `categoryMappingToCanonical`
-- `mappingMethodTraining`
-- `generateVendorReport`
+**Valid (snake_case - current standard):**
+- `matching_proposals`
+- `category_mapping_to_canonical`
+- `mapping_method_training`
+- `preprocess_incoming_bmecat`
+- `generate_vendor_report`
+
+**Valid (legacy camelCase - grandfathered):**
+- `preprocessIncomingBmecat` (existing job; allowed for backward compatibility)
 
 **Invalid:**
-- `preprocess_incoming_bmecat` (snake_case; should be camelCase)
 - `PreprocessIncomingBmecat` (PascalCase; should start lowercase)
 - `preprocess-incoming-bmecat` (kebab-case; not allowed)
-- `preprocessIncomingBMEcat` (acronym not lowercased after prefix)
+- `preprocessIncomingBMEcat` (mixed casing; inconsistent)
 - `p` (too short; under 3 characters)
 
 #### Compatibility expectations
+
+**Current pattern:**
+- **snake_case is the standard** for all new jobs (verified against 3 out of 4 existing jobs in `vendor_input_processing`)
+- One legacy camelCase job (`preprocessIncomingBmecat`) is grandfathered for backward compatibility
 
 **Stable:**
 - Job IDs MUST NOT change after deployment without a breaking change decision
@@ -167,7 +173,9 @@ A `job_id` is the canonical identifier for a job. It serves as:
   - All references in artifact catalogs, job inventory, orchestration configs, and downstream dependencies
 
 **Evolving:**
-- New jobs may be added without affecting existing jobs
+- New jobs MUST use snake_case
+- Existing camelCase jobs MAY remain as-is (no forced migration)
+- If a camelCase job is renamed for other reasons, it SHOULD be migrated to snake_case
 
 ---
 
@@ -557,7 +565,7 @@ This section defines what validators SHOULD/MUST check for naming compliance. It
 
 **Job ID consistency:**
 - Folder name = `job_id` (manifest field) = `glue_job_name` (manifest field)
-- Job ID matches camelCase pattern `^[a-z][a-zA-Z0-9]{2,62}$`
+- Job ID matches snake_case pattern `^[a-z][a-z0-9_]{2,62}$` (legacy camelCase jobs `^[a-z][a-zA-Z0-9]{2,62}$` are grandfathered)
 
 **Job group consistency:**
 - Job group folder matches snake_case pattern `^[a-z][a-z0-9_]{2,62}$`

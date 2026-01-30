@@ -646,8 +646,9 @@ These decisions align with:
    - **Impact:** No changes needed; script cards are complementary
 
 3. **Documentation System Catalog** (`docs/context/documentation_system_catalog.md`)
-   - Entry #13 (Script Card Spec) and Entry #27 (Per-job Script Card) have been updated to align with this refined specification
-   - **Action completed (2026-01-30):** Catalog entries now accurately reflect the 10 required sections, boundary rules, and expanded scope
+   - Entry #27 (Per-job Script Card) description could potentially be updated after spec approval
+   - **Note:** Previous specifications (business_job_description_spec, artifacts_catalog_spec, etc.) were created WITHOUT updating the catalog. Updating the catalog is NOT a required action unless the pattern changes.
+   - **Decision point:** If/when this spec is approved, decide whether catalog entries should reflect refined specs (policy question)
 
 4. **Ops Documentation** (`docs/ops/tooling_reference.md`, `docs/ops/ci_automation_reference.md`)
    - Should reference script cards as source of "what signals exist"

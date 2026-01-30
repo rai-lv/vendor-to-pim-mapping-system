@@ -437,6 +437,9 @@ try:
     # -------------------------
     # 5) Handle duplicate xmedia IDs
     # -------------------------
+    # Note: This comparison process requires unique xmedia IDs (1 row per ID).
+    # If duplicates are found, ALL rows with duplicate IDs are removed from processing
+    # and written to separate output files. No occurrences of duplicate IDs are kept.
     # Detect duplicates by grouping on key column
     dup_a = df_a.groupBy(key_safe_a).count().filter(col("count") > 1)
     dup_b = df_b.groupBy(key_safe_b).count().filter(col("count") > 1)

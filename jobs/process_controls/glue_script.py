@@ -434,19 +434,50 @@ try:
     if null_key_b > 0:
         raise RuntimeError("Found null/empty 'xmedia ID' values in input B.")
 
+    # -------------------------
+    # 5) Handle duplicate xmedia IDs
+    # -------------------------
+    # Note: This comparison process requires unique xmedia IDs (1 row per ID).
+    # If duplicates are found, ALL rows with duplicate IDs are removed from processing
+    # and written to separate output files. No occurrences of duplicate IDs are kept.
+    # Detect duplicates by grouping on key column
     dup_a = df_a.groupBy(key_safe_a).count().filter(col("count") > 1)
     dup_b = df_b.groupBy(key_safe_b).count().filter(col("count") > 1)
 
     dup_a_exists = dup_a.limit(1).count() > 0
     dup_b_exists = dup_b.limit(1).count() > 0
+    
+    # Initialize duplicate dataframes
+    duplicates_a = None
+    duplicates_b = None
+    
     if dup_a_exists or dup_b_exists:
         sample_a = [r[key_safe_a] for r in dup_a.select(key_safe_a).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_a_exists else []
         sample_b = [r[key_safe_b] for r in dup_b.select(key_safe_b).limit(MAX_DUPLICATE_SAMPLE_COUNT).collect()] if dup_b_exists else []
-        raise RuntimeError(
-            f"Duplicate xmedia IDs detected. "
-            f"A sample={sample_a} | B sample={sample_b}. "
-            f"Fix duplicates before diff (comparison requires 1 row per xmedia ID)."
-        )
+        
+        print(f"[INFO] Duplicate xmedia IDs detected.")
+        print(f"[INFO] Sample duplicates in A: {sample_a}")
+        print(f"[INFO] Sample duplicates in B: {sample_b}")
+        
+        # Extract duplicate rows from input A
+        if dup_a_exists:
+            duplicate_ids_a = dup_a.select(key_safe_a)
+            duplicates_a = df_a.join(duplicate_ids_a, on=key_safe_a, how="inner")
+            # Remove duplicates from main dataset - keep none of the duplicate rows
+            df_a = df_a.join(duplicate_ids_a, on=key_safe_a, how="left_anti")
+            dup_count_a = duplicates_a.count()
+            clean_count_a = df_a.count()
+            print(f"[INFO] Removed {dup_count_a} duplicate rows from input A. Remaining rows: {clean_count_a}")
+        
+        # Extract duplicate rows from input B
+        if dup_b_exists:
+            duplicate_ids_b = dup_b.select(key_safe_b)
+            duplicates_b = df_b.join(duplicate_ids_b, on=key_safe_b, how="inner")
+            # Remove duplicates from main dataset - keep none of the duplicate rows
+            df_b = df_b.join(duplicate_ids_b, on=key_safe_b, how="left_anti")
+            dup_count_b = duplicates_b.count()
+            clean_count_b = df_b.count()
+            print(f"[INFO] Removed {dup_count_b} duplicate rows from input B. Remaining rows: {clean_count_b}")
 
     KEY_SAFE = "xmedia_id"
     df_a = df_a.withColumnRenamed(key_safe_a, KEY_SAFE)
@@ -723,6 +754,36 @@ try:
     write_single_csv(statistics_df, output_bucket, out_statistics_key, tmp_statistics, s3_client)
 
     # -------------------------
+    # 8a) Write duplicate outputs if duplicates were found
+    # -------------------------
+    out_duplicates_a_key = None
+    out_duplicates_b_key = None
+    
+    if duplicates_a is not None:
+        # Restore original column names for duplicates output
+        reverse_map_a = reverse_safe_name_map(map_a)
+        duplicates_a_restored = duplicates_a.select([
+            col(safe).alias(reverse_map_a.get(safe, safe)) for safe in duplicates_a.columns
+        ])
+        
+        out_duplicates_a_key = f"{result_prefix.rstrip('/')}/duplicates-{tag_a}.csv"
+        tmp_duplicates_a = f"{result_prefix.rstrip('/')}/_tmp_duplicates_{tag_a}_{RUN_TS}/"
+        write_single_csv(duplicates_a_restored, output_bucket, out_duplicates_a_key, tmp_duplicates_a, s3_client)
+        print(f"[INFO] Wrote duplicates for {tag_a}: s3://{output_bucket}/{out_duplicates_a_key}")
+    
+    if duplicates_b is not None:
+        # Restore original column names for duplicates output
+        reverse_map_b = reverse_safe_name_map(map_b)
+        duplicates_b_restored = duplicates_b.select([
+            col(safe).alias(reverse_map_b.get(safe, safe)) for safe in duplicates_b.columns
+        ])
+        
+        out_duplicates_b_key = f"{result_prefix.rstrip('/')}/duplicates-{tag_b}.csv"
+        tmp_duplicates_b = f"{result_prefix.rstrip('/')}/_tmp_duplicates_{tag_b}_{RUN_TS}/"
+        write_single_csv(duplicates_b_restored, output_bucket, out_duplicates_b_key, tmp_duplicates_b, s3_client)
+        print(f"[INFO] Wrote duplicates for {tag_b}: s3://{output_bucket}/{out_duplicates_b_key}")
+
+    # -------------------------
     # 9) Run receipt (JSON)
     # -------------------------
     receipt = {
@@ -748,6 +809,8 @@ try:
             "missing_in_b_key": out_missing_in_b_key,
             "field_differences_key": out_diffs_key,
             "statistics_key": out_statistics_key,
+            "duplicates_in_a_key": out_duplicates_a_key,
+            "duplicates_in_b_key": out_duplicates_b_key,
         },
         "schema": {
             "comparable_columns_count": len(comparable_cols),

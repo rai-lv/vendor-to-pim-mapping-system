@@ -424,5 +424,199 @@ Source priority:
 
 Otherwise `TBD`.
 
+### 6.4 Breaking Changes for Artifact Contracts (normative)
+
+This section defines what constitutes a **breaking change** vs a **non-breaking change** for artifact catalog entries.
+
+**Purpose:** Enable consistent governance decisions and validation automation by providing a canonical definition of artifact contract compatibility.
+
+#### 6.4.1 Breaking changes (MUST require governance approval)
+
+The following changes to an artifact catalog entry are **breaking changes** and MUST follow the governance approval process defined in `docs/standards/decision_records_standard.md`:
+
+**Identity and location changes:**
+- Renaming `artifact_id` (breaks references from job manifests, orchestration, and other catalog entries)
+- Changing `file_name_pattern` in a way that breaks existing S3 key construction (e.g., changing `output.json` to `result.json`)
+- Adding, removing, or changing `s3_location_pattern` entries when it prevents existing consumers from finding the artifact
+- Changing `producer_job_id` (reassigning ownership)
+
+**Format and structure changes:**
+- Changing `format` to an incompatible type (e.g., `json` → `csv`, `ndjson` → `json`)
+- Changing `content_contract.top_level_type` to an incompatible type (e.g., `json_object` → `json_array`)
+- Removing items from `content_contract.required_sections` (consumers may depend on these sections)
+- Changing `content_contract.primary_keying` in a way that breaks consumer join/lookup logic
+
+**Behavioral changes:**
+- Changing `presence_on_success` from `required` to `optional` or `conditional` (breaks consumers expecting the file to always exist)
+- Changing `content_contract.empty_behavior` to a more restrictive value:
+  - `absent_file_allowed` → `empty_file_allowed` (file must now always be written)
+  - `empty_file_allowed` → `no_empty_allowed` (file must now contain data)
+  - `empty_object_allowed` → `no_empty_allowed` (object must now contain keys)
+  - `empty_array_allowed` → `no_empty_allowed` (array must now contain elements)
+
+**Governance field changes (if used):**
+- Changing `stability` from `stable` to `evolving` or `experimental` (signals reduced reliability)
+
+#### 6.4.2 Non-breaking changes (allowed without special approval)
+
+The following changes are **non-breaking** and MAY be made without formal governance approval, though they SHOULD still be reviewed:
+
+**Additive changes:**
+- Adding new `s3_location_pattern` entries (additional locations where the artifact can be found)
+- Adding items to `content_contract.required_sections` (additional guaranteed sections; does not break existing consumers)
+- Changing `presence_on_success` from `optional` or `conditional` to `required` (strengthens the guarantee)
+
+**Relaxing restrictions:**
+- Changing `content_contract.empty_behavior` to a less restrictive value:
+  - `no_empty_allowed` → any other value (more permissive)
+  - `empty_file_allowed` → `absent_file_allowed` (more permissive)
+
+**Metadata and documentation changes:**
+- Clarifying `purpose` text without changing the artifact's actual behavior
+- Adding or updating `content_contract.notes` (documentation only)
+- Adding, removing, or updating `evidence_sources` (traceability metadata)
+- Updating `producer_glue_job_name` to reflect deployment changes (metadata only)
+- Changing `stability` from `experimental` to `evolving` or `stable` (signals increased reliability)
+
+**Format compatibility changes:**
+- Changing `format` to a compatible type if the file structure remains unchanged (e.g., `other` → `json` when format is clarified)
+
+#### 6.4.3 Backward compatibility expectations
+
+When a breaking change is unavoidable, the following practices SHOULD be followed:
+
+**Deprecation period:**
+- Minimum: 2 release cycles or 30 days (whichever is longer)
+- During deprecation: support both old and new contracts (e.g., dual-write to old and new filenames)
+- Emit deprecation warnings in job logs and run receipts
+
+**Versioned filenames:**
+- For breaking format/structure changes: introduce a versioned filename (e.g., `output.json` → `output_v2.json`)
+- Update producer to write both versions during transition
+- Update consumers one by one to read new version
+- Remove old version after all consumers migrated
+
+**Migration plan:**
+- Document migration steps in an ADR
+- Identify all affected consumers (use `consumers` field in catalog entry)
+- Coordinate updates with consumer owners
+- Validate that no downstream jobs break
+
+**Decision record:**
+- Create an ADR documenting:
+  - Why the breaking change is necessary
+  - Which consumers are affected
+  - Migration plan and timeline
+  - Backward compatibility approach (if any)
+
+#### 6.4.4 Relationship to `breaking_change_rules` field
+
+The optional `breaking_change_rules` field (Section 6.3) MAY be used to override or augment these default rules for a specific artifact type:
+
+- `No breaking changes allowed without ADR and versioned filename` — Strict governance; all breaking changes require both ADR approval and versioned filenames (no in-place updates)
+- `Breaking changes allowed if consumers updated in same PR` — Relaxed governance for tightly-coupled artifacts; breaking changes are allowed if all consumer job manifests are updated in the same pull request
+
+If `breaking_change_rules` is `TBD` or absent, the default rules in this section (6.4) apply.
+
+---
+
+## 7) Consistency Check Appendix
+
+### 7.1 Aligned documents
+
+This specification was drafted and validated against the following repository documentation:
+
+**Context layer:**
+- `docs/context/development_approach.md` — Ensured alignment with 5-step workflow, approval gates, and evidence discipline
+- `docs/context/target_agent_system.md` — Verified agent/tool role separation and "no hidden authority" principle
+- `docs/context/documentation_system_catalog.md` — Confirmed canonical placement in `docs/standards/` and appropriate content boundaries
+- `docs/context/glossary.md` — Verified term usage (artifact, evidence, TBD, deterministic, job manifest, etc.)
+
+**Standards layer:**
+- `docs/standards/job_manifest_spec.md` — Aligned artifact entry sourcing rules with manifest schema (inputs, outputs, config_files, bucket, key_pattern, format, required flag)
+- `docs/standards/naming_standard.md` — Aligned artifact_id derivation rules with job_id and naming conventions
+- `docs/standards/validation_standard.md` — Ensured compliance checklist is validator-friendly and deterministic
+
+**Process layer:**
+- `docs/process/workflow_guide.md` — Verified that the spec supports validation/evidence requirements (Step 5) and does not conflict with process
+
+**Living catalogs:**
+- `docs/catalogs/artifacts_catalog.md` — This spec defines the schema that catalog entries must follow
+
+### 7.2 Potential conflicts detected
+
+**All conflicts from initial draft have been resolved:**
+
+**Conflict 1: Missing registry directory** ✅ RESOLVED
+- **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
+- **Resolution**: Created `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file with documented schema
+- **Status**: Shared-artifact exception mechanism is now operationalizable
+
+**Conflict 2: Incomplete breaking change definition** ✅ RESOLVED
+- **Location**: Section 6.3 defines `breaking_change_rules` field
+- **Resolution**: Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)" with complete definitions
+- **Status**: Validators can now enforce breaking change governance consistently
+
+### 7.3 Assumptions introduced
+
+**Assumption 1: Job manifest as primary evidence source**
+- **What**: The spec assumes `job_manifest.yaml` files exist for all jobs and contain `inputs[]`, `outputs[]`, and `config_files[]` sections
+- **Why**: Required for deterministic artifact entry derivation (Section 2.2, 3.2, 3.3, 3.5, 3.7)
+- **Grounding**: Validated against `docs/standards/job_manifest_spec.md` which defines these as required manifest sections
+- **Impact**: Spec is only operationalizable when job manifests exist
+- **Status**: ✅ Grounded — no action needed
+
+**Assumption 2: Single-writer default**
+- **What**: Section 3.6 assumes the default governance rule is "one producer per artifact type" (single-writer rule)
+- **Why**: Simplifies orchestration and reduces coordination complexity
+- **Grounding**: Not explicitly stated in development approach or governance docs, but implied by the need for an explicit "shared-artifact exception" mechanism
+- **Impact**: If multi-writer artifacts are common, the exception mechanism may be overused
+- **Status**: ⚠️ Implicit — consider making explicit in a governance doc or ADR
+
+**Assumption 3: S3 as artifact storage**
+- **What**: The spec assumes all artifacts are S3 objects (Section 0: "typically S3 objects", Section 3.3: `s3_location_pattern`)
+- **Why**: Matches the AWS Glue / PySpark runtime environment described in glossary
+- **Grounding**: Validated against `docs/context/system_context.md` and `docs/standards/job_manifest_spec.md` which use S3 extensively
+- **Impact**: Spec would need updates if non-S3 artifacts are introduced (e.g., DynamoDB tables, RDS data)
+- **Status**: ✅ Grounded — documented in scope (Section 0)
+
+**Assumption 4: Placeholder normalization prevents all ambiguity**
+- **What**: Section 2.1 assumes that normalizing `${...}`, `{...}`, and `<...>` to `<VAR>` makes matching deterministic
+- **Why**: Enables consistent matching across different placeholder style conventions
+- **Grounding**: Informed by `docs/standards/job_manifest_spec.md` which uses `${...}` style
+- **Impact**: May fail if placeholders have semantic differences (e.g., `${date}` vs `${timestamp}`) that should not match
+- **Status**: ⚠️ Bounded — normalization is intentionally lossy; edge cases may require human resolution
+
+### 7.4 Cross-document dependencies
+
+This spec depends on:
+- `docs/standards/job_manifest_spec.md` — for manifest schema and field semantics
+- `docs/standards/naming_standard.md` — for job_id and artifact naming conventions; aligned with for breaking change definitions
+- `docs/standards/decision_records_standard.md` — for governance approval process (referenced in Section 6.4)
+- `docs/catalogs/artifacts_catalog.md` — as the instance file this spec governs
+- `docs/registries/shared_artifacts_allowlist.yaml` — for shared-artifact exception (now created)
+
+Documents that depend on this spec:
+- `docs/catalogs/artifacts_catalog.md` — must conform to entry structure defined here
+- `docs/registries/shared_artifacts_allowlist.yaml` — follows governance rules defined here
+- Automation tools (e.g., catalog generators/updaters) — must follow matching and sourcing rules
+- `docs/standards/validation_standard.md` — should include artifact catalog compliance checks
+
+### 7.5 Traceability summary
+
+| Section | Requirement | Grounded in | Status |
+|---------|-------------|-------------|--------|
+| 0 (Scope) | Artifacts are S3 objects | System context, glossary, job manifest spec | ✅ Verified |
+| 1.1 (Catalog file) | Single canonical file `docs/catalogs/artifacts_catalog.md` | Documentation system catalog | ✅ Verified |
+| 1.2 (Entry grammar) | Required field order | Job manifest spec field order pattern | ✅ Aligned |
+| 2.1 (Placeholder normalization) | Deterministic matching | Job manifest spec placeholder usage | ✅ Aligned |
+| 3.1 (artifact_id) | Derivation from job_id | Naming standard | ✅ Verified |
+| 3.6 (Shared artifact exception) | Allowlist file location | Documentation system catalog (registries layer); file now created | ✅ Verified |
+| 3.8 (presence_on_success) | Required flag alignment | Job manifest spec `required` field | ✅ Verified |
+| 3.9 (purpose) | No-empty rule | Development approach (no silent unknowns) | ✅ Aligned |
+| 3.10 (content_contract) | Empty behavior semantics | Validation standard (deterministic evidence) | ✅ Aligned |
+| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard; Section 6.4 provides normative definitions | ✅ Complete |
+| 6.4 (Breaking changes) | Compatibility rules | Naming standard Section 5; decision records standard | ✅ Aligned |
+
 ---
 

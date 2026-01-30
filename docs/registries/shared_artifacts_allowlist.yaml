@@ -1,0 +1,27 @@
+# Shared Artifacts Allowlist
+#
+# Purpose:
+# This registry defines artifact types that are explicitly allowed to have multiple producer jobs,
+# as an exception to the default single-writer rule defined in docs/standards/artifacts_catalog_spec.md.
+#
+# Governance:
+# - Adding an artifact_id to this allowlist requires explicit approval via a decision record (ADR)
+# - The decision record MUST document:
+#   - Why multiple producers are necessary (business justification)
+#   - Coordination mechanism to prevent conflicts
+#   - Which job is the canonical owner (primary accountable producer)
+#
+# Schema:
+# Each entry is an artifact_id (string) from docs/catalogs/artifacts_catalog.md
+#
+# Example:
+# - vendor_input__raw_catalog
+# - shared_reference__product_taxonomy
+#
+# Reference:
+# See docs/standards/artifacts_catalog_spec.md Section 3.6 for the shared-artifact exception rules.
+#
+# Current allowlist:
+# (Empty - no shared artifacts are currently approved)
+#
+shared_artifacts: []

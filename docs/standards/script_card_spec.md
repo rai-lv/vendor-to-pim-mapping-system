@@ -17,6 +17,10 @@ A **script card** documents **one executable job** from an operational perspecti
 
 A script card is an **operational + interface reference** that enables operators and developers to understand and troubleshoot job execution.
 
+### Timing note
+
+Script cards document runtime behavior and are typically created or updated during **Step 5 (Validate, test, and document)** of the development workflow, or retroactively for existing jobs. If used prospectively during Step 3 (capability planning), mark runtime details as `TBD` and update after implementation.
+
 ### What a script card is NOT
 
 A script card is NOT:
@@ -357,7 +361,7 @@ A script card MUST NOT:
 
 **Canonical location:** `jobs/<job_group>/<job_id>/script_card_<job_id>.md`
 
-**Alternative location (if per-job docs are centralized):** `docs/jobs/<job_id>/script_card_<job_id>.md`
+Script cards MUST be co-located with job code in the job folder structure. This ensures operational documentation stays synchronized with implementation.
 
 **Naming convention:** `script_card_<job_id>.md` where `<job_id>` matches the job folder name and manifest `job_id` field.
 
@@ -443,6 +447,9 @@ Before approving a script card, reviewers SHOULD verify:
 - No artifact contract duplication (belongs in artifacts catalog)
 - No tool commands embedded (belongs in ops docs)
 - Cross-references are valid and necessary
+
+Reviewers MUST verify:
+- Cross-references are valid when artifact_ids and job_ids are specified (not `TBD`)
 
 ### 7.3 Relationship to validation standard
 
@@ -605,19 +612,20 @@ These decisions align with:
 - Practical constraints (no standard run receipt schema exists yet)
 - Enforcement philosophy (automated structure checking, human quality review)
 
-### Assumptions introduced
+### Resolved assumptions and design clarifications
 
-1. **Assumption:** Script cards are primarily written retroactively (after job implementation) or updated during Step 5 (Validate, test, and document).
-   - **Bounded:** Applies to timing of script card creation.
-   - **Why:** The spec focuses on describing "what is" (runtime behavior, invariants) rather than "what should be" (intent, requirements).
-   - **Impact:** If script cards are needed prospectively (during Step 3 capability planning), additional guidance may be needed for handling unknowns.
-   - **Approval status:** Marked as assumption; not yet approved.
+The following items were initially documented as assumptions and have been resolved through explicit specification in earlier sections:
 
-2. **Assumption:** Per-job script cards are co-located with job folders (`jobs/<job_group>/<job_id>/`) rather than centralized in `docs/jobs/`.
-   - **Bounded:** Applies to file location only.
-   - **Why:** Follows pattern observed for business descriptions. Documentation System Catalog lists alternative location as acceptable.
-   - **Impact:** Tools and validation must support both locations. Cross-references must use full paths.
-   - **Approval status:** Marked as assumption; both locations are acceptable per catalog.
+1. **Timing of script card creation** (Resolved in Section 0)
+   - **Decision:** Script cards are typically created/updated during Step 5 (Validate, test, and document) or retroactively for existing jobs.
+   - **Specification:** Section 0 includes a "Timing note" that addresses prospective use during Step 3.
+   - **Approval status:** Approved and incorporated into specification.
+
+2. **File location canonicalization** (Resolved in Section 5.1)
+   - **Decision:** Script cards MUST be co-located with job code at `jobs/<job_group>/<job_id>/script_card_<job_id>.md`.
+   - **Rationale:** Ensures operational documentation stays synchronized with implementation.
+   - **Impact:** Single canonical location simplifies tooling and eliminates location ambiguity.
+   - **Approval status:** Approved and incorporated into specification.
 
 ### What was deliberately excluded to avoid double truth
 

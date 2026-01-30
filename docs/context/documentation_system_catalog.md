@@ -261,7 +261,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 #### 26) Per-job Business Description
 
-**Canonical location:** `docs/jobs/<job_id>/`
+**Canonical location:** `jobs/<job_group>/<job_id>/`
 **Purpose statement:** Job-local business intent: purpose, scope boundaries, and business rules.
 **Why necessary:** Makes each job auditable against intent without mixing operational detail.
 **Must contain:** Purpose; scope; rules; job-local assumptions/unknowns.
@@ -269,7 +269,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 #### 27) Per-job Script Card
 
-**Canonical location:** `docs/jobs/<job_id>/`
+**Canonical location:** `jobs/<job_group>/<job_id>/`
 **Purpose statement:** Job-local operational behavior: how it runs, invariants, failure modes, observability.
 **Why necessary:** Operator and developer clarity without re-deriving from code.
 **Must contain:** Behavior summary; failure modes; invariants; observability expectations.

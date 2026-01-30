@@ -426,3 +426,139 @@ Otherwise `TBD`.
 
 ---
 
+## 7) Open Items / TBD
+
+### 7.1 Shared artifacts allowlist location
+
+**Issue:** The spec references `docs/registries/shared_artifacts_allowlist.yaml` (Section 3.6, 3.11, 4) to govern the shared-artifact exception, but this file and `docs/registries/` directory do not currently exist in the repository.
+
+**Impact:** 
+- The shared-artifact exception mechanism cannot be operationalized until the allowlist file is created
+- Automations that check shared-producer compliance will fail
+- The evidence_sources allowed list (Section 3.11) includes a non-existent path
+
+**Options for resolution:**
+1. **Create the registry structure**: Add `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file (can start empty)
+2. **Alternative location**: Place the allowlist in `docs/catalogs/` instead (would require spec update)
+3. **Remove the mechanism**: If shared artifacts are not expected in this system, remove the shared-artifact exception entirely
+
+**Recommendation:** Option 1 (create registry structure) aligns with the spec's design and maintains separation between living catalogs (`docs/catalogs/`) and governance registries (`docs/registries/`).
+
+### 7.2 Breaking change rules formalization
+
+**Issue:** Section 6.3 defines `breaking_change_rules` as an optional governance field with example values, but there is no normative definition of what constitutes a "breaking change" for artifact contracts in this spec or referenced standards.
+
+**Impact:**
+- The `breaking_change_rules` field cannot be populated consistently
+- Validators cannot enforce breaking change governance without a canonical definition
+
+**Current state:** 
+- `docs/standards/naming_standard.md` Section 5 defines breaking changes for job IDs and artifact filenames (renaming)
+- No standard defines breaking changes for content contracts (e.g., changing `required_sections`, `empty_behavior`, `top_level_type`)
+
+**Options for resolution:**
+1. **Define in this spec**: Add a new section defining breaking vs non-breaking artifact contract changes
+2. **Create separate standard**: Draft `docs/standards/artifact_compatibility_standard.md` 
+3. **Reference existing**: Update `docs/standards/naming_standard.md` to cover artifact contract compatibility
+
+**Recommendation:** Option 1 (define in this spec) keeps contract compatibility rules co-located with contract structure rules.
+
+---
+
+## 8) Consistency Check Appendix
+
+### 8.1 Aligned documents
+
+This specification was drafted and validated against the following repository documentation:
+
+**Context layer:**
+- `docs/context/development_approach.md` — Ensured alignment with 5-step workflow, approval gates, and evidence discipline
+- `docs/context/target_agent_system.md` — Verified agent/tool role separation and "no hidden authority" principle
+- `docs/context/documentation_system_catalog.md` — Confirmed canonical placement in `docs/standards/` and appropriate content boundaries
+- `docs/context/glossary.md` — Verified term usage (artifact, evidence, TBD, deterministic, job manifest, etc.)
+
+**Standards layer:**
+- `docs/standards/job_manifest_spec.md` — Aligned artifact entry sourcing rules with manifest schema (inputs, outputs, config_files, bucket, key_pattern, format, required flag)
+- `docs/standards/naming_standard.md` — Aligned artifact_id derivation rules with job_id and naming conventions
+- `docs/standards/validation_standard.md` — Ensured compliance checklist is validator-friendly and deterministic
+
+**Process layer:**
+- `docs/process/workflow_guide.md` — Verified that the spec supports validation/evidence requirements (Step 5) and does not conflict with process
+
+**Living catalogs:**
+- `docs/catalogs/artifacts_catalog.md` — This spec defines the schema that catalog entries must follow
+
+### 8.2 Potential conflicts detected
+
+**Conflict 1: Missing registry directory**
+- **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
+- **Issue**: Directory `docs/registries/` does not exist
+- **Severity**: High — blocks operationalization of shared-artifact exception
+- **Resolution required**: See Section 7.1 (Open Items)
+
+**Conflict 2: Incomplete breaking change definition**
+- **Location**: Section 6.3 defines `breaking_change_rules` field
+- **Issue**: No canonical definition exists for what constitutes a breaking change to artifact contracts
+- **Severity**: Medium — optional field remains unpopulated but spec is usable
+- **Resolution required**: See Section 7.2 (Open Items)
+
+### 8.3 Assumptions introduced
+
+**Assumption 1: Job manifest as primary evidence source**
+- **What**: The spec assumes `job_manifest.yaml` files exist for all jobs and contain `inputs[]`, `outputs[]`, and `config_files[]` sections
+- **Why**: Required for deterministic artifact entry derivation (Section 2.2, 3.2, 3.3, 3.5, 3.7)
+- **Grounding**: Validated against `docs/standards/job_manifest_spec.md` which defines these as required manifest sections
+- **Impact**: Spec is only operationalizable when job manifests exist
+- **Status**: ✅ Grounded — no action needed
+
+**Assumption 2: Single-writer default**
+- **What**: Section 3.6 assumes the default governance rule is "one producer per artifact type" (single-writer rule)
+- **Why**: Simplifies orchestration and reduces coordination complexity
+- **Grounding**: Not explicitly stated in development approach or governance docs, but implied by the need for an explicit "shared-artifact exception" mechanism
+- **Impact**: If multi-writer artifacts are common, the exception mechanism may be overused
+- **Status**: ⚠️ Implicit — consider making explicit in a governance doc or ADR
+
+**Assumption 3: S3 as artifact storage**
+- **What**: The spec assumes all artifacts are S3 objects (Section 0: "typically S3 objects", Section 3.3: `s3_location_pattern`)
+- **Why**: Matches the AWS Glue / PySpark runtime environment described in glossary
+- **Grounding**: Validated against `docs/context/system_context.md` and `docs/standards/job_manifest_spec.md` which use S3 extensively
+- **Impact**: Spec would need updates if non-S3 artifacts are introduced (e.g., DynamoDB tables, RDS data)
+- **Status**: ✅ Grounded — documented in scope (Section 0)
+
+**Assumption 4: Placeholder normalization prevents all ambiguity**
+- **What**: Section 2.1 assumes that normalizing `${...}`, `{...}`, and `<...>` to `<VAR>` makes matching deterministic
+- **Why**: Enables consistent matching across different placeholder style conventions
+- **Grounding**: Informed by `docs/standards/job_manifest_spec.md` which uses `${...}` style
+- **Impact**: May fail if placeholders have semantic differences (e.g., `${date}` vs `${timestamp}`) that should not match
+- **Status**: ⚠️ Bounded — normalization is intentionally lossy; edge cases may require human resolution
+
+### 8.4 Cross-document dependencies
+
+This spec depends on:
+- `docs/standards/job_manifest_spec.md` — for manifest schema and field semantics
+- `docs/standards/naming_standard.md` — for job_id and artifact naming conventions
+- `docs/catalogs/artifacts_catalog.md` — as the instance file this spec governs
+- `docs/registries/shared_artifacts_allowlist.yaml` — for shared-artifact exception (not yet created)
+
+Documents that depend on this spec:
+- `docs/catalogs/artifacts_catalog.md` — must conform to entry structure defined here
+- Automation tools (e.g., catalog generators/updaters) — must follow matching and sourcing rules
+- `docs/standards/validation_standard.md` — should include artifact catalog compliance checks
+
+### 8.5 Traceability summary
+
+| Section | Requirement | Grounded in | Status |
+|---------|-------------|-------------|--------|
+| 0 (Scope) | Artifacts are S3 objects | System context, glossary, job manifest spec | ✅ Verified |
+| 1.1 (Catalog file) | Single canonical file `docs/catalogs/artifacts_catalog.md` | Documentation system catalog | ✅ Verified |
+| 1.2 (Entry grammar) | Required field order | Job manifest spec field order pattern | ✅ Aligned |
+| 2.1 (Placeholder normalization) | Deterministic matching | Job manifest spec placeholder usage | ✅ Aligned |
+| 3.1 (artifact_id) | Derivation from job_id | Naming standard | ✅ Verified |
+| 3.6 (Shared artifact exception) | Allowlist file location | Documentation system catalog (registries layer) | ⚠️ File missing |
+| 3.8 (presence_on_success) | Required flag alignment | Job manifest spec `required` field | ✅ Verified |
+| 3.9 (purpose) | No-empty rule | Development approach (no silent unknowns) | ✅ Aligned |
+| 3.10 (content_contract) | Empty behavior semantics | Validation standard (deterministic evidence) | ✅ Aligned |
+| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard (partial) | ⚠️ Incomplete |
+
+---
+

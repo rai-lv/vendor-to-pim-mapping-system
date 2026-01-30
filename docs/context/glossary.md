@@ -75,10 +75,38 @@ Domain-specific breaking change rules are defined for:
 - Artifact contracts: `docs/standards/artifacts_catalog_spec.md` Section 6.5
 - Naming conventions: `docs/standards/naming_standard.md` Section 5
 
+### Business artifacts
+Data products expressed from a stakeholder or end-user perspective rather than technical storage implementation.
+In business descriptions, inputs and outputs are described as business artifacts (what they represent) rather than technical specifications (bucket/key patterns).
+Examples: "vendor product catalog", "category mapping proposals", "validation report" (vs. "s3://bucket/path/file.json").
+Related: Artifact type, Business description.
+
+### Boundary statement
+An explicit declaration of what a job, capability, or objective does NOT do.
+Boundary statements prevent scope creep and clarify intent by stating explicit non-goals.
+Format: "Does not..." or "Boundary:..." followed by specific exclusions.
+Required in business descriptions (Section 1) and recommended for capability definitions.
+Specification: `docs/standards/business_job_description_spec.md` Section 1.
+
 ### Business description
 A per-job documentation file (`bus_description_<job_id>.md`) that captures business requirements, context, and rationale for a job.
 Location: `jobs/<job_group>/<job_id>/` or `docs/jobs/<job_id>/`
 Specification: `docs/standards/business_job_description_spec.md`
+
+### Business rules and controls
+Rules embedded in job logic that materially affect business outcomes, including:
+- selection/prioritization logic (e.g., "uses first match found")
+- exclusion criteria (e.g., "filters out products without article_id")
+- validation thresholds (e.g., "requires minimum 3 products per category")
+- truth protection rules (e.g., "never overwrites existing canonical mappings")
+Documented in Section 5 of business descriptions to ensure business stakeholders understand decision logic.
+Specification: `docs/standards/business_job_description_spec.md` Section 5.
+
+### Business stakeholder
+A person with responsibility for or interest in business outcomes, requirements, or decisions.
+Business stakeholders provide requirements, approve objectives, and evaluate whether jobs achieve intended business goals.
+Business descriptions target business stakeholders as primary audience (vs. technical operators).
+Test: "Would a business stakeholder need this to understand what the job achieves?"
 
 ---
 
@@ -142,6 +170,13 @@ The name of a job as deployed in its execution platform (e.g., AWS Glue job name
 For AWS Glue jobs, this is stored in the manifest `glue_job_name` field and typically matches the `job_id`.
 Deployment-specific prefixes (e.g., `prod-{job_id}`) are applied at deployment time and are not part of the canonical deployment name.
 Specification: `docs/standards/job_inventory_spec.md` Section 2.2.1.
+
+### Documentation timing
+The phase at which documentation is created: during development (prospective, intent-driven) or after implementation (retroactive, observation-driven).
+- **For new jobs:** Business descriptions capture intended behavior and approved business rules before/during implementation.
+- **For existing jobs (retroactive):** Business descriptions document observed behavior from code analysis and operational knowledge.
+Retroactive documentation must mark interpretations with `ASSUMPTION:` and uncertain behaviors with `TBD`.
+Specification: `docs/standards/business_job_description_spec.md` Section 0.4.
 
 ### Deprecated
 Marked as obsolete but retained temporarily for historical reference and migration support.
@@ -375,6 +410,12 @@ An objective sets:
 - scope boundaries,
 - and (when known) unknowns/assumptions that require later resolution.
 
+### Operational notes
+An optional, minimal section in business descriptions (Section 7) for operational facts that materially affect business understanding and cannot be deferred to the script card.
+Includes: critical failure behavior affecting business continuity, output behavior affecting downstream consumption, monitoring artifacts essential to business tracking.
+Should be used sparingly to maintain separation between business view (business description) and operational detail (script card).
+Specification: `docs/standards/business_job_description_spec.md` Section 7.
+
 ---
 
 ## P
@@ -382,6 +423,12 @@ An objective sets:
 ### Pipeline
 An ordered set of capabilities required to achieve an objective, including dependencies/decision points where relevant.
 
+### Processing logic (business flow)
+The sequence of business-level transformations described in a business description (Section 4).
+Expressed in natural language describing what stakeholders care about (e.g., "enriches products with...", "aggregates per vendor category...") rather than code-level implementation.
+Typically 4-12 steps; complex jobs may use multi-phase structure (PART 1, PART 2, etc.).
+Distinct from operational steps in script cards which describe technical execution.
+Specification: `docs/standards/business_job_description_spec.md` Section 4.
 
 ### Placeholder (manifest)
 A template variable in a job manifest's `bucket` or `key_pattern` field, represented as `${NAME}`.
@@ -446,8 +493,15 @@ A file path specified relative to the repository root, used for cross-document r
 Format: `docs/context/development_approach.md` (not absolute URLs for internal documents).
 Ensures links remain valid when repository is cloned or moved.
 
+### Retroactive documentation
+Documentation created after a job or system is already implemented, based on code analysis and operational observation rather than prospective design.
+Retroactive documentation must mark interpretations with `ASSUMPTION:` and uncertain behaviors with `TBD`.
+Contrasts with prospective documentation created during development that captures intended behavior.
+See also: Documentation timing.
+Specification: `docs/standards/business_job_description_spec.md` Section 0.4.
+
 ### Runtime truth
-The “what actually runs” layer:
+The "what actually runs" layer:
 the effective behavior defined by code, deployed artifacts, and runtime configuration.
 
 ---

@@ -578,18 +578,19 @@ This section documents design decisions made for this specification.
 
 **Question:** Should validation tooling enforce field cardinality (e.g., "at least 4 runtime behavior bullets"), or only presence/absence of sections?
 
-**Decision (2026-01-30):** Validation tooling should enforce only presence/absence of sections, not field cardinality.
+**Decision (2026-01-30):** Validation tooling should enforce structural cardinality but not content cardinality.
 
 **Rationale:**
-- Cardinality requirements (e.g., "4–8 bullets") remain normative for human review
-- Automated enforcement of cardinality would be overly rigid for edge cases
-- Presence/absence checking provides structural validation without constraining legitimate variation
-- Human reviewers can assess whether content meets quality expectations
+- **Structural cardinality** (e.g., "at least one input block", "all five Identity fields present") is essential for completeness
+- **Content cardinality** (e.g., "4–8 bullets", "1–3 sentences") is quality-focused and context-dependent
+- Automated enforcement of content cardinality would be overly rigid for edge cases
+- This distinction allows tooling to verify structure while leaving quality assessment to human reviewers
 
 **Implementation:**
-- Automated tooling validates: section presence, required field presence, cross-reference validity
-- Automated tooling does NOT validate: bullet counts, sentence counts, word limits
+- Automated tooling validates: section presence, structural cardinality (≥1 input), required field presence, cross-reference validity
+- Automated tooling does NOT validate: bullet counts, sentence counts, word limits (content cardinality)
 - Human review remains essential for operational clarity and quality (Section 7.2)
+- Section 7.1 explicitly distinguishes structural vs content cardinality
 
 ### 9.3 Cross-job dependency representation
 
@@ -609,6 +610,57 @@ This section documents design decisions made for this specification.
 - Script cards MAY list these for human readability, but they are not authoritative
 - Tooling should generate or validate these fields against artifacts catalog
 - During manual documentation, use `TBD` if artifacts catalog is incomplete; resolve via catalog updates
+
+### 9.4 Configuration files documentation
+
+**Question:** Should script cards document `config_files[]` from job manifests, and if so, how?
+
+**Decision (2026-01-30):** Add optional Section 2.3A for configuration files.
+
+**Rationale:**
+- Job manifests include `config_files[]` (per job_manifest_spec.md Section 5.5)
+- Configuration files are critical to job operation but distinct from data inputs
+- Without dedicated section, jobs with config files couldn't be fully documented
+- Optional section keeps spec flexible for jobs without config files
+
+**Implementation:**
+- Section 2.3A Configuration Files (OPTIONAL) added between Trigger/Parameters and Inputs
+- Five required fields per config block: bucket, key_pattern, format, required, meaning
+- Clear distinction: config files control behavior; inputs provide data to process
+
+### 9.5 Runtime enum placement
+
+**Question:** Should script cards define allowed runtime values, or reference the manifest spec?
+
+**Decision (2026-01-30):** Reference manifest spec as source of truth.
+
+**Rationale:**
+- Job manifest spec already defines runtime enum (Section 5.2)
+- Duplicating enum in script card spec creates "double truth" risk
+- Script cards document jobs; manifests define job interface schema
+- Manifest spec is the normative source for manifest schema elements
+
+**Implementation:**
+- Section 2.1 Identity: runtime field references job_manifest_spec.md Section 5.2
+- Script cards use runtime values from manifests; manifest spec defines allowed values
+- Changes to runtime enum only need updating in one place (manifest spec)
+
+### 9.6 Non-Glue job identification
+
+**Question:** How should script cards document `glue_job_name` for non-Glue jobs (make, Lambda, etc.)?
+
+**Decision (2026-01-30):** Use `N/A` for non-Glue runtimes.
+
+**Rationale:**
+- Field is required structurally (part of Identity section) but not semantically applicable to all jobs
+- `N/A` is clearer than `TBD` (which implies unknown) or omitting the field (which violates structure)
+- Maintains consistent Identity structure across all job types
+
+**Implementation:**
+- Section 2.1 Identity: "Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown"
+- Glue jobs: use actual deployed name (matching manifest)
+- Non-Glue jobs (runtime: make, python, nodejs, other): use `N/A`
+- Unknown cases: use `TBD`
 
 ---
 

@@ -55,8 +55,44 @@ Each entry MUST follow this structure:
 - `TBD` is the only allowed unknown marker.
 - `NONE` is the only allowed explicit-empty marker and MUST be used only when emptiness is provable from evidence.
 
-Scalar `TBD` discipline (MUST):
-- For list-typed fields (`consumers`, `producers`, `evidence_sources`, `required_sections`), unknown MUST be expressed as the scalar string `TBD` (not `[TBD]`, not omitted).
+#### 1.3.1 Scalar `TBD` discipline (MUST)
+
+For list-typed fields (`consumers`, `producers`, `evidence_sources`, `required_sections`), unknown MUST be expressed as the scalar string `TBD` (not `[TBD]`, not omitted).
+
+**YAML representation:**
+```yaml
+# Correct - unknown list field:
+consumers: TBD
+
+# Incorrect - do not use:
+consumers: [TBD]    # Wrong: not a scalar
+consumers:          # Wrong: omitted
+  - TBD             # Wrong: list with TBD item
+```
+
+#### 1.3.2 `NONE` vs empty list representation (MUST)
+
+For list-typed fields, use the following representation rules:
+
+**When emptiness is provable from evidence:**
+```yaml
+consumers: NONE     # Correct: scalar string NONE
+```
+
+**Empty list representation is NOT allowed:**
+```yaml
+consumers: []       # Wrong: use NONE instead
+```
+
+**Omitted fields are NOT allowed:**
+```yaml
+# Wrong: field omitted (all required fields must be present)
+```
+
+**Semantic meaning:**
+- `NONE` (scalar string): Provably empty based on evidence (e.g., no consumers exist)
+- Omitted field: Schema violation (all required fields must be present per Section 1.2)
+- `[]` (empty list): NOT allowed; use `NONE` instead to maintain consistent scalar representation
 
 ---
 
@@ -66,13 +102,41 @@ Scalar `TBD` discipline (MUST):
 
 To make matching deterministic across placeholder styles, automations MUST normalize placeholders before comparison.
 
-Normalization rule:
+#### 2.1.1 Core normalization rule (MUST)
+
 - Replace any `${...}` token with `<VAR>`.
 - Replace any `{...}` token with `<VAR>`.
 - Replace any `<...>` token with `<VAR>`.
 - No other transformations are allowed (no fuzzy matching).
 
 After normalization, compare strings literally.
+
+#### 2.1.2 Edge case handling (MUST)
+
+**Complete placeholder tokens only:**
+- Only complete placeholder tokens matching the full pattern are normalized
+- Token definition: `${` followed by one or more characters followed by `}`
+- Partial matches are NOT normalized
+
+**Adjacent placeholders:**
+```
+${vendor_name}${date} → <VAR><VAR>
+```
+
+**Placeholders within text:**
+```
+prefix_${vendor}_suffix → prefix_<VAR>_suffix
+```
+
+**Nested or malformed placeholders:**
+- Nested placeholders (e.g., `${outer_${inner}}`) are NOT expected in artifact patterns
+- If encountered during matching, treat the entire string as a single placeholder token
+- Malformed placeholders (e.g., unclosed `${vendor`) are NOT normalized; match literally
+
+**Escaped or literal placeholder-like text:**
+- Backslash-escaped placeholders (e.g., `\${literal}`) are NOT expected in S3 patterns
+- If encountered, treat literally without normalization
+- Context: S3 key patterns use actual placeholders, not escaped text
 
 ### 2.2 Entry matching for create/update (MUST)
 
@@ -91,9 +155,17 @@ Step 1 — Construct candidate S3 pattern:
 - If `bucket` or `key_pattern` is `TBD`, treat the candidate S3 pattern as `TBD` and continue to Step 3.
 
 Step 2 — Primary match: normalized S3 location match:
-- Normalize candidate S3 pattern and each existing entry’s `s3_location_pattern` (see 2.1).
-- If exactly one entry matches, reuse that entry.
-- If more than one entry matches, automation MUST NOT choose; stop and require human resolution.
+- Normalize candidate S3 pattern (see 2.1)
+- For each existing entry:
+  - If entry has a single `s3_location_pattern`, normalize it and compare to candidate
+  - If entry has multiple `s3_location_pattern` values (list), normalize each and compare to candidate
+  - Entry matches if candidate matches ANY of the entry's patterns (OR logic)
+- If exactly one entry matches, reuse that entry
+- If more than one entry matches, automation MUST NOT choose; stop and require human resolution
+
+**Multi-pattern matching rule:**
+- An entry with patterns `[A, B, C]` matches candidate `X` if `X` matches `A` OR `B` OR `C`
+- "Exactly one entry matches" means exactly one catalog entry has at least one pattern matching the candidate
 
 Step 3 — Secondary match: terminal filename match:
 - Extract terminal segment from the candidate `key_pattern` (after the final `/`).
@@ -103,6 +175,100 @@ Step 3 — Secondary match: terminal filename match:
 
 Step 4 — No match found:
 - Create a new entry and assign `artifact_id` using section 3.1.
+
+### 2.3 Entry update rules (MUST)
+
+When a matched entry exists and new evidence differs from the current entry value, follow these update rules:
+
+#### 2.3.1 Auto-updatable fields (additive only)
+
+The following fields MAY be automatically updated by automation when new evidence is discovered:
+
+**Additive list updates:**
+- `consumers`: Add new consumer job_ids when evidence shows additional consumers
+- `evidence_sources`: Add new evidence source files when used
+- `producers`: Add new producer job_ids (only if shared-artifact exception applies per Section 3.6)
+
+**Update rules:**
+- MUST add new items when proven by evidence
+- MUST NOT remove items without explicit evidence of removal
+- MUST maintain lexicographic sort order after updates
+- MUST de-duplicate entries
+
+#### 2.3.2 Human-approval fields (breaking changes)
+
+The following fields require human approval before modification (governed by Section 6.5):
+
+**Identity and contract fields:**
+- `artifact_id` (renaming forbidden per Section 3.1)
+- `producer_job_id` (ownership transfer)
+- `file_name_pattern` (may break consumers)
+- `s3_location_pattern` (may break discovery)
+- `format` (incompatible type changes)
+- `presence_on_success` (behavioral contract change)
+- `content_contract` (structural contract change)
+
+**Update process:**
+- Automation MUST stop and report conflict
+- Human reviews conflict and decides on resolution
+- Changes require breaking change governance per Section 6.5
+
+#### 2.3.3 Conflict resolution
+
+When evidence conflicts with existing entry values:
+
+**Stop conditions (automation MUST NOT proceed):**
+- Evidence contradicts existing field value (e.g., format changed from `json` to `csv`)
+- Multiple evidence sources provide conflicting values
+- New evidence would trigger breaking change per Section 6.5
+
+**Automation response:**
+- Stop update process
+- Generate conflict report per Section 2.4
+- Require human resolution before proceeding
+
+### 2.4 Conflict resolution process (MUST)
+
+When automation cannot proceed deterministically, follow this process:
+
+#### 2.4.1 Create conflict report
+
+Generate a conflict report containing:
+- **Timestamp**: When conflict was detected
+- **Candidate artifact**: Details of the artifact causing conflict
+- **Conflict type**: One of:
+  - Multiple entries match (ambiguous matching)
+  - Evidence contradicts existing entry
+  - Multiple evidence sources conflict
+  - Breaking change detected
+- **Matching entries**: List of entry IDs involved (if applicable)
+- **Conflicting values**: Current value vs. new evidence value
+- **Evidence sources**: Files/sources contributing to conflict
+- **Recommendation**: Suggested resolution (if determinable)
+
+#### 2.4.2 Store conflict report
+
+- Create report file: `docs/catalogs/conflicts/YYYY-MM-DD-<artifact_summary>.md`
+- Use naming pattern: date prefix, then brief artifact identifier
+- Example: `2026-01-30-vendor_products_format_conflict.md`
+
+#### 2.4.3 Notification and resolution
+
+**Notification:**
+- Notify catalog maintainer via configured channel (e.g., GitHub issue, PR comment)
+- Include link to conflict report file
+- Mark automation run as requiring human intervention
+
+**Human resolution options:**
+1. Update existing entry to resolve ambiguity (add differentiation, correct values)
+2. Create new entry with explicit differentiation
+3. Update matching rules in this spec if systematic issue identified
+4. Update evidence sources if evidence was incorrect
+
+**Documentation:**
+- Document resolution decision in conflict report file
+- If systematic issue, consider ADR for rule change
+- Update affected catalog entries with resolution
 
 ---
 
@@ -122,8 +288,14 @@ If entry does not exist (deterministic derivation rule):
 
 Producer anchor:
 - For produced artifacts: `producer_anchor = <producer_job_id>` (folder job_id of the producing job).
-- For external (not produced in repo): `producer_anchor = <lexicographically smallest proven consumer job_id>`.
-- If no in-repo consumer can be proven: `producer_anchor = external`.
+- For external (not produced in repo): `producer_anchor = external` (permanent; see below).
+
+**External artifact naming stability rule (MUST):**
+- External artifacts (not produced in this repository) always use `producer_anchor = external`
+- This anchor is permanent and MUST NOT change even when consumers are added later
+- Rationale: Ensures artifact_id stability (satisfies "renaming forbidden" rule above)
+- Consumer tracking: Use `consumers` field to document which jobs consume the external artifact
+- Exception: If an external artifact later becomes produced in-repo, this is a fundamental change requiring new artifact entry with new artifact_id
 
 Artifact type token derivation (from manifest `key_pattern`):
 1) If `key_pattern` ends with a filename segment containing an extension, use that filename.
@@ -159,6 +331,30 @@ Definition:
 
 Automation parsing rule:
 - If scalar string is used, treat it as a list of exactly one string for matching and updates.
+
+#### 3.3.1 Multi-pattern usage constraints (MUST)
+
+When an entry has multiple `s3_location_pattern` values, they MUST satisfy these constraints:
+
+**Purpose constraint:**
+- Multiple patterns MUST represent alternative locations for the SAME logical artifact
+- Valid use cases:
+  - Cross-region replication (same artifact in multiple regions)
+  - Primary and backup locations
+  - Historical migration paths during transition periods
+- Invalid use cases (use separate entries instead):
+  - Different artifact versions (e.g., `v1` vs `v2`)
+  - Different artifact purposes or content
+  - Artifacts with different producers
+
+**Consumer guidance:**
+- Consumers should treat all patterns as equivalent alternatives
+- Primary pattern is typically listed first (by convention)
+- Consumers may use any pattern based on their access/proximity needs
+
+**Validation rule:**
+- If multiple patterns exist, document in `content_contract.notes` why multiple locations are needed
+- If patterns represent fundamentally different artifacts, split into separate catalog entries
 
 Source priority:
 1) existing entry (unless change is proven)
@@ -288,10 +484,43 @@ Operational meaning of `empty_behavior` values (MUST; non-overlapping):
 - `TBD` — cannot be proven from in-repo evidence.
 
 Consistency rule with `presence_on_success` (MUST):
-- If `presence_on_success` is set to `conditional` based on provable “success without writing” behavior, then:
+- If `presence_on_success` is set to `conditional` based on provable "success without writing" behavior, then:
   - `content_contract.empty_behavior` MUST be set to `absent_file_allowed`,
   - unless code proves that the success path writes an explicit empty representation instead (then use the relevant `empty_*_allowed`).
 
+#### 3.10.1 Bidirectional consistency matrix (MUST)
+
+The following combinations of `presence_on_success` and `content_contract.empty_behavior` are valid or invalid:
+
+**Valid combinations:**
+
+`presence_on_success: required` (file must exist on success):
+- `empty_behavior: empty_file_allowed` ✅ (zero-byte file written)
+- `empty_behavior: empty_object_allowed` ✅ (`{}` written)
+- `empty_behavior: empty_array_allowed` ✅ (`[]` written)
+- `empty_behavior: no_empty_allowed` ✅ (non-empty content required)
+
+`presence_on_success: optional` (file may or may not exist):
+- `empty_behavior: absent_file_allowed` ✅ (file may be missing)
+- `empty_behavior: empty_file_allowed` ✅ (or zero-byte if present)
+- `empty_behavior: empty_object_allowed` ✅ (or `{}` if present)
+- `empty_behavior: empty_array_allowed` ✅ (or `[]` if present)
+- `empty_behavior: no_empty_allowed` ✅ (if present, must be non-empty)
+
+`presence_on_success: conditional` (file existence depends on conditions):
+- `empty_behavior: absent_file_allowed` ✅ (may be missing based on condition)
+- `empty_behavior: empty_file_allowed` ✅ (or zero-byte when written)
+- `empty_behavior: empty_object_allowed` ✅ (or `{}` when written)
+- `empty_behavior: empty_array_allowed` ✅ (or `[]` when written)
+
+**Invalid combinations:**
+
+`presence_on_success: required` (file must exist on success):
+- `empty_behavior: absent_file_allowed` ❌ **INVALID** - contradicts "required" (file missing on success is not allowed)
+
+**Validation rule:**
+- Automation MUST reject entries with invalid combinations
+- Human review MUST verify consistency when either field is updated
 Source priority:
 1) existing entry
 2) business descriptions / ADRs (only if they define structural expectations)
@@ -372,6 +601,7 @@ If present, they MUST appear **only after** `evidence_sources` and **in exactly 
 1) `producer_glue_job_name`  
 2) `stability`  
 3) `breaking_change_rules`
+4) `deprecated`
 
 ### 6.1 `producer_glue_job_name` (MAY)
 
@@ -426,7 +656,60 @@ Source priority:
 
 Otherwise `TBD`.
 
-### 6.4 Breaking Changes for Artifact Contracts (normative)
+### 6.4 `deprecated` (MAY)
+
+Definition:
+- Marks an artifact type as deprecated or retired from active use.
+- Communicates lifecycle state to consumers and automation.
+
+Schema (when present):
+```yaml
+deprecated:
+  status: true
+  superseded_by: <new_artifact_id>  # Optional: replacement artifact
+  deprecation_date: YYYY-MM-DD      # Optional: when deprecated
+  removal_date: YYYY-MM-DD          # Optional: planned removal
+  reason: <text>                     # Optional: explanation
+```
+
+Allowed values:
+- `status`: `true` (artifact is deprecated) or omit field entirely if not deprecated
+- `superseded_by`: artifact_id of replacement artifact (if applicable), or omit
+- `deprecation_date`: ISO 8601 date when deprecation was announced
+- `removal_date`: ISO 8601 date when artifact will be removed/unsupported
+- `reason`: Brief explanation of why deprecated and migration guidance
+
+Usage rules (MUST):
+- When `deprecated.status: true`, the artifact is marked as deprecated
+- Deprecated entries remain in catalog for historical reference
+- Consumers should migrate away from deprecated artifacts
+- New consumers should not use deprecated artifacts
+- If `superseded_by` is provided, it MUST reference a valid artifact_id in the catalog
+
+Example (artifact deprecated with replacement):
+```yaml
+deprecated:
+  status: true
+  superseded_by: preprocessIncomingBmecat__vendor_products_v2
+  deprecation_date: 2026-01-15
+  removal_date: 2026-06-30
+  reason: "Migrating to new schema with enhanced validation. See ADR-042 for migration guide."
+```
+
+Example (artifact deprecated without replacement):
+```yaml
+deprecated:
+  status: true
+  deprecation_date: 2026-01-20
+  reason: "Feature discontinued. No replacement planned."
+```
+
+Source priority:
+1) existing entry
+2) ADR documenting deprecation decision
+3) explicit team decision with documented rationale
+
+### 6.5 Breaking Changes for Artifact Contracts (normative)
 
 This section defines what constitutes a **breaking change** vs a **non-breaking change** for artifact catalog entries.
 
@@ -545,21 +828,7 @@ This specification was drafted and validated against the following repository do
 **Living catalogs:**
 - `docs/catalogs/artifacts_catalog.md` — This spec defines the schema that catalog entries must follow
 
-### 7.2 Potential conflicts detected
-
-**All conflicts from initial draft have been resolved:**
-
-**Conflict 1: Missing registry directory** ✅ RESOLVED
-- **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
-- **Resolution**: Created `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file with documented schema
-- **Status**: Shared-artifact exception mechanism is now operationalizable
-
-**Conflict 2: Incomplete breaking change definition** ✅ RESOLVED
-- **Location**: Section 6.3 defines `breaking_change_rules` field
-- **Resolution**: Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)" with complete definitions
-- **Status**: Validators can now enforce breaking change governance consistently
-
-### 7.3 Assumptions introduced
+### 7.2 Assumptions introduced
 
 **Assumption 1: Job manifest as primary evidence source**
 - **What**: The spec assumes `job_manifest.yaml` files exist for all jobs and contain `inputs[]`, `outputs[]`, and `config_files[]` sections
@@ -589,12 +858,12 @@ This specification was drafted and validated against the following repository do
 - **Impact**: May fail if placeholders have semantic differences (e.g., `${date}` vs `${timestamp}`) that should not match
 - **Status**: ⚠️ Bounded — normalization is intentionally lossy; edge cases may require human resolution
 
-### 7.4 Cross-document dependencies
+### 7.3 Cross-document dependencies
 
 This spec depends on:
 - `docs/standards/job_manifest_spec.md` — for manifest schema and field semantics
 - `docs/standards/naming_standard.md` — for job_id and artifact naming conventions; aligned with for breaking change definitions
-- `docs/standards/decision_records_standard.md` — for governance approval process (referenced in Section 6.4)
+- `docs/standards/decision_records_standard.md` — for governance approval process (referenced in Section 6.5)
 - `docs/catalogs/artifacts_catalog.md` — as the instance file this spec governs
 - `docs/registries/shared_artifacts_allowlist.yaml` — for shared-artifact exception (now created)
 
@@ -604,7 +873,7 @@ Documents that depend on this spec:
 - Automation tools (e.g., catalog generators/updaters) — must follow matching and sourcing rules
 - `docs/standards/validation_standard.md` — should include artifact catalog compliance checks
 
-### 7.5 Traceability summary
+### 7.4 Traceability summary
 
 | Section | Requirement | Grounded in | Status |
 |---------|-------------|-------------|--------|
@@ -617,7 +886,7 @@ Documents that depend on this spec:
 | 3.8 (presence_on_success) | Required flag alignment | Job manifest spec `required` field | ✅ Verified |
 | 3.9 (purpose) | No-empty rule | Development approach (no silent unknowns) | ✅ Aligned |
 | 3.10 (content_contract) | Empty behavior semantics | Validation standard (deterministic evidence) | ✅ Aligned |
-| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard; Section 6.4 provides normative definitions | ✅ Complete |
+| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard; Section 6.5 provides normative definitions | ✅ Complete |
 | 6.4 (Breaking changes) | Compatibility rules | Naming standard Section 5; decision records standard | ✅ Aligned |
 
 ---

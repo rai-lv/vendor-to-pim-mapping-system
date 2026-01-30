@@ -102,6 +102,16 @@ Format: `docs/context/development_approach.md` (not absolute URLs for internal d
 A failure mode where the same “contract” or meaning is defined in more than one place (e.g., a standard is duplicated inside a workflow doc),
 creating competing sources of authority and eventual inconsistency.
 
+### Decision record
+A structured document that records significant decisions, their rationale, alternatives considered, and approval status.
+Decision records follow the format defined in `docs/standards/decision_records_standard.md`.
+They are essential for breaking changes, exceptions to principles, and governance decisions.
+
+### Deprecated
+Marked as obsolete but retained temporarily for historical reference and migration support.
+Deprecated documents include a deprecation marker, reason, redirect to replacement (if any), and planned removal date.
+Minimum retention: 30 days or one release cycle.
+
 ### Deterministic
 A property of tools and evidence outputs: given the same inputs, a deterministic tool or process produces the same outputs consistently.
 Deterministic evidence can be independently verified and does not rely on subjective interpretation.

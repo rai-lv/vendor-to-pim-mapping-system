@@ -108,7 +108,7 @@ Specification: `docs/standards/documentation_spec.md` Section 7.
 Any mismatch between approved intent and observed reality (tool results, implementation behavior, or artifact content).
 Conflicts must be surfaced explicitly and resolved via an explicit decision (not silently).
 
-### content_contract
+### Content contract
 A minimal parse and validation contract for an artifact, describing its structural expectations without being a full schema.
 Includes: top_level_type, primary_keying, required_sections, empty_behavior, and notes.
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
@@ -160,7 +160,7 @@ Location: `docs/context/documentation_system_catalog.md`
 
 ## E
 
-### empty_behavior
+### Empty behavior
 Defines how an artifact represents "no data" state.
 Allowed values:
 - `absent_file_allowed` — file may not exist
@@ -197,7 +197,7 @@ YAML metadata block at the start of a file, enclosed by `---` delimiters.
 Used in agent profile definitions (`.github/agents/`) to specify agent name, description, and other metadata.
 Required by GitHub Copilot for agent configuration.
 
-### file_name_pattern
+### File name pattern
 Terminal filename pattern (last segment after final `/`), which may contain placeholders.
 Represents a stable pattern, not a concrete run-instance filename.
 Examples: `vendor_products.json`, `${vendor_name}_products.json`.
@@ -346,7 +346,7 @@ A technique for deterministic artifact matching across different placeholder sty
 Normalizes `${...}`, `{...}`, and `<...>` to `<VAR>` before comparison to enable consistent matching.
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 2.1.
 
-### presence_on_success
+### Presence on success
 Defines whether an artifact file must exist when a job succeeds.
 Allowed values:
 - `required` — file must exist on success
@@ -410,7 +410,7 @@ the effective behavior defined by code, deployed artifacts, and runtime configur
 ### Scope boundary
 A statement that makes the objective/capability bounded and unambiguous, including explicit exclusions.
 
-### s3_location_pattern
+### S3 location pattern
 Stable S3 location pattern(s) for an artifact type, in the format `s3://${bucket}/${key_pattern}`.
 May be a single pattern or multiple patterns (for cross-region replication, backups, or migration paths).
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.3.

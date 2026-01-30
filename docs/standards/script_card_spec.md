@@ -93,8 +93,8 @@ Every script card MUST contain the following sections in order. Each section's r
 | Field | Description | Allowed values | Example |
 |-------|-------------|----------------|---------|
 | `job_id` | Repository folder identifier | Must match folder name | `preprocessIncomingBmecat` |
-| `glue_job_name` | AWS Glue job name (if applicable) | Exact name or `TBD` | `preprocessIncomingBmecat` |
-| `runtime` | Execution runtime | `pyspark`, `python_shell`, `aws_lambda`, `make`, `other`, `TBD` | `pyspark` |
+| `glue_job_name` | AWS Glue job name | Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown | `preprocessIncomingBmecat` |
+| `runtime` | Execution runtime | Must match job manifest runtime value (see job_manifest_spec.md Section 5.2) | `pyspark` |
 | `repo_path` | Path to entry script | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py` |
 | `manifest_path` | Path to job manifest | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml` |
 
@@ -142,6 +142,40 @@ Every script card MUST contain the following sections in order. Each section's r
 **Pass criterion:** All three subfields present; if parameters are known they must be listed as **names only** (no inline descriptions).
 
 **Note:** Parameter semantics are documented in the job manifest. The script card references them by name only.
+
+**Preconditions guidance:**
+- State specific artifacts/states required (e.g., "Input files from upstream job X must exist in bucket Y")
+- Reference specific bucket/key patterns when relevant
+- Use `NONE` if no preconditions exist (job can run anytime)
+- Use `TBD` only if truly unknown
+- Examples of good preconditions:
+  - "Vendor catalog XML must exist at `s3://bucket/vendors/${vendor_name}/catalog.xml`"
+  - "Job `matching_proposals` must complete successfully before this job runs"
+  - "DynamoDB table `vendor_metadata` must contain entry for `${vendor_name}`"
+
+---
+
+### 2.3A Configuration Files (OPTIONAL)
+
+**Purpose:** Documents static configuration artifacts used by the job.
+
+**When to include:** When `job_manifest.yaml` has `config_files[]` entries.
+
+**Per-config block fields:**
+
+| Field | Description | Allowed values | Example |
+|-------|-------------|----------------|---------|
+| `bucket` | S3 bucket | Bucket name or placeholder or `TBD` | `vendor-input-raw` |
+| `key_pattern` | S3 key pattern | Pattern with placeholders or `TBD` | `configuration-files/preprocessing_config_${vendor_name}.json` |
+| `format` | File format | Format string or `TBD` | `json` |
+| `required` | Whether config is mandatory | `true`, `false`, `TBD` | `true` |
+| `meaning` | What the config controls | Text | `Vendor-specific extraction rules and field mappings` |
+
+**Format:** One block per config file; fields presented as bullet list or compact table.
+
+**Pass criterion:** If section is present, each config block contains all five fields.
+
+**Note:** Configuration files are distinct from data inputs - they control job behavior rather than provide data to process. Config files should be relatively static (change infrequently) compared to data inputs (which change per execution).
 
 ---
 
@@ -194,6 +228,12 @@ Every script card MUST contain the following sections in order. Each section's r
 
 **Cross-reference rule:** If `artifact_id` is known, it MUST match an entry in `docs/catalogs/artifacts_catalog.md`. Do NOT redefine artifact contracts here.
 
+**Consumers field guidance:**
+- The `consumers` field SHOULD be derived from `docs/catalogs/artifacts_catalog.md` producer/consumer relationships
+- Script cards MAY include consumers for human readability, but the artifacts catalog is the authoritative source
+- Use `TBD` if the artifacts catalog is incomplete; resolve via catalog updates rather than manual script card maintenance
+- Use `NONE` if the artifact is provably unused by any downstream job
+
 ---
 
 ### 2.6 Side Effects (MUST)
@@ -213,6 +253,18 @@ Every script card MUST contain the following sections in order. Each section's r
 **Pass criterion:** All three subfields present.
 
 **Semantic note:** Side effects are critical for orchestration and recovery logic. Mark as `TBD` only if truly unknown; investigate code if possible.
+
+**Guidance for other_side_effects:**
+- Structure complex side effects as one bullet per distinct side effect type
+- Include conditions for conditional side effects (e.g., "on success only", "on failure")
+- Reference external systems by name and operation (e.g., "Updates DynamoDB table `vendor_metadata` with processing timestamp")
+- For file operations, specify the pattern and condition (e.g., "Moves processed files to archive prefix `${input_key}.processed` on success")
+- Use `NONE` if no other side effects exist beyond the boolean fields above
+- Examples of well-documented other_side_effects:
+  - "Archives input files to `s3://archive-bucket/processed/${timestamp}/` after successful processing"
+  - "Updates DynamoDB table `job_status` with execution metadata (start_time, end_time, record_count)"
+  - "Sends SNS notification to topic `data-processing-complete` on success"
+  - "Deletes temporary files from `s3://temp-bucket/intermediate/${job_run_id}/` after completion"
 
 ---
 
@@ -374,6 +426,13 @@ Script cards MUST be co-located with job code in the job folder structure. This 
 - Use bullet lists for field lists (not tables, unless compact tables improve readability for inputs/outputs)
 - Use code blocks (triple backticks) for examples, not inline code spans
 
+**Versioning and change tracking:**
+- Script cards have no explicit version numbers in the document
+- Changes are tracked via git history (commits, diffs)
+- When making significant updates to a script card (not just typo fixes), document the reason in the git commit message
+- Optional: Add a comment at the end of the script card noting significant changes (e.g., `<!-- Updated 2026-01-30: Added config_files section -->`)
+- For major divergence from implementation (e.g., job behavior changed but script card not yet updated), add a note in the script card itself
+
 ### 5.3 Placeholder representation
 
 When documenting patterns with placeholders (e.g., S3 key patterns):
@@ -435,9 +494,10 @@ Script cards MAY be validated using automated tooling that checks:
 - TBD count and distribution (high TBD count may signal incomplete documentation)
 
 **Scope of automated validation (per decision 9.2):**
-- Automated tooling enforces **presence/absence** of sections and fields
-- Automated tooling does NOT enforce **field cardinality** (e.g., "4–8 bullets", "1–3 sentences")
-- Cardinality requirements remain normative for human review but are not enforced by tooling
+- Automated tooling DOES enforce **structural cardinality** (e.g., "at least one input block", "all five Identity fields present")
+- Automated tooling does NOT enforce **content cardinality** (e.g., "4–8 bullets", "1–3 sentences")
+- Content cardinality requirements remain normative for human review but are not enforced by tooling
+- This distinction allows tooling to verify structure while leaving quality assessment to human reviewers
 
 ### 7.2 Human review checkpoints
 
@@ -480,6 +540,17 @@ When documenting existing jobs retroactively:
 - Use `TBD` for values that cannot be determined from code analysis or operational knowledge
 - Prioritize filling in identity, interface, and failure modes (sections critical for operations)
 - Document what is known first; iterate to resolve TBDs over time
+
+---
+
+## 8.3 Complete Script Card Example
+
+For a reference implementation of a complete script card covering all required sections, see the preprocessIncomingBmecat job:
+- **Location:** `jobs/vendor_input_processing/preprocessIncomingBmecat/script_card_preprocessIncomingBmecat.md` (when created)
+- **Covers:** All 10 required sections (2.1-2.10) plus optional sections
+- **Demonstrates:** Proper formatting, field completion, cross-references, and TBD usage
+
+**Note:** As script cards are created for existing jobs, this example will be available as a reference. Until then, use the field-level examples throughout this specification (Sections 2.2, 2.7, 2.8) as guidance.
 
 ---
 

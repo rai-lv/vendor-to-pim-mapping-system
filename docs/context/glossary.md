@@ -39,6 +39,17 @@ An assumption is permitted only if it is:
 - bounded (what is assumed, why, impact),
 - approved by a human before implementation depends on it.
 
+### artifact_id
+Stable canonical identifier for an artifact type (not a single run instance).
+Format: `<producer_anchor>__<artifact_type_snake_case>` where producer_anchor is either the producing job_id or "external" for artifacts not produced in this repository.
+Once assigned, artifact_ids MUST NOT be renamed to maintain stable references.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.1.
+
+### Artifact type
+A stable pattern describing a category of artifacts, distinguished from specific run instances.
+Example: artifact type = "vendor_products.json for vendor X", instance = "vendor_products.json written on 2026-01-30 at 14:23:45".
+Catalog entries document artifact types, not individual instances.
+
 ---
 
 ## B
@@ -53,6 +64,10 @@ A change that requires migration, deprecation period, or coordination because it
 Examples include renaming job IDs, changing artifact filenames, or modifying parameter names.
 Breaking changes require governance approval, decision records, and explicit migration plans.
 Specification: `docs/standards/naming_standard.md` Section 5.
+
+Domain-specific breaking change rules are defined for:
+- Artifact contracts: `docs/standards/artifacts_catalog_spec.md` Section 6.5
+- Naming conventions: `docs/standards/naming_standard.md` Section 5
 
 ### Business description
 A per-job documentation file (`bus_description_<job_id>.md`) that captures business requirements, context, and rationale for a job.
@@ -74,6 +89,10 @@ A structured description of what a capability must do, typically including:
 - acceptance criteria,
 - a bounded breakdown into codable tasks (or an equivalent controlled implementation outline).
 
+### Catalog entry
+A structured block in `docs/catalogs/artifacts_catalog.md` that documents one artifact type: its identity, location patterns, format, producer, consumers, content contract, and governance metadata.
+Entries follow the schema defined in `docs/standards/artifacts_catalog_spec.md`.
+
 ### Codable task
 A bounded unit of implementation work derived from a capability definition.
 A codable task is defined so that it can be executed and reviewed in a controlled way (clear boundaries, dependencies, and intended outputs).
@@ -88,6 +107,11 @@ Specification: `docs/standards/documentation_spec.md` Section 7.
 ### Conflict
 Any mismatch between approved intent and observed reality (tool results, implementation behavior, or artifact content).
 Conflicts must be surfaced explicitly and resolved via an explicit decision (not silently).
+
+### Content contract
+A minimal parse and validation contract for an artifact, describing its structural expectations without being a full schema.
+Includes: top_level_type, primary_keying, required_sections, empty_behavior, and notes.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
 
 ### Cross-reference
 A link from one document to another, typically using relative paths from the repository root.
@@ -123,6 +147,10 @@ and
 - implemented/runtime behavior or documents (what is true).
 Drift includes silent changes, shadow specs, and unapproved re-interpretation of terms/rules.
 
+### Dual-write
+Migration technique where data is written to both old and new locations during a transition period, enabling gradual consumer migration and rollback capability.
+Used for breaking changes to artifact locations or formats.
+
 ### Documentation system catalog
 A registry that defines all document types, their purposes, semantic boundaries, and canonical locations.
 The catalog prevents overlap, ensures separation of concerns, and serves as the authoritative reference for where content belongs.
@@ -131,6 +159,16 @@ Location: `docs/context/documentation_system_catalog.md`
 ---
 
 ## E
+
+### Empty behavior
+Defines how an artifact represents "no data" state.
+Allowed values:
+- `absent_file_allowed` — file may not exist
+- `empty_file_allowed` — zero-byte file written
+- `empty_object_allowed` — `{}` written
+- `empty_array_allowed` — `[]` written
+- `no_empty_allowed` — non-empty content required
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
 
 ### Evidence
 Deterministic outputs that support approval decisions (e.g., validation reports, test results, run receipts, logs).
@@ -158,6 +196,12 @@ Agent functions are defined independently of specific agent implementations, all
 YAML metadata block at the start of a file, enclosed by `---` delimiters.
 Used in agent profile definitions (`.github/agents/`) to specify agent name, description, and other metadata.
 Required by GitHub Copilot for agent configuration.
+
+### File name pattern
+Terminal filename pattern (last segment after final `/`), which may contain placeholders.
+Represents a stable pattern, not a concrete run-instance filename.
+Examples: `vendor_products.json`, `${vendor_name}_products.json`.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.2.
 
 ---
 
@@ -297,6 +341,24 @@ A template variable in a job manifest's `bucket` or `key_pattern` field, represe
 Placeholders are substituted at job invocation time with actual parameter values or runtime-generated values.
 Types: parameter placeholders (match parameter names exactly) and runtime-generated placeholders (computed by the job).
 
+### Placeholder normalization
+A technique for deterministic artifact matching across different placeholder styles.
+Normalizes `${...}`, `{...}`, and `<...>` to `<VAR>` before comparison to enable consistent matching.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 2.1.
+
+### Presence on success
+Defines whether an artifact file must exist when a job succeeds.
+Allowed values:
+- `required` — file must exist on success
+- `optional` — file may or may not exist
+- `conditional` — existence depends on job conditions
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.8.
+
+### Producer anchor
+The prefix component in artifact_id derivation: either the producing job_id (for in-repo artifacts) or "external" (for artifacts not produced in this repository).
+Producer anchor for external artifacts is permanent and MUST NOT change even when consumers are added later.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.1.
+
 ### PySpark
 The Python API for Apache Spark, enabling large-scale data processing using Spark's distributed computing engine.
 In this system, PySpark jobs run on AWS Glue with access to `SparkContext`, `GlueContext`, and Spark DataFrames.
@@ -348,6 +410,11 @@ the effective behavior defined by code, deployed artifacts, and runtime configur
 ### Scope boundary
 A statement that makes the objective/capability bounded and unambiguous, including explicit exclusions.
 
+### S3 location pattern
+Stable S3 location pattern(s) for an artifact type, in the format `s3://${bucket}/${key_pattern}`.
+May be a single pattern or multiple patterns (for cross-region replication, backups, or migration paths).
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.3.
+
 ### Script card
 A per-job technical documentation file (`script_card_<job_id>.md`) that describes implementation details, dependencies, and technical considerations.
 Location: `jobs/<job_group>/<job_id>/` or `docs/jobs/<job_id>/`
@@ -366,6 +433,11 @@ An anti-pattern where normative requirements are embedded in the wrong documenta
 Example: A process guide containing required field definitions instead of referencing the authoritative standard.
 Shadow specs create competing authority and violate the "single source of truth" principle.
 
+### Shared artifact exception
+An allowlisted case where multiple producer jobs write to the same artifact type, overriding the default single-writer rule.
+Requires explicit registration in `docs/registries/shared_artifacts_allowlist.yaml`.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.6.
+
 ### Stale
 Outdated information that no longer reflects current implementation, decisions, or behavior.
 Stale documentation reduces accuracy and misleads users.
@@ -383,6 +455,11 @@ A governance rule:
 each contract type (e.g., “format rules”, “workflow gates”, “tool usage”, “templates”) must have exactly one authoritative home.
 Other documents may reference it but must not redefine it.
 
+
+### Single-writer rule
+Default governance principle: an artifact type MUST have exactly one producing job to simplify orchestration and reduce coordination complexity.
+Multi-writer artifacts are allowed only via the shared artifact exception.
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.6.
 ### Success criteria
 Concrete conditions that define when an objective is achieved.
 Success criteria inform capability planning and validation evidence.
@@ -399,6 +476,9 @@ TBDs must be either resolved later or explicitly approved as controlled assumpti
 - Use `null` for "not applicable" (e.g., receipt bucket when no receipt is written)
 - Use `[]` for "provably empty" (e.g., counters when none exist)
 - Reserve `TBD` for "cannot determine without runtime/deployment data"
+
+**In artifacts catalog:** Unknown list fields MUST use scalar string `TBD` (not `[TBD]` or omitted).
+Specification: `docs/standards/artifacts_catalog_spec.md` Section 1.3.1.
 
 ### Tool
 A deterministic instrument used by humans and agents to scaffold, validate, and produce evidence.

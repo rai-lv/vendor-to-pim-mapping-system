@@ -15,7 +15,7 @@ This spec defines a framework that is:
 - auditable via explicit evidence sources
 
 The catalog file is:
-- `docs/artifacts_catalog.md`
+- `docs/catalogs/artifacts_catalog.md`
 
 ---
 

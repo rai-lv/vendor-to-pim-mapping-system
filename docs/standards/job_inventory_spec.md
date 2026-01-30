@@ -46,7 +46,7 @@ For each job row:
 
 1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
 Clarification: config_files[] from the manifest are not represented as separate interface columns in docs/job_inventory.md in v1.4. The inventory indexes only inputs[] and outputs[]. (Artifact consumers may still be derived from config_files[] in the artifacts catalog.)
-2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
+2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/catalogs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
 3. **Business purpose text** MAY come from a business description document if present; otherwise `TBD`.
    - If a business description exists, it MUST be taken from `docs/business_job_descriptions/<job_id>.md`.
 4. **Dependency claims** (upstream/downstream) MUST only be stated if supported by evidence inside this repo (see “Dependency links” rules). Otherwise `TBD`.
@@ -310,7 +310,7 @@ When adding a new job:
 2. Add zero or more new dependency bullets under `## Dependency links`.
 3. Add any new verification bullets under `## Open verification items`.
 4. Do not rewrite existing rows except to replace `TBD` with confirmed values or to set `last_reviewed`.
-5. If `inputs`/`outputs` positions are `TBD` because artifact_ids are missing or ambiguous, create/fix the required entries in `docs/artifacts_catalog.md` first (or in the same PR), then replace the `TBD` positions.
+5. If `inputs`/`outputs` positions are `TBD` because artifact_ids are missing or ambiguous, create/fix the required entries in `docs/catalogs/artifacts_catalog.md` first (or in the same PR), then replace the `TBD` positions.
 
 If automation-derived dependencies are enabled:
 - `upstream_job_ids`, `downstream_job_ids`, and `## Dependency links` MUST be regenerated according to the dependency derivation rule.

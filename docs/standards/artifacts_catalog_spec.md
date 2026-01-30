@@ -15,7 +15,7 @@ This spec defines a framework that is:
 - auditable via explicit evidence sources
 
 The catalog file is:
-- `docs/artifacts_catalog.md`
+- `docs/catalogs/artifacts_catalog.md`
 
 ---
 
@@ -23,7 +23,7 @@ The catalog file is:
 
 ### 1.1 Catalog file structure (MUST)
 
-`docs/artifacts_catalog.md` MUST contain:
+`docs/catalogs/artifacts_catalog.md` MUST contain:
 - a top-level title: `# Artifacts Catalog`
 - then a sequence of entries, each entry starting with `## <artifact_id>`
 
@@ -47,6 +47,8 @@ Each entry MUST follow this structure:
 9. `purpose`
 10. `content_contract`
 11. `evidence_sources`
+
+**Optional governance fields (Section 6)** MAY appear after `evidence_sources` if present.
 
 ### 1.3 Allowed markers for unknown/empty (MUST)
 

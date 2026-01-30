@@ -115,6 +115,22 @@ These rules apply to all naming across the repository unless explicitly overridd
 - If an identifier must change, provide a deprecation period with aliasing or migration guidance
 - Breaking changes require explicit governance approval (see Section 5)
 
+### 3.7 Empty markers
+
+**MUST use specific markers for unknown vs provably empty:**
+
+**TBD marker:**
+- Use scalar string `TBD` for unknown/unresolved values
+- In YAML list fields: use scalar `TBD`, not `[TBD]` or omitted field
+- Example: `consumers: TBD`
+
+**NONE marker:**
+- Use scalar string `NONE` for provably empty values (when evidence confirms emptiness)
+- Do NOT use empty list `[]` representation
+- Example: `consumers: NONE` (when artifact has no consumers)
+
+**Rationale:** Consistent scalar representation enables deterministic validation and distinguishes "unknown" from "provably empty".
+
 ---
 
 ## 4) Naming Conventions by Entity Type
@@ -319,6 +335,10 @@ Artifact identifiers are filenames for data outputs written to S3 that are consu
 - New artifact types may be added without affecting existing artifacts
 - Additional optional outputs may be added to jobs without breaking changes
 
+**Note on artifact_id vs file_name_pattern:**
+- This section describes artifact *filenames* (terminal segments written to S3)
+- For catalog *artifact_id* naming (stable identifiers for catalog entries), see Section 4.8
+
 ---
 
 ### 4.5 Documentation Filenames
@@ -516,6 +536,61 @@ Parameter names are job invocation arguments declared in the manifest `parameter
   - Decision record
   - Update to all callers and orchestration configs
   - Deprecation period with backward-compatible aliasing (if feasible)
+
+---
+
+### 4.8 Artifact Identifiers (`artifact_id`)
+
+#### Definition
+An `artifact_id` is the stable canonical identifier for an artifact type in the artifacts catalog. It represents a pattern, not a concrete run instance.
+
+#### Format rule (MUST)
+
+**Pattern:** `<producer_anchor>__<artifact_type_snake_case>`
+
+**Producer anchor:**
+- For artifacts produced in-repo: producer_anchor = producing job_id (e.g., `preprocessIncomingBmecat`)
+- For external artifacts (not produced in repo): producer_anchor = `external` (permanent, never changes)
+
+**Separator:** Double underscore `__` (not single underscore)
+
+**Artifact type token:** Derived from manifest `key_pattern`, normalized to snake_case:
+1. Extract terminal filename (after final `/`)
+2. Remove run-context prefixes (e.g., `${vendor_name}_`, `${vendor}_`)
+3. Remove file extension
+4. Convert to snake_case
+
+**Stability rule (MUST):**
+- Artifact IDs MUST NOT be renamed once assigned
+- Renaming breaks references from job manifests, orchestration, and catalogs
+
+#### Examples
+
+**Valid:**
+- `preprocessIncomingBmecat__vendor_products` (in-repo producer)
+- `external__bmecat_input` (external artifact)
+- `matching_proposals__category_mappings` (in-repo producer)
+
+**Invalid:**
+- `preprocessIncomingBmecat_vendor_products` (single underscore; should be double)
+- `preprocessIncomingBmecat__VendorProducts` (PascalCase type; should be snake_case)
+- `preprocessIncomingBmecat__${vendor_name}_products` (contains placeholder; should be normalized)
+
+#### Cross-reference
+- Full artifact_id derivation rules: `docs/standards/artifacts_catalog_spec.md` Section 3.1
+- Artifact catalog entry structure: `docs/standards/artifacts_catalog_spec.md`
+
+#### Compatibility expectations
+
+**Stable:**
+- Artifact IDs are permanent stable contracts
+- Renaming is a breaking change requiring:
+  - Decision record
+  - Update to all producers, consumers, and catalog references
+  - Governance approval per breaking change rules
+
+**Evolving:**
+- New artifact types may be added without affecting existing artifacts
 
 ---
 

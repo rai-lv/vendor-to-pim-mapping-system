@@ -23,7 +23,7 @@ The catalog file is:
 
 ### 1.1 Catalog file structure (MUST)
 
-`docs/artifacts_catalog.md` MUST contain:
+`docs/catalogs/artifacts_catalog.md` MUST contain:
 - a top-level title: `# Artifacts Catalog`
 - then a sequence of entries, each entry starting with `## <artifact_id>`
 

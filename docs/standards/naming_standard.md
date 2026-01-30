@@ -326,6 +326,8 @@ Artifact identifiers are filenames for data outputs written to S3 that are consu
 #### Definition
 Documentation filenames identify standards, context docs, process guides, and per-job documentation.
 
+**Note:** This section provides naming conventions. For complete metadata header requirements and semantic content rules, see `docs/standards/documentation_spec.md`.
+
 #### Format rule (MUST)
 
 **Casing:** snake_case (lowercase with underscores)
@@ -358,10 +360,23 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - Pattern: `<catalog_name>.md`
 - Examples: `job_inventory.md`, `artifacts_catalog.md`, `decision_log.md`
 
+**Decision records (`docs/decisions/` if present):**
+- Pattern: `<YYYYMMDD>_<decision_topic>.md` or following `decision_records_standard.md`
+- Examples: `20260129_job_naming_migration.md`
+
 **Per-job docs (`docs/jobs/<job_id>/` or `jobs/<job_group>/<job_id>/`):**
 - Business description: `bus_description_<job_id>.md`
 - Script card: `script_card_<job_id>.md`
 - Examples: `bus_description_preprocessIncomingBmecat.md`, `script_card_matchingProposals.md`
+
+**Agent profiles (`.github/agents/`):**
+- Pattern: `<agent-name>.md` (kebab-case allowed for GitHub Copilot compatibility)
+- Must include YAML frontmatter with `name` and `description` fields
+- Examples: `code-reviewer.md`, `test-generator.md`
+- Specification: `docs/standards/documentation_spec.md` Section 3.6 and 6.5.3
+
+**Repository root:**
+- `README.md` is exempted from standard naming rules (see `docs/standards/documentation_spec.md` Section 6.5.1)
 
 #### Examples
 
@@ -370,10 +385,13 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - `workflow_guide.md`
 - `agent_role_charter.md`
 - `bus_description_preprocessIncomingBmecat.md`
+- `20260129_job_naming_migration.md` (decision record)
+- `code-reviewer.md` (agent profile in `.github/agents/`)
+- `README.md` (repository root, exempted from standard rules)
 
 **Invalid:**
 - `JobManifestSpec.md` (PascalCase; should be snake_case)
-- `workflow-guide.md` (kebab-case; not allowed)
+- `workflow-guide.md` (kebab-case in docs/; not allowed except for agent profiles)
 - `workflowGuide.md` (camelCase; should be snake_case)
 
 #### Compatibility expectations

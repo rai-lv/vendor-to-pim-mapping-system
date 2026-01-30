@@ -17,6 +17,10 @@ A **script card** documents **one executable job** from an operational perspecti
 
 A script card is an **operational + interface reference** that enables operators and developers to understand and troubleshoot job execution.
 
+### Timing note
+
+Script cards document runtime behavior and are typically created or updated during **Step 5 (Validate, test, and document)** of the development workflow, or retroactively for existing jobs. If used prospectively during Step 3 (capability planning), mark runtime details as `TBD` and update after implementation.
+
 ### What a script card is NOT
 
 A script card is NOT:
@@ -89,8 +93,8 @@ Every script card MUST contain the following sections in order. Each section's r
 | Field | Description | Allowed values | Example |
 |-------|-------------|----------------|---------|
 | `job_id` | Repository folder identifier | Must match folder name | `preprocessIncomingBmecat` |
-| `glue_job_name` | AWS Glue job name (if applicable) | Exact name or `TBD` | `preprocessIncomingBmecat` |
-| `runtime` | Execution runtime | `pyspark`, `python_shell`, `aws_lambda`, `make`, `other`, `TBD` | `pyspark` |
+| `glue_job_name` | AWS Glue job name | Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown | `preprocessIncomingBmecat` |
+| `runtime` | Execution runtime | Must match job manifest runtime value (see job_manifest_spec.md Section 5.2) | `pyspark` |
 | `repo_path` | Path to entry script | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py` |
 | `manifest_path` | Path to job manifest | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml` |
 
@@ -138,6 +142,40 @@ Every script card MUST contain the following sections in order. Each section's r
 **Pass criterion:** All three subfields present; if parameters are known they must be listed as **names only** (no inline descriptions).
 
 **Note:** Parameter semantics are documented in the job manifest. The script card references them by name only.
+
+**Preconditions guidance:**
+- State specific artifacts/states required (e.g., "Input files from upstream job X must exist in bucket Y")
+- Reference specific bucket/key patterns when relevant
+- Use `NONE` if no preconditions exist (job can run anytime)
+- Use `TBD` only if truly unknown
+- Examples of good preconditions:
+  - "Vendor catalog XML must exist at `s3://bucket/vendors/${vendor_name}/catalog.xml`"
+  - "Job `matching_proposals` must complete successfully before this job runs"
+  - "DynamoDB table `vendor_metadata` must contain entry for `${vendor_name}`"
+
+---
+
+### 2.3A Configuration Files (OPTIONAL)
+
+**Purpose:** Documents static configuration artifacts used by the job.
+
+**When to include:** When `job_manifest.yaml` has `config_files[]` entries.
+
+**Per-config block fields:**
+
+| Field | Description | Allowed values | Example |
+|-------|-------------|----------------|---------|
+| `bucket` | S3 bucket | Bucket name or placeholder or `TBD` | `vendor-input-raw` |
+| `key_pattern` | S3 key pattern | Pattern with placeholders or `TBD` | `configuration-files/preprocessing_config_${vendor_name}.json` |
+| `format` | File format | Format string or `TBD` | `json` |
+| `required` | Whether config is mandatory | `true`, `false`, `TBD` | `true` |
+| `meaning` | What the config controls | Text | `Vendor-specific extraction rules and field mappings` |
+
+**Format:** One block per config file; fields presented as bullet list or compact table.
+
+**Pass criterion:** If section is present, each config block contains all five fields.
+
+**Note:** Configuration files are distinct from data inputs - they control job behavior rather than provide data to process. Config files should be relatively static (change infrequently) compared to data inputs (which change per execution).
 
 ---
 
@@ -190,6 +228,12 @@ Every script card MUST contain the following sections in order. Each section's r
 
 **Cross-reference rule:** If `artifact_id` is known, it MUST match an entry in `docs/catalogs/artifacts_catalog.md`. Do NOT redefine artifact contracts here.
 
+**Consumers field guidance:**
+- The `consumers` field SHOULD be derived from `docs/catalogs/artifacts_catalog.md` producer/consumer relationships
+- Script cards MAY include consumers for human readability, but the artifacts catalog is the authoritative source
+- Use `TBD` if the artifacts catalog is incomplete; resolve via catalog updates rather than manual script card maintenance
+- Use `NONE` if the artifact is provably unused by any downstream job
+
 ---
 
 ### 2.6 Side Effects (MUST)
@@ -209,6 +253,18 @@ Every script card MUST contain the following sections in order. Each section's r
 **Pass criterion:** All three subfields present.
 
 **Semantic note:** Side effects are critical for orchestration and recovery logic. Mark as `TBD` only if truly unknown; investigate code if possible.
+
+**Guidance for other_side_effects:**
+- Structure complex side effects as one bullet per distinct side effect type
+- Include conditions for conditional side effects (e.g., "on success only", "on failure")
+- Reference external systems by name and operation (e.g., "Updates DynamoDB table `vendor_metadata` with processing timestamp")
+- For file operations, specify the pattern and condition (e.g., "Moves processed files to archive prefix `${input_key}.processed` on success")
+- Use `NONE` if no other side effects exist beyond the boolean fields above
+- Examples of well-documented other_side_effects:
+  - "Archives input files to `s3://archive-bucket/processed/${timestamp}/` after successful processing"
+  - "Updates DynamoDB table `job_status` with execution metadata (start_time, end_time, record_count)"
+  - "Sends SNS notification to topic `data-processing-complete` on success"
+  - "Deletes temporary files from `s3://temp-bucket/intermediate/${job_run_id}/` after completion"
 
 ---
 
@@ -357,7 +413,7 @@ A script card MUST NOT:
 
 **Canonical location:** `jobs/<job_group>/<job_id>/script_card_<job_id>.md`
 
-**Alternative location (if per-job docs are centralized):** `docs/jobs/<job_id>/script_card_<job_id>.md`
+Script cards MUST be co-located with job code in the job folder structure. This ensures operational documentation stays synchronized with implementation.
 
 **Naming convention:** `script_card_<job_id>.md` where `<job_id>` matches the job folder name and manifest `job_id` field.
 
@@ -369,6 +425,13 @@ A script card MUST NOT:
 - H3: Optional subsections within major sections
 - Use bullet lists for field lists (not tables, unless compact tables improve readability for inputs/outputs)
 - Use code blocks (triple backticks) for examples, not inline code spans
+
+**Versioning and change tracking:**
+- Script cards have no explicit version numbers in the document
+- Changes are tracked via git history (commits, diffs)
+- When making significant updates to a script card (not just typo fixes), document the reason in the git commit message
+- Optional: Add a comment at the end of the script card noting significant changes (e.g., `<!-- Updated 2026-01-30: Added config_files section -->`)
+- For major divergence from implementation (e.g., job behavior changed but script card not yet updated), add a note in the script card itself
 
 ### 5.3 Placeholder representation
 
@@ -431,9 +494,10 @@ Script cards MAY be validated using automated tooling that checks:
 - TBD count and distribution (high TBD count may signal incomplete documentation)
 
 **Scope of automated validation (per decision 9.2):**
-- Automated tooling enforces **presence/absence** of sections and fields
-- Automated tooling does NOT enforce **field cardinality** (e.g., "4–8 bullets", "1–3 sentences")
-- Cardinality requirements remain normative for human review but are not enforced by tooling
+- Automated tooling DOES enforce **structural cardinality** (e.g., "at least one input block", "all five Identity fields present")
+- Automated tooling does NOT enforce **content cardinality** (e.g., "4–8 bullets", "1–3 sentences")
+- Content cardinality requirements remain normative for human review but are not enforced by tooling
+- This distinction allows tooling to verify structure while leaving quality assessment to human reviewers
 
 ### 7.2 Human review checkpoints
 
@@ -443,6 +507,9 @@ Before approving a script card, reviewers SHOULD verify:
 - No artifact contract duplication (belongs in artifacts catalog)
 - No tool commands embedded (belongs in ops docs)
 - Cross-references are valid and necessary
+
+Reviewers MUST verify:
+- Cross-references are valid when artifact_ids and job_ids are specified (not `TBD`)
 
 ### 7.3 Relationship to validation standard
 
@@ -476,6 +543,17 @@ When documenting existing jobs retroactively:
 
 ---
 
+## 8.3 Complete Script Card Example
+
+For a reference implementation of a complete script card covering all required sections, see the preprocessIncomingBmecat job:
+- **Location:** `jobs/vendor_input_processing/preprocessIncomingBmecat/script_card_preprocessIncomingBmecat.md` (when created)
+- **Covers:** All 10 required sections (2.1-2.10) plus optional sections
+- **Demonstrates:** Proper formatting, field completion, cross-references, and TBD usage
+
+**Note:** As script cards are created for existing jobs, this example will be available as a reference. Until then, use the field-level examples throughout this specification (Sections 2.2, 2.7, 2.8) as guidance.
+
+---
+
 ## 9) Resolved Design Decisions
 
 This section documents design decisions made for this specification.
@@ -500,18 +578,19 @@ This section documents design decisions made for this specification.
 
 **Question:** Should validation tooling enforce field cardinality (e.g., "at least 4 runtime behavior bullets"), or only presence/absence of sections?
 
-**Decision (2026-01-30):** Validation tooling should enforce only presence/absence of sections, not field cardinality.
+**Decision (2026-01-30):** Validation tooling should enforce structural cardinality but not content cardinality.
 
 **Rationale:**
-- Cardinality requirements (e.g., "4–8 bullets") remain normative for human review
-- Automated enforcement of cardinality would be overly rigid for edge cases
-- Presence/absence checking provides structural validation without constraining legitimate variation
-- Human reviewers can assess whether content meets quality expectations
+- **Structural cardinality** (e.g., "at least one input block", "all five Identity fields present") is essential for completeness
+- **Content cardinality** (e.g., "4–8 bullets", "1–3 sentences") is quality-focused and context-dependent
+- Automated enforcement of content cardinality would be overly rigid for edge cases
+- This distinction allows tooling to verify structure while leaving quality assessment to human reviewers
 
 **Implementation:**
-- Automated tooling validates: section presence, required field presence, cross-reference validity
-- Automated tooling does NOT validate: bullet counts, sentence counts, word limits
+- Automated tooling validates: section presence, structural cardinality (≥1 input), required field presence, cross-reference validity
+- Automated tooling does NOT validate: bullet counts, sentence counts, word limits (content cardinality)
 - Human review remains essential for operational clarity and quality (Section 7.2)
+- Section 7.1 explicitly distinguishes structural vs content cardinality
 
 ### 9.3 Cross-job dependency representation
 
@@ -531,6 +610,57 @@ This section documents design decisions made for this specification.
 - Script cards MAY list these for human readability, but they are not authoritative
 - Tooling should generate or validate these fields against artifacts catalog
 - During manual documentation, use `TBD` if artifacts catalog is incomplete; resolve via catalog updates
+
+### 9.4 Configuration files documentation
+
+**Question:** Should script cards document `config_files[]` from job manifests, and if so, how?
+
+**Decision (2026-01-30):** Add optional Section 2.3A for configuration files.
+
+**Rationale:**
+- Job manifests include `config_files[]` (per job_manifest_spec.md Section 5.5)
+- Configuration files are critical to job operation but distinct from data inputs
+- Without dedicated section, jobs with config files couldn't be fully documented
+- Optional section keeps spec flexible for jobs without config files
+
+**Implementation:**
+- Section 2.3A Configuration Files (OPTIONAL) added between Trigger/Parameters and Inputs
+- Five required fields per config block: bucket, key_pattern, format, required, meaning
+- Clear distinction: config files control behavior; inputs provide data to process
+
+### 9.5 Runtime enum placement
+
+**Question:** Should script cards define allowed runtime values, or reference the manifest spec?
+
+**Decision (2026-01-30):** Reference manifest spec as source of truth.
+
+**Rationale:**
+- Job manifest spec already defines runtime enum (Section 5.2)
+- Duplicating enum in script card spec creates "double truth" risk
+- Script cards document jobs; manifests define job interface schema
+- Manifest spec is the normative source for manifest schema elements
+
+**Implementation:**
+- Section 2.1 Identity: runtime field references job_manifest_spec.md Section 5.2
+- Script cards use runtime values from manifests; manifest spec defines allowed values
+- Changes to runtime enum only need updating in one place (manifest spec)
+
+### 9.6 Non-Glue job identification
+
+**Question:** How should script cards document `glue_job_name` for non-Glue jobs (make, Lambda, etc.)?
+
+**Decision (2026-01-30):** Use `N/A` for non-Glue runtimes.
+
+**Rationale:**
+- Field is required structurally (part of Identity section) but not semantically applicable to all jobs
+- `N/A` is clearer than `TBD` (which implies unknown) or omitting the field (which violates structure)
+- Maintains consistent Identity structure across all job types
+
+**Implementation:**
+- Section 2.1 Identity: "Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown"
+- Glue jobs: use actual deployed name (matching manifest)
+- Non-Glue jobs (runtime: make, python, nodejs, other): use `N/A`
+- Unknown cases: use `TBD`
 
 ---
 
@@ -605,19 +735,20 @@ These decisions align with:
 - Practical constraints (no standard run receipt schema exists yet)
 - Enforcement philosophy (automated structure checking, human quality review)
 
-### Assumptions introduced
+### Resolved assumptions and design clarifications
 
-1. **Assumption:** Script cards are primarily written retroactively (after job implementation) or updated during Step 5 (Validate, test, and document).
-   - **Bounded:** Applies to timing of script card creation.
-   - **Why:** The spec focuses on describing "what is" (runtime behavior, invariants) rather than "what should be" (intent, requirements).
-   - **Impact:** If script cards are needed prospectively (during Step 3 capability planning), additional guidance may be needed for handling unknowns.
-   - **Approval status:** Marked as assumption; not yet approved.
+The following items were initially documented as assumptions and have been resolved through explicit specification in earlier sections:
 
-2. **Assumption:** Per-job script cards are co-located with job folders (`jobs/<job_group>/<job_id>/`) rather than centralized in `docs/jobs/`.
-   - **Bounded:** Applies to file location only.
-   - **Why:** Follows pattern observed for business descriptions. Documentation System Catalog lists alternative location as acceptable.
-   - **Impact:** Tools and validation must support both locations. Cross-references must use full paths.
-   - **Approval status:** Marked as assumption; both locations are acceptable per catalog.
+1. **Timing of script card creation** (Resolved in Section 0)
+   - **Decision:** Script cards are typically created/updated during Step 5 (Validate, test, and document) or retroactively for existing jobs.
+   - **Specification:** Section 0 includes a "Timing note" that addresses prospective use during Step 3.
+   - **Approval status:** Approved and incorporated into specification.
+
+2. **File location canonicalization** (Resolved in Section 5.1)
+   - **Decision:** Script cards MUST be co-located with job code at `jobs/<job_group>/<job_id>/script_card_<job_id>.md`.
+   - **Rationale:** Ensures operational documentation stays synchronized with implementation.
+   - **Impact:** Single canonical location simplifies tooling and eliminates location ambiguity.
+   - **Approval status:** Approved and incorporated into specification.
 
 ### What was deliberately excluded to avoid double truth
 

@@ -424,44 +424,140 @@ Source priority:
 
 Otherwise `TBD`.
 
+### 6.4 Breaking Changes for Artifact Contracts (normative)
+
+This section defines what constitutes a **breaking change** vs a **non-breaking change** for artifact catalog entries.
+
+**Purpose:** Enable consistent governance decisions and validation automation by providing a canonical definition of artifact contract compatibility.
+
+#### 6.4.1 Breaking changes (MUST require governance approval)
+
+The following changes to an artifact catalog entry are **breaking changes** and MUST follow the governance approval process defined in `docs/standards/decision_records_standard.md`:
+
+**Identity and location changes:**
+- Renaming `artifact_id` (breaks references from job manifests, orchestration, and other catalog entries)
+- Changing `file_name_pattern` in a way that breaks existing S3 key construction (e.g., changing `output.json` to `result.json`)
+- Adding, removing, or changing `s3_location_pattern` entries when it prevents existing consumers from finding the artifact
+- Changing `producer_job_id` (reassigning ownership)
+
+**Format and structure changes:**
+- Changing `format` to an incompatible type (e.g., `json` → `csv`, `ndjson` → `json`)
+- Changing `content_contract.top_level_type` to an incompatible type (e.g., `json_object` → `json_array`)
+- Removing items from `content_contract.required_sections` (consumers may depend on these sections)
+- Changing `content_contract.primary_keying` in a way that breaks consumer join/lookup logic
+
+**Behavioral changes:**
+- Changing `presence_on_success` from `required` to `optional` or `conditional` (breaks consumers expecting the file to always exist)
+- Changing `content_contract.empty_behavior` to a more restrictive value:
+  - `absent_file_allowed` → `empty_file_allowed` (file must now always be written)
+  - `empty_file_allowed` → `no_empty_allowed` (file must now contain data)
+  - `empty_object_allowed` → `no_empty_allowed` (object must now contain keys)
+  - `empty_array_allowed` → `no_empty_allowed` (array must now contain elements)
+
+**Governance field changes (if used):**
+- Changing `stability` from `stable` to `evolving` or `experimental` (signals reduced reliability)
+
+#### 6.4.2 Non-breaking changes (allowed without special approval)
+
+The following changes are **non-breaking** and MAY be made without formal governance approval, though they SHOULD still be reviewed:
+
+**Additive changes:**
+- Adding new `s3_location_pattern` entries (additional locations where the artifact can be found)
+- Adding items to `content_contract.required_sections` (additional guaranteed sections; does not break existing consumers)
+- Changing `presence_on_success` from `optional` or `conditional` to `required` (strengthens the guarantee)
+
+**Relaxing restrictions:**
+- Changing `content_contract.empty_behavior` to a less restrictive value:
+  - `no_empty_allowed` → any other value (more permissive)
+  - `empty_file_allowed` → `absent_file_allowed` (more permissive)
+
+**Metadata and documentation changes:**
+- Clarifying `purpose` text without changing the artifact's actual behavior
+- Adding or updating `content_contract.notes` (documentation only)
+- Adding, removing, or updating `evidence_sources` (traceability metadata)
+- Updating `producer_glue_job_name` to reflect deployment changes (metadata only)
+- Changing `stability` from `experimental` to `evolving` or `stable` (signals increased reliability)
+
+**Format compatibility changes:**
+- Changing `format` to a compatible type if the file structure remains unchanged (e.g., `other` → `json` when format is clarified)
+
+#### 6.4.3 Backward compatibility expectations
+
+When a breaking change is unavoidable, the following practices SHOULD be followed:
+
+**Deprecation period:**
+- Minimum: 2 release cycles or 30 days (whichever is longer)
+- During deprecation: support both old and new contracts (e.g., dual-write to old and new filenames)
+- Emit deprecation warnings in job logs and run receipts
+
+**Versioned filenames:**
+- For breaking format/structure changes: introduce a versioned filename (e.g., `output.json` → `output_v2.json`)
+- Update producer to write both versions during transition
+- Update consumers one by one to read new version
+- Remove old version after all consumers migrated
+
+**Migration plan:**
+- Document migration steps in an ADR
+- Identify all affected consumers (use `consumers` field in catalog entry)
+- Coordinate updates with consumer owners
+- Validate that no downstream jobs break
+
+**Decision record:**
+- Create an ADR documenting:
+  - Why the breaking change is necessary
+  - Which consumers are affected
+  - Migration plan and timeline
+  - Backward compatibility approach (if any)
+
+#### 6.4.4 Relationship to `breaking_change_rules` field
+
+The optional `breaking_change_rules` field (Section 6.3) MAY be used to override or augment these default rules for a specific artifact type:
+
+- `No breaking changes allowed without ADR and versioned filename` — Strict governance; all breaking changes require both ADR approval and versioned filenames (no in-place updates)
+- `Breaking changes allowed if consumers updated in same PR` — Relaxed governance for tightly-coupled artifacts; breaking changes are allowed if all consumer job manifests are updated in the same pull request
+
+If `breaking_change_rules` is `TBD` or absent, the default rules in this section (6.4) apply.
+
 ---
 
-## 7) Open Items / TBD
+## 7) Resolution Summary
 
-### 7.1 Shared artifacts allowlist location
+Both open items from the initial draft have been resolved:
 
-**Issue:** The spec references `docs/registries/shared_artifacts_allowlist.yaml` (Section 3.6, 3.11, 4) to govern the shared-artifact exception, but this file and `docs/registries/` directory do not currently exist in the repository.
+### 7.1 Shared artifacts allowlist location ✅ RESOLVED
 
-**Impact:** 
-- The shared-artifact exception mechanism cannot be operationalized until the allowlist file is created
-- Automations that check shared-producer compliance will fail
-- The evidence_sources allowed list (Section 3.11) includes a non-existent path
+**Resolution implemented:** Option 1 (create registry structure)
 
-**Options for resolution:**
-1. **Create the registry structure**: Add `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file (can start empty)
-2. **Alternative location**: Place the allowlist in `docs/catalogs/` instead (would require spec update)
-3. **Remove the mechanism**: If shared artifacts are not expected in this system, remove the shared-artifact exception entirely
+**Actions taken:**
+- Created `docs/registries/` directory
+- Created `docs/registries/shared_artifacts_allowlist.yaml` with documented schema and governance rules
+- Allowlist starts empty (no shared artifacts currently approved)
+- File includes:
+  - Purpose statement
+  - Governance requirements (ADR approval needed to add entries)
+  - Schema documentation
+  - Examples
+  - Reference to Section 3.6 of this spec
 
-**Recommendation:** Option 1 (create registry structure) aligns with the spec's design and maintains separation between living catalogs (`docs/catalogs/`) and governance registries (`docs/registries/`).
+**Status:** The shared-artifact exception mechanism is now operationalizable. Automations can check the allowlist, and governance processes can add entries via ADRs.
 
-### 7.2 Breaking change rules formalization
+### 7.2 Breaking change rules formalization ✅ RESOLVED
 
-**Issue:** Section 6.3 defines `breaking_change_rules` as an optional governance field with example values, but there is no normative definition of what constitutes a "breaking change" for artifact contracts in this spec or referenced standards.
+**Resolution implemented:** Option 1 (define in this spec)
 
-**Impact:**
-- The `breaking_change_rules` field cannot be populated consistently
-- Validators cannot enforce breaking change governance without a canonical definition
+**Actions taken:**
+- Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)"
+- Defined breaking changes for all major artifact contract elements:
+  - Identity and location (artifact_id, file_name_pattern, s3_location_pattern)
+  - Format and structure (format, content_contract fields)
+  - Behavior (presence_on_success, empty_behavior)
+  - Governance fields (stability)
+- Defined non-breaking changes (additive changes, relaxing restrictions, metadata updates)
+- Specified backward compatibility expectations (deprecation, versioned filenames, migration plans)
+- Linked to `breaking_change_rules` field (Section 6.3) for artifact-specific overrides
+- Aligned with existing `docs/standards/naming_standard.md` Section 5
 
-**Current state:** 
-- `docs/standards/naming_standard.md` Section 5 defines breaking changes for job IDs and artifact filenames (renaming)
-- No standard defines breaking changes for content contracts (e.g., changing `required_sections`, `empty_behavior`, `top_level_type`)
-
-**Options for resolution:**
-1. **Define in this spec**: Add a new section defining breaking vs non-breaking artifact contract changes
-2. **Create separate standard**: Draft `docs/standards/artifact_compatibility_standard.md` 
-3. **Reference existing**: Update `docs/standards/naming_standard.md` to cover artifact contract compatibility
-
-**Recommendation:** Option 1 (define in this spec) keeps contract compatibility rules co-located with contract structure rules.
+**Status:** Validators can now enforce breaking change governance consistently. The `breaking_change_rules` field can be populated with reference to normative definitions.
 
 ---
 
@@ -490,17 +586,17 @@ This specification was drafted and validated against the following repository do
 
 ### 8.2 Potential conflicts detected
 
-**Conflict 1: Missing registry directory**
-- **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
-- **Issue**: Directory `docs/registries/` does not exist
-- **Severity**: High — blocks operationalization of shared-artifact exception
-- **Resolution required**: See Section 7.1 (Open Items)
+**All conflicts from initial draft have been resolved:**
 
-**Conflict 2: Incomplete breaking change definition**
+**Conflict 1: Missing registry directory** ✅ RESOLVED
+- **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
+- **Resolution**: Created `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file with documented schema (see Section 7.1)
+- **Status**: Shared-artifact exception mechanism is now operationalizable
+
+**Conflict 2: Incomplete breaking change definition** ✅ RESOLVED
 - **Location**: Section 6.3 defines `breaking_change_rules` field
-- **Issue**: No canonical definition exists for what constitutes a breaking change to artifact contracts
-- **Severity**: Medium — optional field remains unpopulated but spec is usable
-- **Resolution required**: See Section 7.2 (Open Items)
+- **Resolution**: Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)" with complete definitions (see Section 7.2)
+- **Status**: Validators can now enforce breaking change governance consistently
 
 ### 8.3 Assumptions introduced
 
@@ -536,12 +632,14 @@ This specification was drafted and validated against the following repository do
 
 This spec depends on:
 - `docs/standards/job_manifest_spec.md` — for manifest schema and field semantics
-- `docs/standards/naming_standard.md` — for job_id and artifact naming conventions
+- `docs/standards/naming_standard.md` — for job_id and artifact naming conventions; aligned with for breaking change definitions
+- `docs/standards/decision_records_standard.md` — for governance approval process (referenced in Section 6.4)
 - `docs/catalogs/artifacts_catalog.md` — as the instance file this spec governs
-- `docs/registries/shared_artifacts_allowlist.yaml` — for shared-artifact exception (not yet created)
+- `docs/registries/shared_artifacts_allowlist.yaml` — for shared-artifact exception (now created)
 
 Documents that depend on this spec:
 - `docs/catalogs/artifacts_catalog.md` — must conform to entry structure defined here
+- `docs/registries/shared_artifacts_allowlist.yaml` — follows governance rules defined here
 - Automation tools (e.g., catalog generators/updaters) — must follow matching and sourcing rules
 - `docs/standards/validation_standard.md` — should include artifact catalog compliance checks
 
@@ -554,11 +652,12 @@ Documents that depend on this spec:
 | 1.2 (Entry grammar) | Required field order | Job manifest spec field order pattern | ✅ Aligned |
 | 2.1 (Placeholder normalization) | Deterministic matching | Job manifest spec placeholder usage | ✅ Aligned |
 | 3.1 (artifact_id) | Derivation from job_id | Naming standard | ✅ Verified |
-| 3.6 (Shared artifact exception) | Allowlist file location | Documentation system catalog (registries layer) | ⚠️ File missing |
+| 3.6 (Shared artifact exception) | Allowlist file location | Documentation system catalog (registries layer); file now created | ✅ Verified |
 | 3.8 (presence_on_success) | Required flag alignment | Job manifest spec `required` field | ✅ Verified |
 | 3.9 (purpose) | No-empty rule | Development approach (no silent unknowns) | ✅ Aligned |
 | 3.10 (content_contract) | Empty behavior semantics | Validation standard (deterministic evidence) | ✅ Aligned |
-| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard (partial) | ⚠️ Incomplete |
+| 6.3 (breaking_change_rules) | Breaking change definition | Naming standard; Section 6.4 provides normative definitions | ✅ Complete |
+| 6.4 (Breaking changes) | Compatibility rules | Naming standard Section 5; decision records standard | ✅ Aligned |
 
 ---
 

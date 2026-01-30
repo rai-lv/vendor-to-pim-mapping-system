@@ -477,6 +477,22 @@ Placeholders are template variables used in job manifests to represent runtime-s
 - `{vendor_name}` (wrong delimiter; must be `${...}`)
 - `<vendor_name>` (wrong delimiter for manifests; `<...>` is for business docs only)
 
+#### Human-readable documentation placeholders
+
+**For human-readable documentation** (business descriptions, script cards, prose):
+
+- **PREFERRED:** Use `${parameter_name}` for consistency with manifests
+- **ACCEPTABLE:** Use `<parameter_name>` for readability in prose
+- **Rule:** Be consistent within the document (don't mix styles)
+- **Rationale:** Human-readable docs prioritize clarity; both formats are unambiguous in context
+
+**Examples in business descriptions:**
+- `${vendor_name}_products.json` (matches manifest format)
+- `<vendor_name>_products.json` (prose-friendly alternative)
+- Both are acceptable; choose one style per document
+
+**Reference:** `docs/standards/business_job_description_spec.md` Section 2 (Note on placeholder notation)
+
 #### Compatibility expectations
 
 **Stable:**

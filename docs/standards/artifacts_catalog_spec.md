@@ -48,6 +48,8 @@ Each entry MUST follow this structure:
 10. `content_contract`
 11. `evidence_sources`
 
+**Optional governance fields (Section 6)** MAY appear after `evidence_sources` if present.
+
 ### 1.3 Allowed markers for unknown/empty (MUST)
 
 - `TBD` is the only allowed unknown marker.

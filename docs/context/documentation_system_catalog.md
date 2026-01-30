@@ -142,10 +142,10 @@ This catalog is **descriptive and governing**: it defines what each document is 
 #### 13) Script Card Spec
 
 **Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative structure for operational job documentation (behavior, invariants, failure modes).
-**Why necessary:** Ensures consistent operational clarity without mixing business rationale.
-**Must contain:** Runtime behavior sections; failure-mode/observability structure.
-**Must not contain:** Business justification or contract rules already defined elsewhere.
+**Purpose statement:** Defines the normative structure for operational job documentation ("script cards"), focusing on runtime behavior, invariants, failure modes, and observability.
+**Why necessary:** Ensures consistent operational clarity across jobs without mixing business rationale or duplicating contract rules.
+**Must contain:** 10 required sections (identity, purpose, trigger/parameters, inputs/outputs, side effects, runtime behavior, invariants, failure modes/observability, references); boundary rules; validation approach; resolved design decisions.
+**Must not contain:** Business justification (belongs in business job description spec); artifact contract rules (belongs in artifacts catalog spec); tool/CLI instructions (belongs in ops layer).
 
 #### 14) Codable Task Spec
 
@@ -269,11 +269,11 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 #### 27) Per-job Script Card
 
-**Canonical location:** `docs/jobs/<job_id>/`
-**Purpose statement:** Job-local operational behavior: how it runs, invariants, failure modes, observability.
-**Why necessary:** Operator and developer clarity without re-deriving from code.
-**Must contain:** Behavior summary; failure modes; invariants; observability expectations.
-**Must not contain:** Business rationale or normative contract schemas.
+**Canonical location:** `jobs/<job_group>/<job_id>/` or `docs/jobs/<job_id>/`
+**Purpose statement:** Job-local operational documentation focusing on runtime behavior, invariants, failure modes, and observability. Provides operational + interface reference for operators and developers.
+**Why necessary:** Enables operators and developers to understand and troubleshoot job execution without re-deriving from code or mixing business rationale.
+**Must contain:** 10 required sections including identity, purpose, trigger/parameters, inputs/outputs (with artifact_id cross-references), side effects, runtime behavior, invariants, failure modes/observability, and references.
+**Must not contain:** Business justification (belongs in business description); artifact contract definitions (belongs in artifacts catalog); CLI commands or troubleshooting (belongs in ops docs).
 
 #### 28) Decision Log (index)
 

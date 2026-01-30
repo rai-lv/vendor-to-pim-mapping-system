@@ -292,14 +292,16 @@ Every script card MUST contain the following sections in order. Each section's r
 | `job_manifest` | Path to job manifest | `jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml` |
 | `business_description` | Path to business description | `jobs/vendor_input_processing/preprocessIncomingBmecat/bus_description_preprocess_incoming_bmecat.md` |
 | `artifacts_catalog_entries` | Artifact IDs referenced | `external__vendor_bmecat_xml, preprocessIncomingBmecat__normalized_vendor_products` or `TBD` |
-| `upstream_jobs` | Jobs this job depends on | Job IDs (comma-separated) or `TBD` or `NONE` |
-| `downstream_jobs` | Jobs that consume this job's outputs | Job IDs (comma-separated) or `TBD` or `NONE` |
+| `upstream_jobs` | Jobs this job depends on (derived from artifacts catalog) | Job IDs (comma-separated) or `TBD` or `NONE` |
+| `downstream_jobs` | Jobs that consume this job's outputs (derived from artifacts catalog) | Job IDs (comma-separated) or `TBD` or `NONE` |
 
 **Format:** Bullet list with subfields.
 
 **Pass criterion:** All five subfields present.
 
 **Cross-reference rule:** All paths and identifiers MUST be valid and resolvable within the repository.
+
+**Derivation note (per decision 9.3):** The `upstream_jobs` and `downstream_jobs` fields are **derived fields** computed automatically from the artifacts catalog (producer/consumer relationships). Script cards MAY list these for human readability, but the artifacts catalog is the authoritative source. During manual documentation, use `TBD` if the artifacts catalog is incomplete; resolve via catalog updates rather than manual script card maintenance.
 
 ---
 
@@ -428,6 +430,11 @@ Script cards MAY be validated using automated tooling that checks:
 - Cross-reference validity (paths, artifact_ids, job_ids)
 - TBD count and distribution (high TBD count may signal incomplete documentation)
 
+**Scope of automated validation (per decision 9.2):**
+- Automated tooling enforces **presence/absence** of sections and fields
+- Automated tooling does NOT enforce **field cardinality** (e.g., "4–8 bullets", "1–3 sentences")
+- Cardinality requirements remain normative for human review but are not enforced by tooling
+
 ### 7.2 Human review checkpoints
 
 Before approving a script card, reviewers SHOULD verify:
@@ -469,39 +476,61 @@ When documenting existing jobs retroactively:
 
 ---
 
-## 9) Open Items / TBD
+## 9) Resolved Design Decisions
 
-This section captures unresolved questions that require human decision or additional context from the existing documentation system.
+This section documents design decisions made for this specification.
 
 ### 9.1 Run receipt format standardization
 
 **Question:** Should script cards reference a standard run receipt schema, or is per-job variation acceptable?
 
-**Current state:** Script cards document whether a run receipt exists and what it contains conceptually. No standard schema is enforced.
+**Decision (2026-01-30):** Accept per-job variation for now.
 
-**Impact:** If a standard run receipt schema is defined later (e.g., in a new `run_receipt_spec.md`), script cards would reference it rather than describing receipt structure inline.
+**Rationale:** 
+- No standard run receipt schema currently exists across jobs
+- Forcing standardization would block documentation of existing jobs
+- Per-job variation allows operational documentation to proceed without waiting for cross-job schema alignment
 
-**Decision needed:** Defer to future governance discussion or accept per-job variation for now?
+**Implementation:**
+- Script cards document whether a run receipt exists and what it contains conceptually (Section 2.9)
+- No requirement to conform to a standard schema
+- If a standard run receipt spec is introduced later, it may be referenced but is not mandatory
 
 ### 9.2 Validation tooling scope
 
 **Question:** Should validation tooling enforce field cardinality (e.g., "at least 4 runtime behavior bullets"), or only presence/absence of sections?
 
-**Current state:** This spec defines normative requirements (e.g., "4–8 bullets"). Tooling enforcement is not yet implemented.
+**Decision (2026-01-30):** Validation tooling should enforce only presence/absence of sections, not field cardinality.
 
-**Impact:** Strict enforcement improves consistency but may be overly rigid for edge cases. Loose enforcement allows variation but requires more human review.
+**Rationale:**
+- Cardinality requirements (e.g., "4–8 bullets") remain normative for human review
+- Automated enforcement of cardinality would be overly rigid for edge cases
+- Presence/absence checking provides structural validation without constraining legitimate variation
+- Human reviewers can assess whether content meets quality expectations
 
-**Decision needed:** What level of automation is desired?
+**Implementation:**
+- Automated tooling validates: section presence, required field presence, cross-reference validity
+- Automated tooling does NOT validate: bullet counts, sentence counts, word limits
+- Human review remains essential for operational clarity and quality (Section 7.2)
 
 ### 9.3 Cross-job dependency representation
 
 **Question:** Should `upstream_jobs` and `downstream_jobs` be derived automatically from artifacts catalog, or manually maintained in script cards?
 
-**Current state:** Script cards list upstream/downstream jobs. Job inventory derives dependencies from artifacts catalog. Potential for inconsistency.
+**Decision (2026-01-30):** Automatic derivation from single source (artifacts catalog).
 
-**Impact:** Automatic derivation ensures consistency but requires artifacts catalog to be complete. Manual maintenance allows early documentation but risks drift.
+**Rationale:**
+- Prevents inconsistency between script cards and job inventory
+- Artifacts catalog is the authoritative source of producer/consumer relationships
+- Manual maintenance in script cards would create "double truth"
+- Aligns with "single source per contract type" principle
 
-**Decision needed:** Single source (artifacts catalog) or dual maintenance with reconciliation?
+**Implementation:**
+- `upstream_jobs` and `downstream_jobs` fields in Section 2.10 are **derived fields**
+- Values are computed automatically from artifacts catalog (producer/consumer relationships)
+- Script cards MAY list these for human readability, but they are not authoritative
+- Tooling should generate or validate these fields against artifacts catalog
+- During manual documentation, use `TBD` if artifacts catalog is incomplete; resolve via catalog updates
 
 ---
 
@@ -563,6 +592,19 @@ This reworked script card specification aligns with:
 
 **None.** This reworked specification is consistent with all reviewed documentation.
 
+### Resolved design decisions
+
+Three design decisions documented in Section 9 (resolved 2026-01-30):
+
+1. **Run receipt format (9.1):** Accept per-job variation. No standard schema enforced.
+2. **Validation tooling scope (9.2):** Automated validation enforces presence/absence only, not field cardinality.
+3. **Dependency representation (9.3):** `upstream_jobs` and `downstream_jobs` are derived fields computed from artifacts catalog (single source).
+
+These decisions align with:
+- Documentation system principles (single source of truth, evidence-based, no double truth)
+- Practical constraints (no standard run receipt schema exists yet)
+- Enforcement philosophy (automated structure checking, human quality review)
+
 ### Assumptions introduced
 
 1. **Assumption:** Script cards are primarily written retroactively (after job implementation) or updated during Step 5 (Validate, test, and document).
@@ -614,11 +656,11 @@ This reworked script card specification aligns with:
 
 ### Notes on finalization
 
-This specification is ready for human review and approval. Key review checkpoints:
+This specification has been reviewed and decisions made for previously open items (see Section 9). Key review checkpoints:
 
 1. **Boundary clarity:** Are the exclusions (Section 3) clear and enforceable?
 2. **Required sections:** Are sections 2.1–2.10 the right balance of completeness vs. simplicity?
-3. **Open items:** Sections 9.1–9.3 require human decisions. Should they be resolved before finalizing, or is it acceptable to finalize with TBDs?
+3. **Design decisions:** Section 9 documents resolved decisions for run receipt format, validation tooling scope, and dependency derivation.
 4. **Migration guidance:** Is Section 8 sufficient for upgrading existing script cards?
 
 **Approval gate:** This spec requires explicit human approval before being used to validate or generate script cards.

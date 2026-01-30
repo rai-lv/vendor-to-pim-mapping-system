@@ -520,50 +520,9 @@ If `breaking_change_rules` is `TBD` or absent, the default rules in this section
 
 ---
 
-## 7) Resolution Summary
+## 7) Consistency Check Appendix
 
-Both open items from the initial draft have been resolved:
-
-### 7.1 Shared artifacts allowlist location ✅ RESOLVED
-
-**Resolution implemented:** Option 1 (create registry structure)
-
-**Actions taken:**
-- Created `docs/registries/` directory
-- Created `docs/registries/shared_artifacts_allowlist.yaml` with documented schema and governance rules
-- Allowlist starts empty (no shared artifacts currently approved)
-- File includes:
-  - Purpose statement
-  - Governance requirements (ADR approval needed to add entries)
-  - Schema documentation
-  - Examples
-  - Reference to Section 3.6 of this spec
-
-**Status:** The shared-artifact exception mechanism is now operationalizable. Automations can check the allowlist, and governance processes can add entries via ADRs.
-
-### 7.2 Breaking change rules formalization ✅ RESOLVED
-
-**Resolution implemented:** Option 1 (define in this spec)
-
-**Actions taken:**
-- Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)"
-- Defined breaking changes for all major artifact contract elements:
-  - Identity and location (artifact_id, file_name_pattern, s3_location_pattern)
-  - Format and structure (format, content_contract fields)
-  - Behavior (presence_on_success, empty_behavior)
-  - Governance fields (stability)
-- Defined non-breaking changes (additive changes, relaxing restrictions, metadata updates)
-- Specified backward compatibility expectations (deprecation, versioned filenames, migration plans)
-- Linked to `breaking_change_rules` field (Section 6.3) for artifact-specific overrides
-- Aligned with existing `docs/standards/naming_standard.md` Section 5
-
-**Status:** Validators can now enforce breaking change governance consistently. The `breaking_change_rules` field can be populated with reference to normative definitions.
-
----
-
-## 8) Consistency Check Appendix
-
-### 8.1 Aligned documents
+### 7.1 Aligned documents
 
 This specification was drafted and validated against the following repository documentation:
 
@@ -584,21 +543,21 @@ This specification was drafted and validated against the following repository do
 **Living catalogs:**
 - `docs/catalogs/artifacts_catalog.md` — This spec defines the schema that catalog entries must follow
 
-### 8.2 Potential conflicts detected
+### 7.2 Potential conflicts detected
 
 **All conflicts from initial draft have been resolved:**
 
 **Conflict 1: Missing registry directory** ✅ RESOLVED
 - **Location**: Section 3.6, 3.11, 4 reference `docs/registries/shared_artifacts_allowlist.yaml`
-- **Resolution**: Created `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file with documented schema (see Section 7.1)
+- **Resolution**: Created `docs/registries/` directory and `shared_artifacts_allowlist.yaml` file with documented schema
 - **Status**: Shared-artifact exception mechanism is now operationalizable
 
 **Conflict 2: Incomplete breaking change definition** ✅ RESOLVED
 - **Location**: Section 6.3 defines `breaking_change_rules` field
-- **Resolution**: Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)" with complete definitions (see Section 7.2)
+- **Resolution**: Added Section 6.4 "Breaking Changes for Artifact Contracts (normative)" with complete definitions
 - **Status**: Validators can now enforce breaking change governance consistently
 
-### 8.3 Assumptions introduced
+### 7.3 Assumptions introduced
 
 **Assumption 1: Job manifest as primary evidence source**
 - **What**: The spec assumes `job_manifest.yaml` files exist for all jobs and contain `inputs[]`, `outputs[]`, and `config_files[]` sections
@@ -628,7 +587,7 @@ This specification was drafted and validated against the following repository do
 - **Impact**: May fail if placeholders have semantic differences (e.g., `${date}` vs `${timestamp}`) that should not match
 - **Status**: ⚠️ Bounded — normalization is intentionally lossy; edge cases may require human resolution
 
-### 8.4 Cross-document dependencies
+### 7.4 Cross-document dependencies
 
 This spec depends on:
 - `docs/standards/job_manifest_spec.md` — for manifest schema and field semantics
@@ -643,7 +602,7 @@ Documents that depend on this spec:
 - Automation tools (e.g., catalog generators/updaters) — must follow matching and sourcing rules
 - `docs/standards/validation_standard.md` — should include artifact catalog compliance checks
 
-### 8.5 Traceability summary
+### 7.5 Traceability summary
 
 | Section | Requirement | Grounded in | Status |
 |---------|-------------|-------------|--------|

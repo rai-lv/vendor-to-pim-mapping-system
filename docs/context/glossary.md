@@ -59,6 +59,12 @@ An XML-based standard for product catalog data exchange, commonly used by vendor
 In this system, BMEcat files are ingested as input to the vendor_input_processing pipeline.
 Reference: `jobs/vendor_input_processing/preprocessIncomingBmecat/`.
 
+### Bootstrap order
+The required sequence for deriving job inventory entries from source artifacts to resolve cross-references correctly.
+The 6-step order: (1) Discover jobs, (2) Extract manifest data, (3) Populate artifacts catalog, (4) Resolve artifact identifiers, (5) Derive dependencies, (6) Resolve remaining TBDs.
+When starting from an empty artifacts catalog, entries are initially populated with `TBD` markers for artifact-dependent fields, then updated after catalog population.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.4.
+
 ### Breaking change
 A change that requires migration, deprecation period, or coordination because it affects stable contracts or automation.
 Examples include renaming job IDs, changing artifact filenames, or modifying parameter names.
@@ -131,6 +137,12 @@ A structured document that records significant decisions, their rationale, alter
 Decision records follow the format defined in `docs/standards/decision_records_standard.md`.
 They are essential for breaking changes, exceptions to principles, and governance decisions.
 
+### Deployment name
+The name of a job as deployed in its execution platform (e.g., AWS Glue job name).
+For AWS Glue jobs, this is stored in the manifest `glue_job_name` field and typically matches the `job_id`.
+Deployment-specific prefixes (e.g., `prod-{job_id}`) are applied at deployment time and are not part of the canonical deployment name.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.1.
+
 ### Deprecated
 Marked as obsolete but retained temporarily for historical reference and migration support.
 Deprecated documents include a deprecation marker, reason, redirect to replacement (if any), and planned removal date.
@@ -139,6 +151,12 @@ Minimum retention: 30 days or one release cycle.
 ### Deterministic
 A property of tools and evidence outputs: given the same inputs, a deterministic tool or process produces the same outputs consistently.
 Deterministic evidence can be independently verified and does not rely on subjective interpretation.
+
+### Downstream job IDs
+Jobs that consume artifacts produced by this job (dependencies in the forward direction).
+Derived from artifact-level evidence by finding all jobs that list this job's output artifacts in their inputs.
+Represented as comma-separated list in lexicographic sort order.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.4.
 
 ### Drift
 Uncontrolled divergence between:
@@ -150,6 +168,12 @@ Drift includes silent changes, shadow specs, and unapproved re-interpretation of
 ### Dual-write
 Migration technique where data is written to both old and new locations during a transition period, enabling gradual consumer migration and rollback capability.
 Used for breaking changes to artifact locations or formats.
+
+### Dual-role artifact
+An artifact that serves as both input and output for the same job (read at job start, updated and written at job end).
+Common pattern for jobs that update shared reference data in place (e.g., canonical mappings).
+In job inventory entries, dual-role artifacts are listed in both `inputs` and `outputs` fields.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.3.
 
 ### Documentation system catalog
 A registry that defines all document types, their purposes, semantic boundaries, and canonical locations.
@@ -173,6 +197,12 @@ Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
 ### Evidence
 Deterministic outputs that support approval decisions (e.g., validation reports, test results, run receipts, logs).
 
+### Evidence artifacts
+Audit artifacts produced by a job for tracking and validation purposes.
+Includes run receipts (structured JSON records of execution metadata) and counters (metrics emitted during job execution).
+Represented in job inventory entries as compact structured string: `run_receipt=<true|false|TBD>; counters=<names|NONE|TBD>`
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.3.
+
 ### Evidence discipline
 Rules for how evidence is used:
 - Evidence must be deterministic and reviewable.
@@ -183,6 +213,12 @@ Rules for how evidence is used:
 A required stop-and-surface behavior:
 when an agent cannot proceed without introducing new assumptions, expanding scope, or changing agreed rules/criteria,
 the agent must escalate for human decision.
+
+### Executor
+The platform that executes a job (e.g., AWS Glue, AWS Lambda, Make).
+Allowed values: `aws_glue`, `aws_lambda`, `make`, `other`, `TBD`.
+Derived from manifest fields: `glue_job_name` → `aws_glue`, `lambda_function_name` → `aws_lambda`, `makefile_target` → `make`.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.2.
 
 ---
 
@@ -245,6 +281,17 @@ Iteration is allowed and expected; it does not advance the system state unless a
 ---
 
 ## J
+
+### Job inventory
+A living catalog that aggregates job inventory entries for all executable jobs in the repository.
+Location: `docs/catalogs/job_inventory.md`
+Purpose: Provides fast orientation for humans and agents about what jobs exist, what they consume/produce, and how they relate to each other.
+Specification: `docs/standards/job_inventory_spec.md`
+
+### Job inventory entry
+A machine-readable structured record representing one executable job, capturing its identity (job_id, deployment_name, job_dir), execution characteristics (executor, runtime), interface contract (parameters, inputs, outputs, side_effects), lifecycle metadata (owner, status, last_reviewed), and dependency relationships (upstream_job_ids, downstream_job_ids).
+Each entry enables consistent discovery, validation, automation, and cross-job integration.
+Specification: `docs/standards/job_inventory_spec.md`
 
 ### Job manifest
 A machine-readable YAML file (`job_manifest.yaml`) that serves as the source of truth for a job's interface contract: parameters, inputs, outputs, side effects, and run receipt behavior.
@@ -428,6 +475,14 @@ A rule that documentation and artifacts must not mix layers:
 - operational references.
 This prevents shadow specs and double truth.
 
+### Shared artifact
+An artifact that is produced by multiple jobs or consumed by multiple jobs.
+Handling rules:
+- Single primary producer: use producer `job_id` as artifact_id anchor
+- Multiple producers: register as shared artifact exception per `artifacts_catalog_spec.md` Section 3.6
+- External artifacts: use `external__*` prefix
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.3.
+
 ### Shadow specification
 An anti-pattern where normative requirements are embedded in the wrong documentation layer.
 Example: A process guide containing required field definitions instead of referencing the authoritative standard.
@@ -483,6 +538,16 @@ Specification: `docs/standards/artifacts_catalog_spec.md` Section 1.3.1.
 ### Tool
 A deterministic instrument used by humans and agents to scaffold, validate, and produce evidence.
 Tools do not invent meaning, interpret intent, or make approval decisions.
+
+---
+
+## U
+
+### Upstream job IDs
+Jobs that produce artifacts consumed by this job (dependencies in the backward direction).
+Derived from artifact-level evidence by finding all jobs that produce artifacts listed in this job's inputs.
+Represented as comma-separated list in lexicographic sort order.
+Specification: `docs/standards/job_inventory_spec.md` Section 2.2.4.
 
 ---
 

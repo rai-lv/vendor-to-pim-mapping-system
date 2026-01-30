@@ -470,7 +470,7 @@ last_reviewed: 2026-01-30
 
 This specification was developed in alignment with:
 
-1. **`docs/context/glossary.md`**: Used canonical definitions for job_id, artifact_id, TBD, NONE, breaking change, evidence
+1. **`docs/context/glossary.md`**: Used canonical definitions for job_id, artifact_id, TBD, NONE, breaking change, evidence. Added new terms: job inventory, job inventory entry, executor, deployment_name, upstream_job_ids, downstream_job_ids, bootstrap order, shared artifact, dual-role artifact, evidence artifacts (2026-01-30).
 2. **`docs/context/development_approach.md`**: Aligned with 5-step workflow and evidence discipline
 3. **`docs/context/documentation_system_catalog.md`**: Positioned as normative standard (not catalog implementation or per-job content)
 4. **`docs/process/workflow_guide.md`**: Supported Step 5 validation and documentation requirements

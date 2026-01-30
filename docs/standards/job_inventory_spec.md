@@ -475,7 +475,7 @@ This section documents design decisions made during specification development.
 ### 7.5 Verification notes
 
 **Evidence sources checked**:
-- Current `job_inventory_spec.md` (v1.4) reviewed for completeness
+- Previous `job_inventory_spec.md` reviewed for completeness
 - Repository contains 4 jobs under `jobs/vendor_input_processing/` verified by file system scan
 - Existing job inventory file at `docs/catalogs/job_inventory.md` reviewed (currently empty template)
 
@@ -492,12 +492,4 @@ This section documents design decisions made during specification development.
 - Breaking change rules aligned with governance requirements
 
 ---
-
-## Revision History
-
-| Version | Date | Changes |
-|---------|------|---------|
-| 2.1 | 2026-01-30 | Resolved TBD entries: Approved single-repo assumption (Decision 1) and version-agnostic artifact references (Decision 2) per recommended options |
-| 2.0 | 2026-01-30 | Complete rework: Focused on normative entry schema; removed catalog file structure details; clarified boundaries; added consistency check appendix; referenced authoritative specs for placeholder/naming rules |
-| 1.4 | (prior) | Previous version: Combined entry schema with catalog file structure and derivation procedures |
 

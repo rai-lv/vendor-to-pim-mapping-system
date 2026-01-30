@@ -6,10 +6,10 @@ This catalog defines the **target documentation set** required for the developme
 
 It exists to:
 
-* enforce **internal consistency** across documentation,
-* prevent **double truth** by assigning **one authoritative home** per contract type,
-* keep separation between **principles**, **enforceable standards**, **execution guidance**, **operational references**, and **living catalogs**,
-* provide a single authoritative routing map: **document type → canonical folder location**.
+- enforce **internal consistency** across documentation,
+- prevent **double truth** by assigning **one authoritative home** per contract type,
+- keep separation between **principles**, **enforceable standards**, **execution guidance**, **operational references**, and **living catalogs**,
+- provide a single authoritative routing map: **document type → canonical folder location**.
 
 This catalog is **descriptive and governing**: it defines what each document is for, where it lives, and what it must not contain.
 
@@ -17,21 +17,21 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ## Canonical Placement Rules
 
-* Each document type has exactly one **canonical folder** in this repository.
-* Documents may reference other documents, but must not duplicate their authoritative rules.
-* Operational detail (tool syntax, troubleshooting) must not appear in context or standards documents.
-* If canonical placement changes, it is treated as a repository refactor and must be updated here.
+- Each document type has exactly one **canonical folder** in this repository.
+- Documents may reference other documents, but must not duplicate their authoritative rules.
+- Operational detail (tool syntax, troubleshooting) must not appear in context or standards documents.
+- If canonical placement changes, it is treated as a repository refactor and must be updated here.
 
 ---
 
 ## Layers and Intent
 
-* **Context layer:** explains intent, shared meaning, and system framing.
-* **Governance and standards layer:** normative rules and schemas (validator-enforceable).
-* **Agent documentation layer:** defines agent roles and how they are used (without becoming tool manuals).
-* **Process layer:** how-to guidance for executing the approach (non-normative).
-* **Operational reference layer:** technical manuals for tools and automation.
-* **Living catalogs and per-job docs:** instances describing the concrete system and per-job intent/operations.
+- **Context layer:** explains intent, shared meaning, and system framing.
+- **Governance and standards layer:** normative rules and schemas (validator-enforceable).
+- **Agent documentation layer:** defines agent roles and how they are used (without becoming tool manuals).
+- **Process layer:** how-to guidance for executing the approach (non-normative).
+- **Operational reference layer:** technical manuals for tools and automation.
+- **Living catalogs and per-job docs:** instances describing the concrete system and per-job intent/operations.
 
 ---
 

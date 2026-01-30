@@ -1,5 +1,9 @@
 # Documentation Specification
 
+## Purpose
+
+This specification defines how documentation must be structured, formatted, and governed to maintain consistency, prevent duplication and confusion, and ensure documentation serves as a reliable system of record across the entire documentation system.
+
 ## 0) Purpose and Principles
 
 ### 0.1 What This Specification Addresses

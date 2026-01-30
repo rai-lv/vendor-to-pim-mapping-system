@@ -1,11 +1,8 @@
-# Job Inventory Specification (v1.4)
+# Job Inventory Specification
 
-UPD 2026-01-28 14:21
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative schema for job inventory entries.
-**Why necessary:** Enables validation, discovery, and consistent indexing.
-**Must contain:** Required fields; reference/link expectations; lifecycle/status semantics (as schema).
-**Must not contain:** Tool manuals or per-job narrative descriptions.
+## Purpose
+
+This standard defines the normative schema for job inventory entries, enabling validation, discovery, and consistent indexing across all jobs in the system.
 
 ## 0) Purpose and scope
 

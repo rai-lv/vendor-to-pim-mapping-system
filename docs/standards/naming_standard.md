@@ -1,7 +1,8 @@
-# Naming Standard (v2.1)
+# Naming Standard
 
-**Version:** 2.1  
-**Last Updated:** 2026-01-29
+## Purpose
+
+This standard governs the naming conventions for repository elements that are referenced by automation, validation tools, and cross-job integration. It ensures naming stability for machine-readable identifiers, enables deterministic validation and automated discovery, prevents naming drift that breaks tooling, and supports human readability while maintaining consistency.
 
 ---
 

@@ -1,5 +1,9 @@
 # Agent Role Charter
 
+**Purpose:** Defines the canonical set of agent roles, their responsibilities, boundaries, and escalation rules for the development workflow.
+
+**Scope:** Covers agent role definitions, separation from tools, responsibilities per workflow step, escalation triggers, and enforcement of approval gates and evidence discipline.
+
 ## 1) Purpose Statement
 
 This document defines the **canonical set of agent roles** used in the vendor-to-pim-mapping-system development workflow and specifies each role's responsibilities, boundaries, and escalation rules.

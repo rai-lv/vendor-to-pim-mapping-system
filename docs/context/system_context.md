@@ -1,6 +1,7 @@
 # System Context
 
-## Purpose statement
+## Purpose
+
 This document explains **what this repository/system is**, its **scope**, and **how truth is established** (intent vs rules vs runtime vs evidence).
 
 It is an onboarding and orientation document. It is **not** a workflow guide, a standards document, or an operational manual.

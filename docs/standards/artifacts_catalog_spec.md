@@ -1,4 +1,8 @@
-# Artifacts Catalog Entry Specification (v1.3.5)
+# Artifacts Catalog Entry Specification
+
+## Purpose
+
+This standard defines the normative schema for describing artifact contracts and content expectations, preventing ad-hoc contract definitions scattered across job documentation.
 
 ## 0) Scope
 

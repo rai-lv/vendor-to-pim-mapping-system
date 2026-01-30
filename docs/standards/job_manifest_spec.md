@@ -1,11 +1,8 @@
-# Job Manifest Specification (v1.0)
+# Job Manifest Specification
 
-UPD 2026-01-28 14:20
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative schema and semantics for machine-readable job interface manifests.
-**Why necessary:** Enables consistent invocation and automation across jobs.
-**Must contain:** Required/optional fields; semantic meaning; placeholder rules; compatibility/breaking-change rules.
-**Must not contain:** Per-job content or embedded authoritative examples.
+## Purpose
+
+This standard defines the normative schema and semantics for machine-readable job interface manifests, ensuring consistent invocation and automation across jobs.
 
 ## 0) Purpose and scope
 

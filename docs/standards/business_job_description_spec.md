@@ -57,23 +57,29 @@ Business descriptions document the business intent for a job. The specific workf
 
 **Reference:** See `docs/context/development_approach.md` for the 5-step workflow and `docs/process/workflow_guide.md` for execution guidance.
 
+### Documentation timing
+
+**For new jobs (during development):**
+Business descriptions capture intended behavior and approved business rules before/during implementation.
+
+**For existing jobs (retroactive documentation):**
+Business descriptions document observed behavior from code analysis and operational knowledge.
+- Mark interpretations with `ASSUMPTION:`
+- Mark uncertain behaviors with `TBD`
+- If behavior contradicts apparent intent, document the contradiction in Section 8
+
 ---
 
 ## 1) Evidence and assumptions discipline
 
-Per `docs/context/target_agent_system.md` and `docs/standards/validation_standard.md`:
+Business descriptions must follow the evidence discipline defined in `docs/context/target_agent_system.md` Section 3.2 and `docs/standards/validation_standard.md`.
 
-**TBD (explicit unknown):**
-- Use `TBD` for facts that are unknown and cannot be determined without additional investigation or runtime evidence.
-- TBDs MUST be resolved before the job is considered production-ready, OR explicitly approved as acceptable unknowns with a decision record.
+**Summary for quick reference:**
+- Use `TBD` for unknown facts that require investigation or runtime evidence
+- Label interpretations with `ASSUMPTION:` and get explicit approval before implementation depends on them
+- Use "Verified/Confirmed" only when explicit evidence exists
 
-**ASSUMPTION (controlled assumption):**
-- Use `ASSUMPTION:` label for interpretations or inferences that are not directly evidenced.
-- Assumptions MUST be explicitly approved by a human before implementation depends on them.
-
-**Verified / Confirmed:**
-- Use these terms ONLY when explicit evidence exists (script analysis, manifest content, artifact inspection, or documented decisions).
-- Otherwise, state "unknown" or use `TBD`.
+See Section 8 of this spec for application to business descriptions.
 
 ---
 
@@ -85,13 +91,16 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* Business purpose (one sentence): <exactly one sentence; starts with this fixed label; must be the first non-empty line in this section>
-* 1–3 sentences: business objective and what outcome is produced.
-* One explicit boundary statement (“Does not …”).
+* Opening statement: A clear, concise statement of the job's business purpose (typically 1-2 sentences)
+  - May use the label "Business purpose:" or integrate naturally into the opening paragraph
+  - Should answer: "What business outcome does this job achieve?"
+* Context: 1-3 additional sentences explaining business objective and what is produced
+* Boundary statement: One explicit statement of what the job does NOT do
+  - Use format: "Does not..." or "Boundary:..." or integrate into context
 
 **Optional**
 
-* One sentence: where it sits in the overall process landscape (or `TBD`).
+* Process landscape: Where the job sits in the overall workflow (or `TBD` if unknown)
 
 ---
 
@@ -101,24 +110,30 @@ Business descriptions MUST use the following section structure. Section numberin
 
 * Plain-language list of required inputs, expressed as **business artifacts**, not storage details.
 * For each required input: one short phrase describing what it represents.
-* Behavior when missing, only at the level of:
+* Behavior when inputs are missing or malformed:
+  - "job fails" / "job continues with empty output" / "job skips the element"
+  - If behavior differs for empty vs missing vs malformed, document each case
 
-  * “job fails” / “job continues with empty output” / “job skips the element”.
+**Allowed format**
 
-**Allowed format (like the examples)**
-
+* Subsections are acceptable for clarity:
+  - "Runtime parameters" for job invocation parameters
+  - "Required input files" for data inputs
+  - "Optional inputs" with behavior if absent
 * Bullet list of artifact names + parenthetical meaning, e.g.:
-
-  * `${vendor_name}_categoryMatchingProposals.json` (full proposals)
-  * `${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json` (1→1 subset)
+  - `${vendor_name}_categoryMatchingProposals.json` (full proposals)
+  - `${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json` (1→1 subset)
 
 **Note on placeholder notation:**
-- Use `${parameter_name}` format per `docs/standards/naming_standard.md` Section 4.6
-- Examples: `${vendor_name}_products.json`, not `<vendor>_products.json`
+- PREFERRED: Use `${parameter_name}` format for consistency with manifests
+- ACCEPTABLE: Use `<parameter_name>` for readability in prose
+- Avoid: `{parameter_name}` (ambiguous)
+- Be consistent within the document
+- Reference: `docs/standards/naming_standard.md` Section 4.6
 
 **Optional**
 
-* Mention where the job *gets* the pointers from (e.g., “keys carried in run receipt/config”) but without bucket/prefix patterns unless they are essential.
+* Mention where the job gets the pointers from (e.g., "keys carried in run receipt/config") but without bucket/prefix patterns unless they are essential.
 
 ---
 
@@ -128,8 +143,7 @@ Business descriptions MUST use the following section structure. Section numberin
 
 * Bullet list of produced artifacts with 1-line meaning each.
 * Explicit mention of outcome type:
-
-  * “NDJSON product feed”, “JSON dictionary keyed by vendor_category_id”, “status report”, etc.
+  - "NDJSON product feed", "JSON dictionary keyed by vendor_category_id", "status report", etc.
 * If relevant: whether output is overwritten vs appended (as a business-operational fact).
 
 ---
@@ -138,13 +152,17 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* 4–10 steps in natural language.
+* 4-12 steps in natural language, or logical parts with substeps
 * Steps describe transformations that a stakeholder cares about:
+  - "enriches products with ..."
+  - "aggregates per vendor category ..."
+  - "derives rules from stable training base ..."
+  - "validates rules and updates reference ..."
 
-  * “enriches products with …”
-  * “aggregates per vendor category …”
-  * “derives rules from stable training base …”
-  * “validates rules and updates reference …”
+**For complex jobs with multiple phases:**
+* Use subsections (### PART 1, ### PART 2, etc.)
+* Each part can have 2-6 steps
+* Total combined should remain readable (aim for under 15 total steps across all parts)
 
 **Must avoid**
 
@@ -159,12 +177,12 @@ Business descriptions MUST use the following section structure. Section numberin
 **Must contain**
 
 * Bullet list of rules that materially affect results:
-
-  * selection/prioritization
-  * exclusions
-  * thresholds
-  * “truth protection”
-  * “what is considered valid evidence”
+  - selection/prioritization (e.g., "uses first match found")
+  - exclusions (e.g., "filters out products without article_id")
+  - thresholds (e.g., "requires minimum 3 products per category")
+  - validation rules (e.g., "skips malformed records")
+  - "truth protection" (e.g., "never overwrites existing canonical mappings")
+  - "what is considered valid evidence"
 
 ---
 
@@ -172,7 +190,7 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* 2–6 bullets of explicit non-goals to prevent misinterpretation.
+* 1-6 bullets of explicit non-goals to prevent misinterpretation.
 
 ---
 
@@ -182,8 +200,8 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 **What belongs here (if anywhere):**
 
-* Critical failure behavior that affects business continuity: "fails fast if …"
-* Output behavior that affects downstream consumption: "writes empty output and exits if …", "overwrites the same output key each run"
+* Critical failure behavior that affects business continuity: "fails fast if ..."
+* Output behavior that affects downstream consumption: "writes empty output and exits if ...", "overwrites the same output key each run"
 * Monitoring/observability artifacts essential to business tracking: "creates run receipt / status artifacts for monitoring"
 
 **What does NOT belong here:**
@@ -206,19 +224,11 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 ---
 
-### Section 9: References
-
-**Must contain**
-
-* Script identifier/path (repo path or filename)
-* Names of key artifacts referenced (inputs/outputs)
-* Optional: link to run receipt / config artifact names (not S3 paths unless unavoidable)
-
----
-
 ## 3) Anti-patterns and what NOT to include
 
-Per `docs/standards/documentation_spec.md` Section 6, business descriptions MUST NOT:
+Per `docs/standards/documentation_spec.md` Section 5.3, business descriptions must avoid these patterns.
+
+**Business description specific guidance:**
 
 **Shadow specifications:**
 - Do NOT duplicate manifest schemas (parameters, S3 patterns) — reference `job_manifest.yaml` instead
@@ -250,51 +260,74 @@ Per `docs/standards/documentation_spec.md` Section 6, business descriptions MUST
 # <Job Name> — Business Description
 
 ## Section 1: Business purpose and context
-Business purpose (one sentence): <...>
-<1–3 sentences.>
-Boundary: Does not ...
+This job [clear statement of business purpose and outcome].
+
+[1-3 sentences providing context about business objective.]
+
+Boundary: Does not [explicit non-goal].
 
 ## Section 2: Inputs (business view)
-Required inputs:
-- <Artifact name> (<meaning>)
-- <Artifact name> (<meaning>)
-Notes: <e.g., “input pointers are taken from run receipt/config”>
+### Runtime parameters
+- `PARAMETER_NAME` (meaning)
 
-Optional inputs:
-- <Artifact name> (<meaning>) — Behavior if absent: <...>
+### Required input files
+- `${vendor_name}_input_file.json` (meaning)
+
+Behavior if missing: [job fails / continues with empty output / skips element]
+
+### Optional inputs
+- `optional_file.json` (meaning) — Behavior if absent: [...]
 
 ## Section 3: Outputs (business view)
-- <Artifact name> — <meaning>
-- <Artifact name> — <meaning>
+- `${vendor_name}_output_file.json` — [meaning and type, e.g., "NDJSON product feed"]
+- Output behavior: [overwrites / appends / creates new]
 
 ## Section 4: Processing logic (business flow)
-1. ...
-2. ...
-3. ...
+1. [Business transformation step 1]
+2. [Business transformation step 2]
+3. [Business transformation step 3]
+4. [Business transformation step 4]
 
 ## Section 5: Business rules and controls
-- ...
-- ...
+- [Selection/prioritization rule]
+- [Exclusion rule]
+- [Validation rule]
+- [Truth protection rule]
 
 ## Section 6: What the job does not do
-- ...
-- ...
+- Does not [explicit non-goal 1]
+- Does not [explicit non-goal 2]
 
 ## Section 7: Operational notes (optional)
-- ...
+- [Critical operational fact affecting business understanding, if any]
 
 ## Section 8: Assumptions and TBDs
-- TBD: ...
-- ASSUMPTION: ...
-
-## Section 9: References
-- Script:
-- Related artifacts:
+- TBD: [unknown fact requiring investigation]
+- ASSUMPTION: [interpretation requiring approval]
 ```
+
+**Complete example:** See `jobs/vendor_input_processing/matching_proposals/bus_description_matching_proposals.md` for a reference implementation.
 
 ---
 
-## 5) Governance and change control
+## 5) Cross-references
+
+For technical details related to this job:
+- Interface contract: see `job_manifest.yaml` in same directory
+- Operational behavior: see `script_card_<job_id>.md` in same directory
+- Artifact schemas: see `docs/catalogs/artifacts_catalog.md`
+- Job inventory entry: see `docs/catalogs/job_inventory.md`
+
+---
+
+## 6) Governance and change control
+
+### Version tracking
+
+Business descriptions use git history for change tracking per `documentation_spec.md` Section 4.
+- No explicit version numbers in the document
+- Use git blame for line-level history
+- Add `Last reviewed: YYYY-MM-DD` in frontmatter only if documenting an existing job retroactively
 
 ### Breaking changes
 
@@ -315,11 +348,26 @@ If a job requires deviation from this standard (e.g., highly specialized section
 ### Compliance validation
 
 Business descriptions SHOULD be validated for:
-- Presence of all required sections (Sections 1-6, 8, 9)
-- Use of proper placeholder notation (`${param}` not `<param>`)
+- Presence of all required sections (Sections 1-6, 8)
+- Use of consistent placeholder notation (either `${param}` or `<param>` but not mixed)
 - No duplication of manifest/schema content
 - No embedded tool manuals or code implementation
 - Proper use of TBD/ASSUMPTION labels per Section 1
 
 Validation may be manual (human review) or automated (linting/scanning tools).
 
+---
+
+## 7) Relationship to script card
+
+To clarify boundaries between business descriptions and script cards:
+
+| Aspect | Business Description | Script Card |
+|--------|---------------------|-------------|
+| Focus | WHY and WHAT (business) | HOW (operational) |
+| Inputs | Business artifacts + meaning | Technical: bucket/key/format |
+| Processing | Business transformations | Operational steps |
+| Failure | Critical business impacts | All failure conditions |
+| Audience | Business stakeholders | Operators and developers |
+
+**Rule:** If it affects business understanding, document in business description. If it's needed to run/operate the job, document in script card. Some facts belong in both (minimal duplication is acceptable for critical operational facts).

@@ -447,27 +447,30 @@ This specification explicitly avoids:
 4. **Per-job business logic**: Does not define job-specific requirements or domain rules (see business job descriptions)
 5. **Implementation details**: Does not describe job code structure or runtime behavior (see script cards)
 
-### 7.4 TBDs introduced
+### 7.4 Design decisions
 
-**TBD-1: Multi-repository artifact linking**
-- **What**: How to represent artifacts consumed from or produced to external repositories
-- **Impact**: Currently assumes all artifacts are in single repository's artifact catalog
-- **Options**:
-  1. Use qualified artifact_id format: `<repo_name>::<artifact_id>`
-  2. Add `external_source` field to entries
-  3. Maintain current single-repo assumption until multi-repo need is proven
-- **Recommendation**: Option 3 (wait for proven need; add as schema extension later)
-- **Decision needed**: Human approval of multi-repo approach when requirement emerges
+This section documents design decisions made during specification development.
 
-**TBD-2: Artifact version tracking in entries**
-- **What**: Whether entries should reference specific artifact versions or schemas
-- **Impact**: Currently references artifact_id without version information
-- **Options**:
-  1. Add `artifact_version` field to inputs/outputs
-  2. Use versioned artifact_ids: `artifact_id@v1.2`
-  3. Maintain current version-agnostic references
-- **Recommendation**: Option 3 (artifact catalog handles versioning; entries reference current contract)
-- **Decision needed**: Only if artifact versioning becomes a breaking change management requirement
+**Decision 1: Multi-repository artifact linking**
+- **Question**: How to represent artifacts consumed from or produced to external repositories
+- **Current scope**: This specification assumes all artifacts are in a single repository's artifact catalog
+- **Decision**: Maintain single-repo assumption until multi-repo need is proven (2026-01-30)
+- **Rationale**: 
+  - No current evidence of multi-repo artifact dependencies in the repository
+  - Adding multi-repo support now would introduce unnecessary complexity
+  - Schema can be extended later if requirement emerges (via optional `external_source` field or qualified artifact_id format)
+- **Future extension path**: If multi-repo linking becomes necessary, add as non-breaking schema extension without modifying existing single-repo entries
+
+**Decision 2: Artifact version tracking in entries**
+- **Question**: Whether entries should reference specific artifact versions or schemas
+- **Current approach**: Entries reference artifact_id without version information
+- **Decision**: Maintain version-agnostic references (2026-01-30)
+- **Rationale**:
+  - Artifact catalog is responsible for documenting artifact schemas and versions
+  - Job inventory entries describe stable interface contracts, not versioned artifacts
+  - Separates concerns: inventory tracks "what artifacts", catalog tracks "what's in artifacts"
+  - Reduces maintenance burden (entries don't need updates when artifact schemas evolve compatibly)
+- **Breaking change handling**: If artifact versions introduce breaking changes, handle via artifact catalog migration procedures (dual-write, deprecation) rather than versioning in inventory entries
 
 ### 7.5 Verification notes
 
@@ -494,6 +497,7 @@ This specification explicitly avoids:
 
 | Version | Date | Changes |
 |---------|------|---------|
+| 2.1 | 2026-01-30 | Resolved TBD entries: Approved single-repo assumption (Decision 1) and version-agnostic artifact references (Decision 2) per recommended options |
 | 2.0 | 2026-01-30 | Complete rework: Focused on normative entry schema; removed catalog file structure details; clarified boundaries; added consistency check appendix; referenced authoritative specs for placeholder/naming rules |
 | 1.4 | (prior) | Previous version: Combined entry schema with catalog file structure and derivation procedures |
 

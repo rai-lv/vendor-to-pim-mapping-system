@@ -102,13 +102,14 @@ Every job inventory entry MUST contain the following fields:
 
 **`job_id` (MUST; always known)**
 - Format: snake_case identifier (lowercase with underscores)
+- **Exception**: Legacy jobs using camelCase are grandfathered for backward compatibility (see `docs/standards/naming_standard.md` Section 4.1)
 - Uniqueness: Must be unique across all entries
 - Derivation: Folder name from `jobs/<job_group>/<job_id>/`
 - Specification: `docs/standards/naming_standard.md` Section 4.1
 - Breaking change: Renaming a job_id requires governance approval and migration plan
 
 **`job_dir` (MUST; always known)**
-- Format: Repository-relative path ending with `/`
+- Format: Repository-relative path (relative to repository root, no leading `/`) ending with `/`
 - Example: `jobs/vendor_input_processing/matching_proposals/`
 - Derivation: Path to folder containing `glue_script.py`
 
@@ -123,7 +124,16 @@ Every job inventory entry MUST contain the following fields:
 **`executor` (MUST)**
 - Meaning: Platform that executes the job
 - Allowed values: `aws_glue`, `aws_lambda`, `make`, `other`, `TBD`
-- Derivation: Inferred from manifest `glue_job_name` presence or explicit declaration
+- Derivation: Inferred from manifest fields using the following decision table:
+
+| Manifest Field Present | Executor Value |
+|------------------------|----------------|
+| `glue_job_name` is present | `aws_glue` |
+| `lambda_function_name` is present | `aws_lambda` |
+| `makefile_target` is present | `make` |
+| `executor` field explicitly set | Use field value |
+| None of the above | `TBD` |
+
 - Unknown: `TBD` (if cannot determine from manifest)
 
 **`runtime` (MUST)**
@@ -159,6 +169,14 @@ Every job inventory entry MUST contain the following fields:
 - Meaning: List of artifact identifiers produced by job
 - Representation: Same rules as `inputs`
 - Source: Artifact identifiers resolved from manifest `outputs[]` via artifact catalog matching
+
+**Shared artifact handling:**
+
+When a job produces artifacts that are consumed by multiple jobs (shared artifacts) or when multiple jobs write to the same artifact type:
+- If the artifact is produced **within this repository** by a single primary job: Use the producer job's `job_id` as the producer anchor in `artifact_id` (e.g., `mapping_method_training__category_mapping_reference`)
+- If the artifact is produced by **multiple jobs** in this repository: The artifact MUST be registered as a shared artifact exception per `docs/standards/artifacts_catalog_spec.md` Section 3.6, and all producing jobs MUST list it in their `outputs`
+- If the artifact is produced **external to this repository**: Use `external__*` prefix for the artifact_id (e.g., `external__bmecat_input`)
+- For artifacts that serve **dual roles** (both input and output for the same job): List the artifact_id in both `inputs` and `outputs` fields
 
 **`side_effects` (MUST)**
 - Meaning: Job behaviors that modify S3 state beyond declared outputs
@@ -252,6 +270,38 @@ Example for `inputs` with 3 positions where middle one is unknown:
 ```
 inputs: artifact_one; TBD; artifact_three
 ```
+
+### 2.4 Entry derivation and bootstrap order
+
+Job inventory entries depend on multiple source artifacts that must be populated in a specific order to resolve cross-references correctly.
+
+#### 2.4.1 Derivation order (MUST)
+
+Entries MUST be derived in the following order:
+
+1. **Discover jobs**: Scan repository for job folders containing `glue_script.py` and `job_manifest.yaml`
+2. **Extract manifest data**: Read each manifest to populate identity, execution, and interface fields
+3. **Populate artifacts catalog**: Extract all `inputs[]` and `outputs[]` from manifests and create artifact catalog entries
+4. **Resolve artifact identifiers**: Match manifest input/output patterns to artifact catalog entries using normalized placeholder matching (see Section 3.3)
+5. **Derive dependencies**: For each job:
+   - `upstream_job_ids`: Find jobs that produce artifacts consumed by this job (from artifact catalog `producer_job_id` field)
+   - `downstream_job_ids`: Find jobs that consume artifacts produced by this job (from artifact catalog `consumers` field)
+6. **Resolve remaining TBDs**: Fill in `business_purpose`, `owner`, `status` from business descriptions or human input
+
+#### 2.4.2 Bootstrap with empty artifact catalog
+
+When starting from an empty artifact catalog:
+- Set `inputs: TBD`, `outputs: TBD` for all jobs initially
+- Set `upstream_job_ids: TBD`, `downstream_job_ids: TBD` for all jobs initially
+- After artifact catalog is populated (step 3 above), update all job entries to resolve TBDs
+- Use `last_reviewed` field to track when dependency resolution was completed
+
+#### 2.4.3 Incremental updates
+
+When adding a new job to an existing populated inventory:
+- New job can reference existing artifact catalog entries immediately
+- Update `downstream_job_ids` for any jobs that produce artifacts consumed by the new job
+- Update `upstream_job_ids` for any jobs that consume artifacts produced by the new job
 
 ---
 
@@ -490,6 +540,17 @@ This section documents design decisions made during specification development.
 - All unknown/empty markers defined
 - Placeholder handling delegated to authoritative specs
 - Breaking change rules aligned with governance requirements
+- Bootstrap order and derivation dependencies explicitly specified (Section 2.4)
+- Legacy camelCase exception documented (Section 2.2.1)
+- Shared artifact handling defined (Section 2.2.3)
+- Executor derivation algorithm specified with decision table (Section 2.2.2)
+
+**Revisions (2026-01-30)**:
+- Added Section 2.4 to define entry derivation and bootstrap order
+- Added exception for legacy camelCase job_ids in Section 2.2.1
+- Added shared artifact handling rules in Section 2.2.3
+- Expanded executor derivation with decision table in Section 2.2.2
+- Clarified job_dir format to specify relative to repository root
 
 ---
 

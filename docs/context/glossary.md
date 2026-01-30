@@ -138,6 +138,14 @@ Compliance is enforced through automated validation (where possible), human revi
 Compliance checking ensures documentation and artifacts conform to approved formats, principles, and quality criteria.
 Specification: `docs/standards/documentation_spec.md` Section 7.
 
+### Configuration files
+Static configuration artifacts used by jobs to control their behavior (e.g., extraction rules, field mappings, vendor-specific settings).
+Distinguished from data inputs: configuration files control HOW a job processes data, while inputs are the data TO process.
+Configuration files are relatively static (change infrequently) compared to data inputs (which change per execution).
+Declared in job manifests under `config_files[]` with bucket, key_pattern, format, and required status.
+Documented in script cards Section 2.3A when present.
+Specification: `docs/standards/job_manifest_spec.md` Section 5.5.
+
 ### Conflict
 Any mismatch between approved intent and observed reality (tool results, implementation behavior, or artifact content).
 Conflicts must be surfaced explicitly and resolved via an explicit decision (not silently).
@@ -259,6 +267,13 @@ Specification: `docs/standards/job_inventory_spec.md` Section 2.2.2.
 
 ## F
 
+### Failure mode
+An expected way a job can fail and how the failure surfaces.
+Includes: failure conditions (exit codes, exceptions), error detection mechanisms, and recovery/rollback behavior.
+Documented in script cards Section 2.9 to enable troubleshooting and orchestration.
+Example: "Exits with code 1 if XML validation fails; raises ValueError if required field missing"
+Related: Observability.
+
 ### Function (agent function)
 A responsibility or role that an agent may fulfill in the workflow.
 Agent functions are defined independently of specific agent implementations, allowing one or multiple actual agents to fulfill a given function.
@@ -308,6 +323,14 @@ Used to prevent scope creep and ambiguity in planning and implementation.
 ### Intent truth
 The “should be true” layer:
 approved objectives, pipeline plans, and capability definitions that define intended behavior and constraints.
+
+
+### Invariant
+A property of job behavior that must always hold true, regardless of inputs or runtime conditions.
+Invariants describe observable, externally meaningful guarantees (not internal implementation details).
+Examples: "Always writes exactly one output file per input file", "Output file is always valid JSON"
+Documented in script cards Section 2.8 to establish behavior contracts.
+Related: Runtime behavior, Failure mode.
 
 ### Iteration within a step
 Refinement loops that occur before a step output is approved.
@@ -416,6 +439,13 @@ Includes: critical failure behavior affecting business continuity, output behavi
 Should be used sparingly to maintain separation between business view (business description) and operational detail (script card).
 Specification: `docs/standards/business_job_description_spec.md` Section 7.
 
+### Observability
+The signals and artifacts that enable monitoring, troubleshooting, and verification of job execution.
+Includes: logs (INFO/ERROR/DEBUG levels), metrics (CloudWatch, custom counters), run receipts (structured execution summaries), and operator verification artifacts.
+Documented in script cards Section 2.9 (what signals exist and what they indicate; how to access them is in ops docs).
+Related: Failure mode, Run receipt.
+
+
 ---
 
 ## P
@@ -447,6 +477,13 @@ Allowed values:
 - `optional` — file may or may not exist
 - `conditional` — existence depends on job conditions
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.8.
+
+### Preconditions
+Required state or artifacts that must exist before a job can execute successfully.
+Examples: "Input files from upstream job X must exist", "DynamoDB table Y must contain entry for parameter Z"
+Documented in script cards Section 2.3 to clarify job dependencies and execution requirements.
+Use `NONE` if no preconditions exist; use `TBD` only if truly unknown.
+
 
 ### Producer anchor
 The prefix component in artifact_id derivation: either the producing job_id (for in-repo artifacts) or "external" (for artifacts not produced in this repository).
@@ -504,6 +541,14 @@ Specification: `docs/standards/business_job_description_spec.md` Section 0.4.
 The "what actually runs" layer:
 the effective behavior defined by code, deployed artifacts, and runtime configuration.
 
+### Runtime behavior
+High-level description of what a job does during execution, expressed as action-oriented steps.
+Focuses on observable behavior (reads, transforms, writes, logs) not internal implementation details.
+Typically 4-8 bullets in script cards Section 2.7.
+Example: "Reads XML from S3", "Validates structure", "Writes JSON output"
+Related: Invariant, Processing logic (business flow).
+
+
 ---
 
 ## S
@@ -517,9 +562,11 @@ May be a single pattern or multiple patterns (for cross-region replication, back
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.3.
 
 ### Script card
-A per-job technical documentation file (`script_card_<job_id>.md`) that describes implementation details, dependencies, and technical considerations.
-Location: `jobs/<job_group>/<job_id>/` or `docs/jobs/<job_id>/`
+A per-job operational documentation file (`script_card_<job_id>.md`) that describes runtime behavior, invariants, failure modes, and observability signals for one executable job.
+Focus: HOW the job behaves at runtime, WHAT must always be true, HOW it fails, and WHAT signals it produces.
+Location: `jobs/<job_group>/<job_id>/`
 Specification: `docs/standards/script_card_spec.md`
+Related: Business description (WHY/WHAT from business perspective).
 
 ### Separation of concerns
 A rule that documentation and artifacts must not mix layers:

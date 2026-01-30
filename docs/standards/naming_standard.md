@@ -384,7 +384,7 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - Pattern: `<YYYYMMDD>_<decision_topic>.md` or following `decision_records_standard.md`
 - Examples: `20260129_job_naming_migration.md`
 
-**Per-job docs (`docs/jobs/<job_id>/` or `jobs/<job_group>/<job_id>/`):**
+**Per-job docs (`jobs/<job_group>/<job_id>/`):**
 - Business description: `bus_description_<job_id>.md`
 - Script card: `script_card_<job_id>.md`
 - Examples: `bus_description_preprocessIncomingBmecat.md`, `script_card_matchingProposals.md`

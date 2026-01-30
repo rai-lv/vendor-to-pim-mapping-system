@@ -1,15 +1,8 @@
-## Business Job Description Standard for Jobs (v1.1)
+# Business Job Description Standard
 
-UPD 2026-01-28 14:22
-**Canonical location:** `docs/standards/`
-**Purpose statement:** Defines the normative structure for describing job purpose, scope boundaries, and business rules.
-**Why necessary:** Ensures business intent is captured consistently and auditable.
-**Must contain:** Required sections/fields; conventions for assumptions/unknowns.
-**Must not contain:** Operational “how to run” details.
+## Purpose
 
-**Purpose:** Framework for writing future business-level job descriptions in a consistent, readable way.
-
-**Rule:** Describe what is done and why. Mention technical details only when they change business meaning (e.g., “fails if missing”, “writes empty result”, “overwrites”).
+This standard defines the normative structure for describing job purpose, scope boundaries, and business rules, ensuring business intent is captured consistently and auditably.
 
 ### 1) Business purpose and context
 

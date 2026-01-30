@@ -216,37 +216,6 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 ---
 
----
-
-## 5) Governance and change control
-
-### Breaking changes
-
-Changes to business descriptions are generally **non-breaking** (documentation updates do not affect runtime behavior). However, the following require decision records per `docs/standards/decision_records_standard.md`:
-
-- Changing the documented business purpose in a way that contradicts approved capability definitions
-- Adding/removing scope boundaries that affect approved acceptance criteria
-- Changing business rules that would invalidate existing automation or approvals
-
-### Exceptions and special cases
-
-If a job requires deviation from this standard (e.g., highly specialized section structure):
-1. Document the deviation reason in `## Section 8: Assumptions and TBDs`
-2. Create a decision record per `docs/standards/decision_records_standard.md`
-3. Reference the decision record in the business description
-4. The deviation must be explicitly approved by a human
-
-### Compliance validation
-
-Business descriptions SHOULD be validated for:
-- Presence of all required sections (Sections 1-6, 8, 9)
-- Use of proper placeholder notation (`${param}` not `<param>`)
-- No duplication of manifest/schema content
-- No embedded tool manuals or code implementation
-- Proper use of TBD/ASSUMPTION labels per Section 1
-
-Validation may be manual (human review) or automated (linting/scanning tools).
-
 ## 3) Anti-patterns and what NOT to include
 
 Per `docs/standards/documentation_spec.md` Section 6, business descriptions MUST NOT:
@@ -321,3 +290,36 @@ Optional inputs:
 ## Section 9: References
 - Script:
 - Related artifacts:
+```
+
+---
+
+## 5) Governance and change control
+
+### Breaking changes
+
+Changes to business descriptions are generally **non-breaking** (documentation updates do not affect runtime behavior). However, the following require decision records per `docs/standards/decision_records_standard.md`:
+
+- Changing the documented business purpose in a way that contradicts approved capability definitions
+- Adding/removing scope boundaries that affect approved acceptance criteria
+- Changing business rules that would invalidate existing automation or approvals
+
+### Exceptions and special cases
+
+If a job requires deviation from this standard (e.g., highly specialized section structure):
+1. Document the deviation reason in `## Section 8: Assumptions and TBDs`
+2. Create a decision record per `docs/standards/decision_records_standard.md`
+3. Reference the decision record in the business description
+4. The deviation must be explicitly approved by a human
+
+### Compliance validation
+
+Business descriptions SHOULD be validated for:
+- Presence of all required sections (Sections 1-6, 8, 9)
+- Use of proper placeholder notation (`${param}` not `<param>`)
+- No duplication of manifest/schema content
+- No embedded tool manuals or code implementation
+- Proper use of TBD/ASSUMPTION labels per Section 1
+
+Validation may be manual (human review) or automated (linting/scanning tools).
+

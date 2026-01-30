@@ -197,7 +197,6 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 ---
 
-
 ### Section 8: Assumptions and TBDs
 
 **Must contain**
@@ -216,8 +215,6 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 * Optional: link to run receipt / config artifact names (not S3 paths unless unavoidable)
 
 ---
-
-
 
 ---
 
@@ -279,8 +276,6 @@ Per `docs/standards/documentation_spec.md` Section 6, business descriptions MUST
 ---
 
 ## 4) Minimal template
-
-
 
 ```md
 # <Job Name> — Business Description

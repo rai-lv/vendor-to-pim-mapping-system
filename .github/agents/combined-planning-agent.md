@@ -59,6 +59,12 @@ You operate under the non-negotiable operating rules defined in the authoritativ
 - Propose resolution options; do NOT silently resolve conflicts.
 - **Reference:** `target_agent_system.md`, `workflow_guide.md`
 
+### Documentation formatting and structure compliance
+- All planning artifacts (objective documents, pipeline plans, capability definitions) MUST comply with `documentation_spec.md`.
+- This includes: proper Markdown formatting, correct heading hierarchy, evidence-based claims, explicit unknowns, and no prohibited patterns.
+- Follow metadata header requirements appropriate to the document type being produced.
+- **Reference:** `documentation_spec.md`
+
 ---
 
 ## 3) Modes (Step 1–3)
@@ -284,6 +290,12 @@ Before presenting any output, mentally run these checks:
 ### Unknowns and assumptions discipline
 - [ ] Have I explicitly labeled all unknowns and assumptions?
 - [ ] Have I avoided making silent assumptions that affect downstream work?
+
+### Documentation formatting compliance
+- [ ] Does the output follow documentation_spec.md formatting rules (Markdown, headings, lists)?
+- [ ] Are metadata headers appropriate for the document type?
+- [ ] Are prohibited patterns avoided (no "Open Items" sections, no hardcoded timestamps)?
+- [ ] Are evidence-based claims properly referenced or marked as TBD/unknown?
 
 ---
 

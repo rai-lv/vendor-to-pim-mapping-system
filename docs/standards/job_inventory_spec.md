@@ -1,331 +1,495 @@
-# Job Inventory Specification
+# Job Inventory Entry Specification
 
 ## Purpose
 
-This standard defines the normative schema for job inventory entries, enabling validation, discovery, and consistent indexing across all jobs in the system.
+This standard defines the normative schema and semantics for **job inventory entries** — machine-readable records that describe the interface and metadata of executable jobs in the system. Job inventory entries enable consistent discovery, validation, automation, and cross-job integration without requiring direct inspection of job implementation artifacts.
 
 ## 0) Purpose and scope
 
-`docs/job_inventory.md` is the authoritative **index** of executable jobs and their **system-level interfaces**.
+### What this standard defines
 
-It must support:
-- fast orientation (what jobs exist, what they consume/produce)
-- safe AI-supported planning (Codex tasks can reference stable fields)
-- incremental extension (new jobs added without rewriting old entries)
-- automation-friendly regeneration (deterministic schema; no invented facts)
+This specification defines the **canonical structure and interpretation rules** for individual job inventory entries. Each entry represents one job's:
+- identity (job ID, deployment name, location),
+- execution characteristics (runtime, executor),
+- interface contract (parameters, inputs, outputs, side effects),
+- lifecycle metadata (owner, status, review date),
+- dependency relationships (upstream/downstream jobs).
 
-The inventory is a **compiled view**. It must not contain invented facts.
+The normative schema defined here supports:
+- **Discovery**: Fast orientation for humans and agents (what jobs exist, what they consume/produce)
+- **Validation**: Deterministic verification that entries conform to required structure and semantics
+- **Automation**: Reliable extraction of job metadata by tools, orchestration systems, and planning agents
+- **Governance**: Tracking of job lifecycle, ownership, and interface stability
 
-This specification defines:
-- the required structure of `docs/job_inventory.md`
-- the required table schema
-- deterministic derivation rules from sources of truth
-- how unknowns are tracked and displayed
+### How entries are used
 
+Job inventory entries are compiled into the repository's authoritative job catalog (`docs/catalogs/job_inventory.md`). The catalog is a **living inventory** that aggregates entries following this specification.
+
+Entries are sourced from:
+- Job manifests (`jobs/<job_group>/<job_id>/job_manifest.yaml`) for interface facts
+- Artifact catalog (`docs/catalogs/artifacts_catalog.md`) for artifact identifiers
+- Business descriptions (`docs/business_job_descriptions/<job_id>.md`) for purpose statements
+- Repository evidence (folder structure, file presence) for discovery
+
+### Out of scope
+
+This specification does NOT define:
+- **Catalog file structure**: The overall structure and section rules for `docs/catalogs/job_inventory.md` (this is an implementation concern)
+- **Tool command syntax**: How to run validation or regeneration tools (see `docs/ops/tooling_reference.md`)
+- **Per-job business logic**: Business rationale, requirements, or domain rules (see `docs/standards/business_job_description_spec.md`)
+- **Implementation details**: Job code structure or runtime behavior (see `docs/standards/script_card_spec.md`)
+- **Derivation procedures**: Detailed algorithms for extracting entry values from source artifacts (this is tooling implementation)
+---
+
+## 1) Core concepts
+
+### 1.1 What is a job inventory entry?
+
+A **job inventory entry** is a structured record representing one executable job. It captures:
+- **Identity**: Unique identifier, folder location, deployment name
+- **Interface contract**: What the job accepts (parameters, inputs) and produces (outputs)
+- **Behavior characteristics**: Side effects, evidence artifacts, execution runtime
+- **Governance metadata**: Owner, lifecycle status, last review date
+- **Dependencies**: Relationships with other jobs via shared artifacts
+
+### 1.2 Entry vs catalog distinction
+
+- **Entry** (this spec): The normative schema for a single job's record
+- **Catalog** (separate concern): The compiled inventory file containing all entries
+
+This specification defines entries. The catalog structure, section headings, and presentation format are implementation concerns governed by catalog tooling and documentation standards.
+
+### 1.3 Semantic properties
+
+**Machine-readable**: Entries must be parseable and validatable by automation without human interpretation.
+
+**Evidence-based**: Entry values must be sourced from authoritative artifacts (manifests, catalogs, file system evidence). Unknown values are explicitly marked with `TBD`.
+
+**Stable patterns**: Entries describe stable interface contracts, not run-specific instances. Placeholders represent parameterized values; concrete run identifiers must not appear in entry patterns.
+
+**Incremental maintenance**: New jobs can be added by inserting new entries without modifying existing entries (except to update dependency relationships or resolve TBDs).
 
 ---
 
-## 1) Source-of-truth rules (MUST)
+## 2) Normative schema for job inventory entries
 
-### 1.1 Job discovery rule (MUST)
+### 2.1 Required fields
 
-A job MUST be included in the inventory if and only if:
-- a folder under `jobs/<job_group>/<job_id>/` contains `glue_script.py`.
+Every job inventory entry MUST contain the following fields:
 
-Canonical `job_id` rule (MUST):
-- The canonical `job_id` used in `docs/job_inventory.md` MUST be the folder name `<job_id>` from `jobs/<job_group>/<job_id>/`.
-- The canonical `job_id` MUST be snake_case.
-- If the folder `<job_id>` is not snake_case, the inventory MUST still use the folder name as-is and MUST add an open verification item:
-  - `[TBD-job-id-format] Folder job_id is not snake_case: jobs/<job_group>/<job_id>/.`
+| Field | Type | Meaning | Unknown marker |
+|-------|------|---------|----------------|
+| `job_id` | string (identifier) | Canonical job identifier (snake_case) | N/A (always known) |
+| `job_dir` | string (path) | Repository path to job folder | N/A (always known) |
+| `executor` | enum | Job execution platform | `TBD` |
+| `deployment_name` | string | Deployed job name | `TBD` |
+| `runtime` | enum | Execution runtime type | `TBD` |
+| `owner` | string | Responsible team/role | `TBD` |
+| `business_purpose` | string (sentence) | One-sentence purpose statement | `TBD` |
+| `parameters` | list(string) or marker | Parameter names (no values) | `TBD`, `NONE` |
+| `inputs` | list(artifact_id) or marker | Input artifact identifiers | `TBD`, `NONE` |
+| `outputs` | list(artifact_id) or marker | Output artifact identifiers | `TBD`, `NONE` |
+| `side_effects` | structured string | Delete/overwrite behaviors | `TBD` |
+| `evidence_artifacts` | structured string | Run receipt and counters | `TBD` |
+| `upstream_job_ids` | list(job_id) or marker | Jobs this job depends on | `TBD` |
+| `downstream_job_ids` | list(job_id) or marker | Jobs that depend on this job | `TBD` |
+| `status` | enum | Job lifecycle status | `TBD` |
+| `last_reviewed` | date (ISO 8601) | Last validation date | `TBD` |
 
-If `job_manifest.yaml` is missing for such a folder, the job row MUST still exist, but all manifest-derived fields MUST be `TBD` and an open verification item `[TBD-manifest]` MUST be added.
+### 2.2 Field semantics and value rules
 
-### 1.2 Row sourcing rules (MUST)
+#### 2.2.1 Identity fields
 
-For each job row:
+**`job_id` (MUST; always known)**
+- Format: snake_case identifier (lowercase with underscores)
+- Uniqueness: Must be unique across all entries
+- Derivation: Folder name from `jobs/<job_group>/<job_id>/`
+- Specification: `docs/standards/naming_standard.md` Section 4.1
+- Breaking change: Renaming a job_id requires governance approval and migration plan
 
-1. **Interface fields** (parameters, inputs, outputs, side effects, evidence artifacts (run receipt behavior and counters), runtime/executor if present in manifest) MUST come from that job’s `job_manifest.yaml`.
-Clarification: config_files[] from the manifest are not represented as separate interface columns in docs/job_inventory.md in v1.4. The inventory indexes only inputs[] and outputs[]. (Artifact consumers may still be derived from config_files[] in the artifacts catalog.)
-2. **Artifact identifiers** for `inputs` and `outputs` MUST come from `docs/catalogs/artifacts_catalog.md` by linking each manifest input/output to exactly one `artifact_id` (see artifact linking rule below).
-3. **Business purpose text** MAY come from a business description document if present; otherwise `TBD`.
-   - If a business description exists, it MUST be taken from `docs/business_job_descriptions/<job_id>.md`.
-4. **Dependency claims** (upstream/downstream) MUST only be stated if supported by evidence inside this repo (see “Dependency links” rules). Otherwise `TBD`.
+**`job_dir` (MUST; always known)**
+- Format: Repository-relative path ending with `/`
+- Example: `jobs/vendor_input_processing/matching_proposals/`
+- Derivation: Path to folder containing `glue_script.py`
 
-**Forbidden:** deriving interface details from Script Cards (they are secondary renderings).
+**`deployment_name` (MUST)**
+- Meaning: Deployed job name in execution platform (e.g., AWS Glue job name)
+- Format: String matching platform naming constraints
+- Source: `glue_job_name` field from job manifest
+- Unknown: `TBD` (if manifest missing or field not present)
 
-### 1.3 Manifest field mapping (MUST)
+#### 2.2.2 Execution characteristics
 
-To avoid guessing, the following inventory fields MUST be sourced from these `job_manifest.yaml` keys:
+**`executor` (MUST)**
+- Meaning: Platform that executes the job
+- Allowed values: `aws_glue`, `aws_lambda`, `make`, `other`, `TBD`
+- Derivation: Inferred from manifest `glue_job_name` presence or explicit declaration
+- Unknown: `TBD` (if cannot determine from manifest)
 
-Scalar `TBD` handling (MUST):
-- If a manifest key is present but its value is the scalar string `TBD`, treat it as unknown exactly as if the key were missing.
-- Apply the same behavior defined for the missing-key case (including setting the derived inventory field to `TBD` and adding the corresponding open verification item tag if the missing-key case defines one).
+**`runtime` (MUST)**
+- Meaning: Execution runtime type
+- Allowed values: `pyspark`, `python_shell`, `python`, `nodejs`, `other`, `TBD`
+- Source: `runtime` field from job manifest
+- Unknown: `TBD` (if manifest missing or field not present)
+- Specification: `docs/standards/job_manifest_spec.md` Section 5.2
 
-Manifest `job_id` consistency check (MUST):
-- If the manifest contains a top-level key `job_id` and its value differs from the canonical folder-based `job_id`,
-  - the inventory MUST still use the canonical folder-based `job_id`,
-  - and an open verification item MUST be added:
-    - `[TBD-manifest-id-mismatch] Manifest job_id differs from folder job_id for jobs/<job_group>/<job_id>/.`
+#### 2.2.3 Interface contract fields
 
-- `deployment_name`:
-  - Use `glue_job_name` if present, else `TBD`.
-- `runtime`:
-  - Use `runtime` if present, else `TBD`.
-- `parameters`:
-  - Use `parameters` (list of names) if present.
-  - If `parameters` exists and is an empty list: `NONE`.
-  - Else if missing: `TBD` and add `[TBD-params]`.
-- `inputs`:
-  - Use `inputs[]` items if present (for artifact linking).
-  - If `inputs` exists and has 0 items: `NONE`.
-  - Else if missing: `TBD` and add `[TBD-inputs]`.
-- `outputs`:
-  - Use `outputs[]` items if present (for artifact linking).
-  - If `outputs` exists and has 0 items: `NONE`.
-  - Else if missing: `TBD` and add `[TBD-outputs]`.
-- `side_effects`:
-  - Use `side_effects.deletes_inputs` and `side_effects.overwrites_outputs` if present.
-  - If missing: `TBD` and add `[TBD-side-effects]`.
-- `evidence_artifacts`:
-  - `run_receipt` MUST be sourced from `logging_and_receipt.writes_run_receipt` if present; else `TBD` and add `[TBD-evidence]`.
-  - `counters` MUST be sourced from `logging_and_receipt.counters_observed` if present:
-    - If list is empty: `NONE`.
-    - Else: comma-separated names.
-  - If `logging_and_receipt` is missing entirely: set both to `TBD` and add `[TBD-evidence]`.
+**`parameters` (MUST)**
+- Meaning: List of parameter names accepted by job (no values)
+- Representation:
+  - Known parameters: Comma-separated list (e.g., `INPUT_BUCKET, vendor_name`)
+  - Provably empty: `NONE`
+  - Unknown: `TBD`
+- Source: `parameters` list from job manifest
+- Order: Preserve manifest order when known
 
-`executor` sourcing:
-- If `glue_job_name` exists as a top-level manifest key, set `executor=aws_glue`.
-- Otherwise set `executor=TBD` and add `[TBD-executor]`.
+**`inputs` (MUST)**
+- Meaning: List of artifact identifiers consumed by job
+- Representation:
+  - Known artifacts: Semicolon-separated list aligned to manifest order (e.g., `external__bmecat_input; preprocessIncomingBmecat__vendor_products`)
+  - Individual unknown positions: `TBD` in specific position
+  - Provably empty: `NONE`
+  - Entirely unknown: `TBD`
+- Source: Artifact identifiers resolved from manifest `inputs[]` via artifact catalog matching
+- Linking: Each manifest input item must match exactly one artifact catalog entry by normalized S3 pattern or filename
+- Placeholder normalization: See `docs/standards/artifacts_catalog_spec.md` Section 2.1
 
-### Business purpose extraction rule (deterministic, MAY)
+**`outputs` (MUST)**
+- Meaning: List of artifact identifiers produced by job
+- Representation: Same rules as `inputs`
+- Source: Artifact identifiers resolved from manifest `outputs[]` via artifact catalog matching
 
-If `docs/business_job_descriptions/<job_id>.md` exists:
-- set `business_purpose` by extracting the value from the first line in section `## 1)` that starts with:
-  - `Business purpose (one sentence):`
-- The extracted value is the substring after the colon (`:`), trimmed of surrounding whitespace.
-- If the line exists but the value is empty after trimming, set `business_purpose=TBD` and add `[TBD-biz-purpose]`.
+**`side_effects` (MUST)**
+- Meaning: Job behaviors that modify S3 state beyond declared outputs
+- Format: Compact structured string `deletes_inputs=<value>; overwrites_outputs=<value>`
+- Allowed values per component: `true`, `false`, `TBD`
+- Example: `deletes_inputs=false; overwrites_outputs=true`
+- Source: `side_effects` object from job manifest
+- Unknown: `deletes_inputs=TBD; overwrites_outputs=TBD` (if manifest missing or incomplete)
 
-If the document does not contain such a line under the `## 1)` section, set `business_purpose=TBD` and add `[TBD-biz-purpose]`.
+**`evidence_artifacts` (MUST)**
+- Meaning: Audit artifacts produced by job
+- Format: Compact structured string `run_receipt=<value>; counters=<value>`
+- Allowed values for `run_receipt`: `true`, `false`, `TBD`
+- Allowed values for `counters`: Comma-separated counter names, `NONE`, `TBD`
+- Example: `run_receipt=true; counters=products_processed, errors_encountered`
+- Source: `logging_and_receipt` object from job manifest
 
-### Artifact linking rule (MUST)
+#### 2.2.4 Dependency fields
 
-To populate the `inputs` and `outputs` columns:
+**`upstream_job_ids` (MUST)**
+- Meaning: Jobs that produce artifacts consumed by this job
+- Representation:
+  - Known dependencies: Comma-separated job IDs (e.g., `preprocessIncomingBmecat, external_data_source`)
+  - Unknown: `TBD`
+- Derivation: Artifact-level evidence (jobs producing artifacts this job consumes)
+- Order: Lexicographic sort for stability
 
-- For each `inputs[]` / `outputs[]` item in the job manifest, find exactly one artifact catalog entry whose:
-  - `s3_location_pattern` matches the manifest `bucket` + `key_pattern` after placeholder normalization, OR
-  - `file_name_pattern` matches the terminal filename pattern (if used by the artifact catalog)
+**`downstream_job_ids` (MUST)**
+- Meaning: Jobs that consume artifacts produced by this job
+- Representation: Same rules as `upstream_job_ids`
+- Derivation: Artifact-level evidence (jobs consuming artifacts this job produces)
 
-Placeholder normalization (deterministic):
-- Replace any placeholder segments (e.g. `<vendor>`, `{vendor}`, `${vendor}`, `<timestamp>`, `{run_id}`) with the canonical token `<VAR>`.
-- Compare the normalized strings literally (no fuzzy matching).
+#### 2.2.5 Governance metadata
 
-Match outcome:
-- If exactly one match is found, use that entry’s `artifact_id`.
-- If zero or multiple matches are found, write `TBD` in the corresponding position and add an open verification item tagged `[TBD-artifact-catalog]`.
+**`owner` (MUST)**
+- Meaning: Team or role responsible for the job
+- Format: Short identifier (e.g., `data_pipeline_team`, `vendor_integration`)
+- Maintenance: Human-maintained; automation must preserve existing non-TBD values
+- Unknown: `TBD`
 
-No additional heuristics are allowed in v1.4 (to keep automation deterministic).
+**`business_purpose` (MUST)**
+- Meaning: One-sentence description of job's business objective
+- Format: Single sentence (under 200 characters recommended)
+- Source: Extracted from business description document if present
+- Unknown: `TBD`
 
----
+**`status` (MUST)**
+- Meaning: Job lifecycle stage
+- Allowed values: `active`, `deprecated`, `planned`, `TBD`
+- Maintenance: Human-maintained; automation must preserve existing non-TBD values
+- Unknown: `TBD`
 
-## 2) File structure of `docs/job_inventory.md` (MUST)
+**`last_reviewed` (MUST)**
+- Meaning: Date when entry was last validated against source artifacts
+- Format: ISO 8601 date `YYYY-MM-DD`
+- Update rule: Set to current date when automation successfully resolves all manifest-derived fields and artifact links
+- Unknown: `TBD`
 
-`docs/job_inventory.md` MUST have exactly these top-level headings in this order:
+### 2.3 Unknown and empty value semantics
 
-1. `# Job Inventory`
-2. `## Scope and evidence`
-3. `## Jobs`
-4. `## Dependency links`
-5. `## Open verification items`
+#### 2.3.1 `TBD` (unknown marker)
 
-No other top-level headings are allowed.
+**Meaning**: Value cannot be determined from available evidence.
 
----
+**Usage rules**:
+- Use for scalar fields when source artifact is missing or field is not present
+- Use for list fields when list content is entirely unknown (not partially known)
+- Must be accompanied by explanation in verification items (catalog implementation concern)
 
-## 3) “Jobs” table schema (MUST)
+**Distinction from provably empty**: `TBD` means "unknown"; `NONE`/`[]` means "proven to be empty"
 
-Under `## Jobs`, there MUST be **one single markdown table** with exactly these columns (same order, same names):
+#### 2.3.2 `NONE` (explicit empty marker)
 
-1. `job_id`
-2. `job_dir`
-3. `executor`
-4. `deployment_name`
-5. `runtime`
-6. `owner`
-7. `business_purpose`
-8. `parameters`
-9. `inputs`
-10. `outputs`
-11. `side_effects`
-12. `evidence_artifacts`
-13. `upstream_job_ids`
-14. `downstream_job_ids`
-15. `status`
-16. `last_reviewed`
+**Meaning**: Evidence confirms the list is provably empty.
 
-### Column value rules (MUST)
+**Usage rules**:
+- Use for `parameters` when manifest shows `parameters: []`
+- Use for `inputs` when manifest shows `inputs: []`
+- Use for `outputs` when manifest shows `outputs: []`
+- Use within `evidence_artifacts` counters when manifest shows `counters_observed: []`
 
-General:
-- `TBD` is the only allowed unknown marker.
-- `NONE` is the only allowed explicit-empty marker (used only when emptiness is provable from the manifest).
-- Table cells MUST NOT contain raw `|` characters. If unavoidable, escape as `\|`.
+**Rationale**: Distinguishes "no items exist" from "don't know if items exist"
 
-Field rules:
-- `job_id`: snake_case, unique across table
-- `job_dir`: repo path to the job folder (e.g., `jobs/vendor_input_processing/matching_proposals/`)
-  - For automation-generated rows, `job_dir` MUST be exactly `jobs/<job_group>/<job_id>/` as discovered by the `glue_script.py` scan.
-- `executor`: one of `aws_glue | aws_lambda | make | other | TBD`
-- `deployment_name`: exact deployment name from manifest if present; else `TBD`
-  - For AWS Glue jobs, this is the configured Glue job name.
-- `runtime`: one of `pyspark | python_shell | python | nodejs | other | TBD`
-- `owner`: short owner identifier (team/role) or `TBD`
-- `business_purpose`: 1 sentence or `TBD`
-- `parameters`: comma-separated parameter names (no values) or `NONE` or `TBD`
-  - `NONE` is allowed only if the manifest shows zero parameters.
+#### 2.3.3 Scalar `TBD` discipline for list fields
 
-Interface lists:
-- `inputs`: semicolon-separated list aligned to the manifest `inputs[]` order
-  - Each position is either a concrete `artifact_id` or `TBD`
-  - If the manifest has zero inputs, use `NONE`
-  - Do not paste S3 patterns here
-- `outputs`: semicolon-separated list aligned to the manifest `outputs[]` order
-  - Each position is either a concrete `artifact_id` or `TBD`
-  - If the manifest has zero outputs, use `NONE`
-  - Do not paste S3 patterns here
+For list-type fields (`parameters`, `inputs`, `outputs`, `upstream_job_ids`, `downstream_job_ids`):
+- Unknown MUST be represented as scalar string `TBD` (not `[TBD]` or omitted field)
+- Individual unknown positions within a known-length list use `TBD` at that position
 
-Side effects:
-- `side_effects`: compact string `deletes_inputs=<v>; overwrites_outputs=<v>` where `<v>` is `true|false|TBD`
-
-Evidence artifacts:
-- `evidence_artifacts`: compact string `run_receipt=<v>; counters=<v>`
-  - `run_receipt` value `<v>` is `true|false|TBD`
-  - `counters` value `<v>` is:
-    - comma-separated counter names (no values), OR
-    - `NONE`, OR
-    - `TBD`
-
-Dependencies:
-- `upstream_job_ids`: comma-separated job_ids or `TBD`
-- `downstream_job_ids`: comma-separated job_ids or `TBD`
-
-Lifecycle:
-- `status`: one of `active | deprecated | planned | TBD`
-- `last_reviewed`: ISO date `YYYY-MM-DD` or `TBD`
-  - Meaning: last date the row was validated against its manifest + artifact catalog links.
-
-`last_reviewed` automation rule (MUST):
-- When an automation creates or updates a row and can resolve all manifest-derived fields AND can resolve artifact_id links for all inputs/outputs (no `TBD` positions in those lists), it MUST set `last_reviewed` to the automation execution date (local repo convention).
-- Otherwise it MUST NOT change `last_reviewed`.
-
-`owner` and `status` handling rule (MUST; human-maintained):
-- Automation MUST preserve existing non-`TBD` values in `owner` and `status`.
-- If `owner` or `status` is missing/empty in an existing row, automation MUST set it to `TBD`.
-- Automation MUST NOT overwrite an existing non-`TBD` `owner` or `status` value.
-
-Ordering and uniqueness best practice (MUST for automation output stability):
-- `upstream_job_ids` and `downstream_job_ids` lists MUST be de-duplicated and sorted ascending (lexicographic) when generated by automation.
+Example for `inputs` with 3 positions where middle one is unknown:
+```
+inputs: artifact_one; TBD; artifact_three
+```
 
 ---
 
-## 4) Dependency links section (MUST)
+## 3) Placeholder handling
 
-Under `## Dependency links`, there MUST be a bullet list where each bullet is exactly:
+### 3.1 Placeholder representation in entries
 
-`- <upstream_job_id> -> <downstream_job_id> : <artifact_id or TBD>`
+Job inventory entries describe **stable interface patterns**, not concrete run instances. Placeholders represent runtime-substituted values in artifact patterns.
 
-Rules:
-- Each listed link must correspond to the `upstream_job_ids` / `downstream_job_ids` columns in the Jobs table.
-- Use `TBD` if the linking artifact is not yet cataloged.
-- If no dependency evidence exists for a job, its upstream/downstream columns remain `TBD` (do not claim `NONE`).
+### 3.2 Canonical placeholder format
 
-### Dependency derivation rule (MUST; automation-derived)
+**In job manifests**: `${NAME}` (canonical format per `docs/standards/job_manifest_spec.md` Section 6.1)
 
-Dependencies MUST be derived automatically from artifact-level evidence in the Jobs table (D1).
+**In inventory entries**: Placeholders are resolved to artifact identifiers through artifact catalog matching. The inventory does not expose placeholder syntax directly; it references stable artifact identifiers.
 
-Preparation:
-- For each job row, parse `inputs` and `outputs` into lists of tokens separated by `;`.
-- Ignore `TBD` and `NONE` tokens when deriving dependencies.
+### 3.3 Normalized placeholder matching
 
-Definitions:
-- For each job, define `job_outputs` as the set of `artifact_id` values present in its `outputs` list (excluding `TBD` and `NONE`).
-- For each job, define `job_inputs` as the set of `artifact_id` values present in its `inputs` list (excluding `TBD` and `NONE`).
+When matching manifest patterns to artifact catalog entries, placeholders are normalized per `docs/standards/artifacts_catalog_spec.md` Section 2.1:
+- `${vendor}`, `{vendor}`, `<vendor>` all normalize to `<VAR>`
+- Matching is deterministic after normalization
+- No fuzzy matching or heuristic interpretation
 
-Derivation:
-1. For each `artifact_id` that appears in any job’s `job_outputs`, compute:
-   - `producers(artifact_id)` = all jobs whose `job_outputs` contains the `artifact_id`
-   - `consumers(artifact_id)` = all jobs whose `job_inputs` contains the `artifact_id`
+### 3.4 Cross-reference
 
-2. If `len(producers(artifact_id)) == 1`:
-   - Let `P` be the single producer job_id.
-   - For each consumer job_id `C` in `consumers(artifact_id)`:
-     - Create a dependency link bullet: `- P -> C : artifact_id`
-     - Record `P` in `C.upstream_job_ids`
-     - Record `C` in `P.downstream_job_ids`
-
-3. If `len(producers(artifact_id)) > 1` (safety rule):
-   - NO dependency link bullets MUST be created for this `artifact_id`.
-   - Add an open verification item:
-     - `[TBD-wiring] Multiple producers for artifact_id=<artifact_id>: <producer_job_id_1>, <producer_job_id_2>, ... . Dependency edges not generated.`
-
-4. After derivation:
-   - `upstream_job_ids` and `downstream_job_ids` MUST be de-duplicated and sorted ascending (lexicographic) for stability.
-   - The `## Dependency links` bullet list MUST be sorted ascending by:
-     1) upstream_job_id, 2) downstream_job_id, 3) artifact_id.
-
-Notes:
-- If a job has no derived upstream/downstream entries, the corresponding columns MUST remain `TBD` (absence of evidence ≠ evidence of absence).
+For complete placeholder naming rules and semantics:
+- Parameter placeholders: `docs/standards/naming_standard.md` Section 4.6
+- Manifest placeholder usage: `docs/standards/job_manifest_spec.md` Section 6
+- Artifact matching normalization: `docs/standards/artifacts_catalog_spec.md` Section 2.1
 
 ---
 
-## 5) Open verification items (MUST)
+## 4) Compatibility and breaking changes
 
-Under `## Open verification items`, include a bullet list of unresolved facts.
+### 4.1 Stable contracts
 
-Each bullet MUST start with one of these tags:
+Job inventory entries represent **interface contracts**. The following changes are considered breaking and require governance approval:
 
-- `[TBD-manifest]`
-- `[TBD-manifest-id-mismatch]`
-- `[TBD-job-id-format]`
-- `[TBD-runtime]`
-- `[TBD-executor]`
-- `[TBD-deployment]`
-- `[TBD-owner]`
-- `[TBD-params]`
-- `[TBD-inputs]`
-- `[TBD-outputs]`
-- `[TBD-side-effects]`
-- `[TBD-evidence]`
-- `[TBD-wiring]`
-- `[TBD-artifact-catalog]`
-- `[TBD-biz-purpose]`
+**Breaking changes**:
+- Renaming `job_id`
+- Changing `deployment_name` for a deployed job
+- Removing items from `parameters` list
+- Removing items from `inputs` or `outputs` lists
+- Changing `artifact_id` references (cascades from artifact catalog changes)
 
-Example:
-- `[TBD-wiring] Confirm Make scenario that triggers job_id=matching_proposals.`
+**Governance requirements for breaking changes**:
+- Decision record documenting rationale, impact, and migration plan
+- Deprecation period with backward compatibility support (where feasible)
+- Update to all affected entries and downstream dependencies
+- Explicit human approval before implementation
+
+### 4.2 Non-breaking changes
+
+The following changes are non-breaking and can be made incrementally:
+
+- Adding new entries (new jobs)
+- Adding optional parameters to existing jobs (if appended to list)
+- Adding new outputs (if additive and not replacing existing artifacts)
+- Resolving `TBD` values to concrete values
+- Updating `last_reviewed` date
+- Updating `status` from `planned` to `active`
+
+### 4.3 Backward compatibility expectations
+
+**Deprecation period**: Minimum 30 days or one release cycle (whichever is longer) when removing or renaming stable identifiers.
+
+**Dual-write support**: For artifact renames, maintain dual-write (old and new artifact) during transition period.
+
+**Migration guidance**: Breaking changes must include explicit migration steps for affected consumers.
+
+### 4.4 Schema evolution
+
+**Adding new fields**: New optional fields may be added to the schema without breaking existing entries. Automation must handle absent fields gracefully.
+
+**Changing field semantics**: Requires new specification version and governance approval. Cannot be done silently.
+
+**Deprecating fields**: Requires deprecation marker, transition period, and eventual removal with version increment.
 
 ---
 
-## 6) Incremental update rules (MUST)
+## 5) Validation expectations
 
-When adding a new job:
-1. Add exactly **one new row** to the Jobs table.
-2. Add zero or more new dependency bullets under `## Dependency links`.
-3. Add any new verification bullets under `## Open verification items`.
-4. Do not rewrite existing rows except to replace `TBD` with confirmed values or to set `last_reviewed`.
-5. If `inputs`/`outputs` positions are `TBD` because artifact_ids are missing or ambiguous, create/fix the required entries in `docs/catalogs/artifacts_catalog.md` first (or in the same PR), then replace the `TBD` positions.
+### 5.1 Schema validation (MUST)
 
-If automation-derived dependencies are enabled:
-- `upstream_job_ids`, `downstream_job_ids`, and `## Dependency links` MUST be regenerated according to the dependency derivation rule.
+Validators MUST verify:
+
+**Structural compliance**:
+- All required fields are present
+- Field types match normative schema
+- Enum values are from allowed sets
+- `job_id` is unique across all entries
+- `job_id` follows naming standard (snake_case pattern)
+
+**Semantic compliance**:
+- `job_dir` path exists in repository (contains `glue_script.py`)
+- Artifact identifiers in `inputs`/`outputs` exist in artifact catalog
+- Job IDs in `upstream_job_ids`/`downstream_job_ids` reference existing entries
+- `side_effects` and `evidence_artifacts` follow compact structured string format
+- `last_reviewed` is valid ISO 8601 date or `TBD`
+
+**Consistency compliance**:
+- `deployment_name` matches manifest `glue_job_name` (if manifest exists)
+- `runtime` matches manifest `runtime` field (if manifest exists)
+- Parameter/input/output counts align with manifest declarations
+
+### 5.2 Evidence validation (SHOULD)
+
+Validators SHOULD check:
+
+**Source traceability**:
+- Fields marked as sourced from manifest can be traced to actual manifest file
+- Artifact identifiers can be matched to artifact catalog entries
+- Business purpose can be traced to business description document
+
+**TBD tracking**:
+- All `TBD` values have corresponding verification items (catalog implementation)
+- `TBD` values are not present when source evidence exists
+
+### 5.3 Validation failure handling
+
+**Critical violations** (MUST block entry acceptance):
+- Missing required fields
+- Invalid enum values
+- Malformed structured strings
+- Non-existent artifact references
+- Duplicate `job_id`
+- `job_id` format violations
+
+**Warnings** (SHOULD flag for review):
+- `TBD` values without explanation
+- Missing manifest when job folder exists
+- Misaligned field values between entry and manifest
+- Outdated `last_reviewed` date (>90 days)
 
 ---
 
-## 7) Compliance checklist (PASS/FAIL)
+## 6) Illustrative example (non-normative)
 
-The inventory file is compliant if:
-- all required headings exist in order
-- there is exactly one Jobs table with exact column names and order
-- every job_id is unique; if a job_id is not snake_case, a `[TBD-job-id-format]` open verification item exists
-- `executor`, `runtime`, `status` values are from allowed enums
-- `side_effects` follows the required `deletes_inputs=...; overwrites_outputs=...` format
-- `evidence_artifacts` follows the required `run_receipt=...; counters=...` format
-- dependency bullets follow the exact `A -> B : artifact` format
-- open items bullets start with one of the allowed tags
-- `inputs` and `outputs` are semicolon-separated lists aligned to manifest counts, or `NONE` if the manifest count is zero
+The following example shows a complete job inventory entry. This is for illustration only and is not normative.
+
+```yaml
+job_id: preprocessIncomingBmecat
+job_dir: jobs/vendor_input_processing/preprocessIncomingBmecat/
+executor: aws_glue
+deployment_name: preprocessIncomingBmecat
+runtime: pyspark
+owner: vendor_integration_team
+business_purpose: Extract and standardize product data from vendor BMEcat XML files
+parameters: INPUT_BUCKET, Vendor_name, Bmecat_input_key, Bmecat_output_prefix
+inputs: external__bmecat_input
+outputs: preprocessIncomingBmecat__vendor_products; preprocessIncomingBmecat__vendor_categories
+side_effects: deletes_inputs=false; overwrites_outputs=true
+evidence_artifacts: run_receipt=true; counters=products_processed, categories_extracted
+upstream_job_ids: TBD
+downstream_job_ids: matching_proposals, category_mapping_to_canonical
+status: active
+last_reviewed: 2026-01-30
+```
+
+**Note**: Actual representation format (table, YAML, JSON) is an implementation detail of the job inventory catalog tool. This schema defines the semantic content, not the presentation format.
+
+---
+
+## 7) Consistency check appendix
+
+### 7.1 Documents aligned with
+
+This specification was developed in alignment with:
+
+1. **`docs/context/glossary.md`**: Used canonical definitions for job_id, artifact_id, TBD, NONE, breaking change, evidence
+2. **`docs/context/development_approach.md`**: Aligned with 5-step workflow and evidence discipline
+3. **`docs/context/documentation_system_catalog.md`**: Positioned as normative standard (not catalog implementation or per-job content)
+4. **`docs/process/workflow_guide.md`**: Supported Step 5 validation and documentation requirements
+5. **`docs/standards/naming_standard.md`**: Referenced for job_id format, parameter naming, and breaking change rules
+6. **`docs/standards/job_manifest_spec.md`**: Used as authoritative source for manifest field semantics and placeholder rules
+7. **`docs/standards/artifacts_catalog_spec.md`**: Referenced for artifact_id format and placeholder normalization
+8. **`docs/standards/documentation_spec.md`**: Followed metadata header and formatting requirements
+
+### 7.2 Conflicts detected
+
+**None detected**. The following potential overlaps were reviewed and resolved:
+
+- **With job_manifest_spec.md**: This spec references manifest fields as sources but does not redefine them. Clear boundary: manifest spec defines interface contracts; this spec defines inventory entry schema.
+- **With naming_standard.md**: This spec references naming rules but does not duplicate them. Clear boundary: naming standard defines identifier formats; this spec defines where identifiers appear in entries.
+- **With artifacts_catalog_spec.md**: This spec uses artifact_id as a reference type but does not define artifact catalog entry structure. Clear boundary: artifact catalog spec defines artifact contracts; this spec defines how jobs reference artifacts.
+
+### 7.3 Boundaries enforced
+
+This specification explicitly avoids:
+
+1. **Catalog file structure**: Does not define section headings, dependency link format, or verification items structure for `docs/catalogs/job_inventory.md` (implementation concern)
+2. **Derivation algorithms**: Does not specify step-by-step procedures for extracting entry values from manifests (tooling concern; see `docs/ops/tooling_reference.md`)
+3. **Tool command syntax**: Does not include validation commands or regeneration tool usage (see `docs/ops/tooling_reference.md`)
+4. **Per-job business logic**: Does not define job-specific requirements or domain rules (see business job descriptions)
+5. **Implementation details**: Does not describe job code structure or runtime behavior (see script cards)
+
+### 7.4 Design decisions
+
+This section documents design decisions made during specification development.
+
+**Decision 1: Multi-repository artifact linking**
+- **Question**: How to represent artifacts consumed from or produced to external repositories
+- **Current scope**: This specification assumes all artifacts are in a single repository's artifact catalog
+- **Decision**: Maintain single-repo assumption until multi-repo need is proven (2026-01-30)
+- **Rationale**: 
+  - No current evidence of multi-repo artifact dependencies in the repository
+  - Adding multi-repo support now would introduce unnecessary complexity
+  - Schema can be extended later if requirement emerges (via optional `external_source` field or qualified artifact_id format)
+- **Future extension path**: If multi-repo linking becomes necessary, add as non-breaking schema extension without modifying existing single-repo entries
+
+**Decision 2: Artifact version tracking in entries**
+- **Question**: Whether entries should reference specific artifact versions or schemas
+- **Current approach**: Entries reference artifact_id without version information
+- **Decision**: Maintain version-agnostic references (2026-01-30)
+- **Rationale**:
+  - Artifact catalog is responsible for documenting artifact schemas and versions
+  - Job inventory entries describe stable interface contracts, not versioned artifacts
+  - Separates concerns: inventory tracks "what artifacts", catalog tracks "what's in artifacts"
+  - Reduces maintenance burden (entries don't need updates when artifact schemas evolve compatibly)
+- **Breaking change handling**: If artifact versions introduce breaking changes, handle via artifact catalog migration procedures (dual-write, deprecation) rather than versioning in inventory entries
+
+### 7.5 Verification notes
+
+**Evidence sources checked**:
+- Previous `job_inventory_spec.md` reviewed for completeness
+- Repository contains 4 jobs under `jobs/vendor_input_processing/` verified by file system scan
+- Existing job inventory file at `docs/catalogs/job_inventory.md` reviewed (currently empty template)
+
+**Standards consistency**:
+- All field names match glossary definitions
+- All references to other specs use correct section numbers (verified 2026-01-30)
+- No shadow specifications introduced (standards referenced, not duplicated)
+
+**Completeness check**:
+- All 16 required fields defined with semantics
+- All enum values specified
+- All unknown/empty markers defined
+- Placeholder handling delegated to authoritative specs
+- Breaking change rules aligned with governance requirements
+
+---
+

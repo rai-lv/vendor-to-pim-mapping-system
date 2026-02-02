@@ -718,7 +718,7 @@ An `artifact_id` is the stable canonical identifier for an artifact type in the 
 ### 5.3 Governance action for breaking changes
 
 **Required steps (MUST):**
-1. Create a decision record documenting:
+1. Create a decision record per `docs/standards/decision_records_standard.md` documenting:
    - Reason for the change
    - Old vs. new naming
    - Impact analysis (all affected jobs, artifacts, references)

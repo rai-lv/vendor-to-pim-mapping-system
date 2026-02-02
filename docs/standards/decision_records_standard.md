@@ -48,6 +48,8 @@ When conflicts exist (approved intent vs. implemented reality, standards vs. art
 
 A decision record MUST be created when any of the following conditions are met:
 
+**Note:** For breaking changes and governance-level changes, creating and approving a decision record per this standard IS the governance approval process. References in other standards to "governance approval" or "explicit approval" mean creating an approved decision record as defined here.
+
 #### 2.1.1 Breaking Changes to Stable Contracts
 **Trigger:** Any change that breaks existing automation, cross-job references, or established contracts.
 

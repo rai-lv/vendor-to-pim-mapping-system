@@ -91,16 +91,16 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* Opening statement: A clear, concise statement of the job's business purpose (typically 1-2 sentences)
+- Opening statement: A clear, concise statement of the job's business purpose (typically 1-2 sentences)
   - May use the label "Business purpose:" or integrate naturally into the opening paragraph
   - Should answer: "What business outcome does this job achieve?"
-* Context: 1-3 additional sentences explaining business objective and what is produced
-* Boundary statement: One explicit statement of what the job does NOT do
+- Context: 1-3 additional sentences explaining business objective and what is produced
+- Boundary statement: One explicit statement of what the job does NOT do
   - Use format: "Does not..." or "Boundary:..." or integrate into context
 
 **Optional**
 
-* Process landscape: Where the job sits in the overall workflow (or `TBD` if unknown)
+- Process landscape: Where the job sits in the overall workflow (or `TBD` if unknown)
 
 ---
 
@@ -108,19 +108,19 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* Plain-language list of required inputs, expressed as **business artifacts**, not storage details.
-* For each required input: one short phrase describing what it represents.
-* Behavior when inputs are missing or malformed:
+- Plain-language list of required inputs, expressed as **business artifacts**, not storage details.
+- For each required input: one short phrase describing what it represents.
+- Behavior when inputs are missing or malformed:
   - "job fails" / "job continues with empty output" / "job skips the element"
   - If behavior differs for empty vs missing vs malformed, document each case
 
 **Allowed format**
 
-* Subsections are acceptable for clarity:
+- Subsections are acceptable for clarity:
   - "Runtime parameters" for job invocation parameters
   - "Required input files" for data inputs
   - "Optional inputs" with behavior if absent
-* Bullet list of artifact names + parenthetical meaning, e.g.:
+- Bullet list of artifact names + parenthetical meaning, e.g.:
   - `${vendor_name}_categoryMatchingProposals.json` (full proposals)
   - `${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json` (1→1 subset)
 
@@ -133,7 +133,7 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Optional**
 
-* Mention where the job gets the pointers from (e.g., "keys carried in run receipt/config") but without bucket/prefix patterns unless they are essential.
+- Mention where the job gets the pointers from (e.g., "keys carried in run receipt/config") but without bucket/prefix patterns unless they are essential.
 
 ---
 
@@ -141,10 +141,10 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* Bullet list of produced artifacts with 1-line meaning each.
-* Explicit mention of outcome type:
+- Bullet list of produced artifacts with 1-line meaning each.
+- Explicit mention of outcome type:
   - "NDJSON product feed", "JSON dictionary keyed by vendor_category_id", "status report", etc.
-* If relevant: whether output is overwritten vs appended (as a business-operational fact).
+- If relevant: whether output is overwritten vs appended (as a business-operational fact).
 
 ---
 
@@ -152,23 +152,23 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* 4-12 steps in natural language, or logical parts with substeps
-* Steps describe transformations that a stakeholder cares about:
+- 4-12 steps in natural language, or logical parts with substeps
+- Steps describe transformations that a stakeholder cares about:
   - "enriches products with ..."
   - "aggregates per vendor category ..."
   - "derives rules from stable training base ..."
   - "validates rules and updates reference ..."
 
 **For complex jobs with multiple phases:**
-* Use subsections (### PART 1, ### PART 2, etc.)
-* Each part can have 2-6 steps
-* Total combined should remain readable (aim for under 15 total steps across all parts)
+- Use subsections (### PART 1, ### PART 2, etc.)
+- Each part can have 2-6 steps
+- Total combined should remain readable (aim for under 15 total steps across all parts)
 
 **Must avoid**
 
-* function names, class names, Spark operations (`explode`, `groupBy`) unless they are needed to understand a business rule.
-* Detailed code-level implementation (that belongs in the script card or code comments).
-* Tool command syntax or operational procedures.
+- function names, class names, Spark operations (`explode`, `groupBy`) unless they are needed to understand a business rule.
+- Detailed code-level implementation (that belongs in the script card or code comments).
+- Tool command syntax or operational procedures.
 
 ---
 
@@ -176,7 +176,7 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* Bullet list of rules that materially affect results:
+- Bullet list of rules that materially affect results:
   - selection/prioritization (e.g., "uses first match found")
   - exclusions (e.g., "filters out products without article_id")
   - thresholds (e.g., "requires minimum 3 products per category")
@@ -190,7 +190,7 @@ Business descriptions MUST use the following section structure. Section numberin
 
 **Must contain**
 
-* 1-6 bullets of explicit non-goals to prevent misinterpretation.
+- 1-6 bullets of explicit non-goals to prevent misinterpretation.
 
 ---
 
@@ -200,16 +200,16 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 **What belongs here (if anywhere):**
 
-* Critical failure behavior that affects business continuity: "fails fast if ..."
-* Output behavior that affects downstream consumption: "writes empty output and exits if ...", "overwrites the same output key each run"
-* Monitoring/observability artifacts essential to business tracking: "creates run receipt / status artifacts for monitoring"
+- Critical failure behavior that affects business continuity: "fails fast if ..."
+- Output behavior that affects downstream consumption: "writes empty output and exits if ...", "overwrites the same output key each run"
+- Monitoring/observability artifacts essential to business tracking: "creates run receipt / status artifacts for monitoring"
 
 **What does NOT belong here:**
 
-* Runtime configuration details (use script card)
-* Detailed error handling and recovery (use script card)
-* Performance characteristics (use script card)
-* Deployment/infrastructure details (use script card or ops documentation)
+- Runtime configuration details (use script card)
+- Detailed error handling and recovery (use script card)
+- Performance characteristics (use script card)
+- Deployment/infrastructure details (use script card or ops documentation)
 
 **Reference:** For comprehensive operational detail, see the corresponding script card per `docs/standards/script_card_spec.md`.
 
@@ -219,8 +219,8 @@ This section is optional and should be minimal. Use it ONLY for operational fact
 
 **Must contain**
 
-* Anything not evidenced: `TBD`
-* Any interpretation: explicitly labeled `ASSUMPTION`
+- Anything not evidenced: `TBD`
+- Any interpretation: explicitly labeled `ASSUMPTION`
 
 ---
 

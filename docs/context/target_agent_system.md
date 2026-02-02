@@ -220,8 +220,8 @@ Required handling:
 2. Identify which “kind of truth” is involved (intent vs rules vs runtime vs evidence).
 3. Propose resolution options:
 
-   * align implementation to approved intent, or
-   * update intent/rules to match reality with explicit human approval.
+   - align implementation to approved intent, or
+   - update intent/rules to match reality with explicit human approval.
 4. Record the decision in an auditable form.
 
 Agents and tools must not silently resolve conflicts by rewriting documents or code without approval.

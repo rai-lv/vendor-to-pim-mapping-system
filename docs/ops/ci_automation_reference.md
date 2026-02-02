@@ -6,7 +6,7 @@
 
 ---
 
-### Standards Validation (CI Gate)
+## Standards Validation (CI Gate)
 
 Every PR **must pass** automated validation. See `docs/standards/validation_standard.md` for validation requirements, tools, and CI integration details.
 

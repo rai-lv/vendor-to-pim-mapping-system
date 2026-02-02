@@ -50,6 +50,8 @@ A decision record MUST be created when any of the following conditions are met:
 
 **Note:** For breaking changes and governance-level changes, creating and approving a decision record per this standard IS the governance approval process. References in other standards to "governance approval" or "explicit approval" mean creating an approved decision record as defined here.
 
+**Exception for standard adoption:** The initial adoption of this standard itself (and any pre-existing governance documents) is approved via the standard PR approval process. Once this standard is approved and merged, subsequent governance changes follow the decision record process defined here.
+
 #### 2.1.1 Breaking Changes to Stable Contracts
 **Trigger:** Any change that breaks existing automation, cross-job references, or established contracts.
 
@@ -80,13 +82,24 @@ A decision record MUST be created when any of the following conditions are met:
 - **Rules conflict:** Standards or governance rules conflict with an artifact
 - **Runtime conflict:** Implementation behavior conflicts with approved intent
 - **Evidence conflict:** Evidence contradicts claims or expected outcomes
+- **Decision conflict:** Two or more approved decision records contain contradictory requirements
 
 **Examples:**
 - Job manifest declares an output as required, but script makes it optional (intent vs. runtime conflict)
 - Standard requires snake_case, but deployed job uses camelCase (rules vs. runtime conflict)
 - Documentation claims a feature is "verified", but no evidence exists (evidence conflict)
+- DR-0001 requires snake_case universally, but DR-0025 allows camelCase for legacy jobs (decision conflict)
 
 **Why required:** Conflicts must not be silently resolved. The decision record documents which source of truth was chosen and why.
+
+**Resolving decision-to-decision conflicts:**
+When two approved decision records contradict each other:
+1. Create a new decision record that explicitly addresses the conflict
+2. The new decision MUST supersede one or both conflicting decisions, or clarify precedence rules
+3. Update the superseded decisions' status and cross-references (per Section 3.1.9)
+4. Update decision_log.md to reflect the resolution
+
+Example resolution: "DR-0050 supersedes DR-0025 (exception removal) while DR-0001 (snake_case requirement) remains active and now applies universally."
 
 #### 2.1.4 Introduction or Removal of Document Types or Canonical Placements
 **Trigger:** Changes to the documentation system catalog structure (ref: `documentation_system_catalog.md`).
@@ -365,8 +378,9 @@ All job identifiers MUST use snake_case format (lowercase with underscores). Exi
 
 **Handling partial supersession:**
 - If a decision is **fully replaced** by a single newer decision: Use "Superseded" status with single "Superseded by" reference
-- If a decision is **partially superseded** by multiple decisions (different aspects replaced separately): Use "Deprecated" status and list all superseding decisions in "Superseded by" field (comma-separated), or note in Status section which aspects are superseded
-- Example: "Superseded by: DR-0015 (length guidance), DR-0020 (casing rules); snake_case requirement still active"
+- If a decision is **partially superseded** by multiple decisions (different aspects replaced separately): Keep status as "Approved" and list all superseding decisions in "Superseded by" field (comma-separated). Add a note in the Status section clarifying which aspects remain active and which are superseded.
+- Example: "Superseded by: DR-0015 (length guidance only), DR-0020 (casing rules only); snake_case requirement remains active"
+- **Rationale:** Partially superseded decisions remain normative for their non-superseded aspects, so "Approved" status is correct. Use "Deprecated" only when the entire decision is no longer recommended but still in effect during a transition period.
 
 ### 3.2 Optional Sections (MAY)
 
@@ -383,6 +397,58 @@ Practical guidance for implementing the decision. Should NOT duplicate standards
 
 #### 3.2.4 Review History
 Log of when the decision was reviewed or revisited. Useful for long-lived decisions that are periodically re-evaluated.
+
+### 3.3 Amendments and Corrections to Approved Decisions
+
+After a decision record is approved, certain types of corrections and clarifications are permitted without creating a superseding decision:
+
+#### 3.3.1 Permitted Direct Amendments (MAY)
+
+The following changes MAY be made directly to an approved decision record without superseding it:
+
+**Typographical corrections:**
+- Fix spelling errors, grammar issues, or formatting problems
+- Correct names, dates, or references that are factually incorrect
+- MUST note the correction in the commit message
+- Example: "Fix typo: 'Jame Smith' → 'Jane Smith'"
+
+**Evidence additions:**
+- Add missing references to evidence that existed at the time of approval
+- Add clarifying links to supporting documentation
+- MUST NOT change the decision or rationale; only supplement existing evidence
+
+**Clarification notes:**
+- Add clarifying text to the Context or Rationale sections if the original wording was ambiguous
+- Add to optional Review History section (3.2.4) to note when clarification was added
+- MUST NOT change the meaning of the decision
+
+#### 3.3.2 Changes Requiring Supersession (MUST)
+
+The following changes MUST be made via a superseding decision record:
+
+**Substantive changes:**
+- Changing the decision itself (what was decided)
+- Modifying acceptance criteria, migration timelines, or affected components
+- Reversing or materially altering the rationale
+- Correcting factual errors that affect the decision's validity (e.g., "affects 4 jobs" → actually affects 12 jobs, requiring different approach)
+
+**Status changes:**
+- Marking a decision as Superseded or Deprecated (via superseding decision)
+- Withdrawing or rejecting an approved decision (cannot be done; create superseding decision instead)
+
+#### 3.3.3 Amendment Documentation
+
+When making permitted direct amendments:
+- Include clear commit message describing the amendment
+- If the amendment is significant (beyond typo fixes), consider adding a note to the optional Review History section (3.2.4)
+- Preserve git history so the amendment is auditable
+
+**Example Review History entry for clarification:**
+```markdown
+## Review History
+
+**2026-03-15:** Clarification added to Rationale section regarding exception handling. Original decision unchanged. (Commit: abc123)
+```
 
 ---
 
@@ -425,9 +491,10 @@ Decision records MUST use exactly one of the following status values:
 - Cross-reference to superseding decision exists
 
 **Transition rules:**
-- Can only transition from: **Approved**
+- Can transition from: **Approved** (directly) or **Deprecated** (after deprecation period)
 - Requires: Reference to superseding decision in "Superseded By" section
 - The superseding decision MUST list this decision in its "Supersedes" section
+- Note: Most decisions transition directly from Approved to Superseded. The Deprecated state is used when a transition period is needed.
 
 #### 4.1.4 Rejected
 **Definition:** Decision was proposed but explicitly rejected by human reviewer.
@@ -502,6 +569,21 @@ Decisions MUST be approved by humans with appropriate authority:
 - **Architecture decisions:** Technical lead or team consensus
 
 **Rule:** Decision records MUST identify the approver by name/role, not just "team" or "someone".
+
+**Multiple approvers:**
+
+Multiple approvals are RECOMMENDED when:
+- Decision affects multiple teams or functional areas (cross-functional decision)
+- Breaking change affects more than 3 jobs or components (high-impact change)
+- Principle or workflow changes (governance-level decisions)
+- High-risk architectural decisions with significant long-term implications
+
+Multiple approvals are OPTIONAL but may be valuable for:
+- Exception requests (standard owner + affected party)
+- Controversial or debated decisions (broader consensus)
+- Decisions with unclear ownership boundaries
+
+When multiple approvals are obtained, the Approval Reference section (3.1.7) MUST document all approvers and their roles.
 
 #### 5.1.2 Forms of Acceptable Approval
 
@@ -970,10 +1052,10 @@ This section documents decisions made about how to implement this standard itsel
   - Cross-reference validation MAY be automated (check referenced decisions exist)
   - Status transition validation MAY be automated (enforce lifecycle rules)
   - Decision ID uniqueness validation SHOULD be automated (check no duplicate IDs exist)
-  - **Manual process**: Before creating a new decision record, check `docs/catalogs/decision_log.md` to determine the next available Decision ID
 
 **Implementation guidance:**
-- Automation details belong in `docs/ops/tooling_reference.md` (not in this standard)
+- Specific automation implementation details (commands, scripts, procedures) belong in `docs/ops/tooling_reference.md` (not in this standard)
+- Manual processes (e.g., how to determine next Decision ID) belong in `docs/ops/tooling_reference.md`
 - Automation is supportive, not mandatory - manual creation is always acceptable
 - Focus automation on reducing friction, not enforcing compliance
 
@@ -1064,6 +1146,15 @@ This standard was aligned with the following documents:
 2. ✅ **Review/expiration policy:** No review policy - decisions active until superseded (Section 9.2)
 3. ✅ **Automation support:** Recommended for documentation/PR workflows; details in ops layer (Section 9.3)
 4. ✅ **Tag standardization:** Suggested tags with recommended categories (Section 9.4, implemented in Section 6.2.4)
+
+**Improvements made (2026-02-02):**
+1. ✅ **Circular dependency resolved:** Added exception for standard adoption itself (Section 2.1 note)
+2. ✅ **Partial supersession clarified:** Use Approved status with notes, not Deprecated (Section 3.1.9)
+3. ✅ **Amendment process added:** New Section 3.3 covering post-approval corrections
+4. ✅ **Status transitions clarified:** Section 4.1.3 now explicit about direct and via-Deprecated paths
+5. ✅ **Operational details separated:** Section 9.3 now references ops layer for implementation specifics
+6. ✅ **Multi-approver guidance added:** Section 5.1.1 now specifies when multiple approvals recommended
+7. ✅ **Decision conflicts addressed:** Section 2.1.3 now covers decision-to-decision conflicts
 
 **Next steps:**
 - Human review and approval of this standard

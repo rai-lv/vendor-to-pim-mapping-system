@@ -9,6 +9,7 @@ CURRENT VALIDATION COVERAGE:
   ✅ Job Manifests (job_manifest.yaml)
   ✅ Artifacts Catalog (docs/catalogs/artifacts_catalog.md)
   ✅ Job Inventory (docs/catalogs/job_inventory.md)
+  ✅ Security Checks (Python scripts and YAML files)
 
 VALIDATION RULES:
 
@@ -41,8 +42,18 @@ KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
   ⚠️  Codable Task Specs: NOT IMPLEMENTED
   ⚠️  Decision Records: NOT IMPLEMENTED
   ⚠️  Context Documents: NOT IMPLEMENTED
-  ⚠️  Security Checks: NOT IMPLEMENTED
-  ⚠️  Consistency Checks: NOT IMPLEMENTED
+  ⚠️  Consistency Checks: NOT IMPLEMENTED (cross-document validation)
+
+4. Security Checks (NEW - basic patterns only):
+   - AWS access keys (AKIA..., ASIA...)
+   - Generic password patterns in code
+   - Hardcoded API keys and tokens
+   - Private key patterns
+   - SQL string concatenation (potential injection)
+   - Unsafe YAML loading (yaml.load vs yaml.safe_load)
+   
+   Note: These are basic pattern checks. For comprehensive security scanning,
+   use dedicated tools like GitGuardian, TruffleHog, or Bandit.
 
 For detailed specifications and rationale, see:
   - docs/standards/job_manifest_spec.md
@@ -608,6 +619,14 @@ def show_coverage():
     print("     - Heading order enforcement")
     print("     - Jobs table structure validation")
     print()
+    print("  ✅ Security Checks (Python and YAML files)")
+    print("     - AWS access key detection")
+    print("     - Hardcoded password detection")
+    print("     - API key and token detection")
+    print("     - Private key detection")
+    print("     - SQL injection pattern detection")
+    print("     - Unsafe YAML loading detection")
+    print()
     print("-" * 70)
     print("NOT IMPLEMENTED (Future Work):")
     print("  ⚠️  Business Descriptions")
@@ -632,17 +651,111 @@ def show_coverage():
     print("  ⚠️  Agent Layer Documents")
     print("     - agent_role_charter.md, .github/agents/*.md")
     print()
-    print("  ⚠️  Security Validation")
-    print("     - Secret detection, credential scanning, SQL injection checks")
-    print()
     print("  ⚠️  Consistency Validation")
     print("     - Cross-document reference checking, contradiction detection")
     print()
     print("-" * 70)
-    print("COVERAGE: 30% (3/10 validation types)")
+    print("COVERAGE: 40% (4/10 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)
+
+
+# Security patterns to detect common secrets and vulnerabilities
+SECURITY_PATTERNS = {
+    "aws_access_key": (
+        r"(?:A3T[A-Z0-9]|AKIA|AGPA|AIDA|AROA|AIPA|ANPA|ANVA|ASIA)[A-Z0-9]{16}",
+        "Potential AWS Access Key ID",
+    ),
+    "aws_secret_key": (
+        r"(?i)aws(.{0,20})?(?:secret|access|key|password)(.{0,20})?['\"]([a-zA-Z0-9/+=]{40})['\"]",
+        "Potential AWS Secret Access Key",
+    ),
+    "generic_api_key": (
+        r"(?i)(?:api|apikey|api_key|access|token)(.{0,20})?['\"]([a-zA-Z0-9]{20,})['\"]",
+        "Potential API Key or Token",
+    ),
+    "password_in_code": (
+        r"(?i)(?:password|passwd|pwd)(.{0,20})?=(.{0,20})?['\"]([^'\"]{8,})['\"]",
+        "Hardcoded password in code",
+    ),
+    "private_key": (
+        r"-----BEGIN (?:RSA |DSA |EC )?PRIVATE KEY-----",
+        "Private key in file",
+    ),
+    "sql_concatenation": (
+        r"(?:SELECT|INSERT|UPDATE|DELETE).{0,100}?\+.{0,20}?['\"]",
+        "Potential SQL injection (string concatenation in SQL)",
+    ),
+    "unsafe_yaml_load": (
+        r"yaml\.load\s*\([^)]*\)",
+        "Unsafe YAML loading (use yaml.safe_load instead)",
+    ),
+}
+
+
+def validate_security(path: Path):
+    """
+    Scan file for common security issues.
+    
+    Checks for:
+    - AWS access keys and secret keys
+    - Generic API keys and tokens
+    - Hardcoded passwords
+    - Private keys
+    - SQL injection patterns (string concatenation in SQL)
+    - Unsafe YAML loading (yaml.load vs yaml.safe_load)
+    
+    Note: This is basic pattern matching. For comprehensive security scanning,
+    use dedicated tools like GitGuardian, TruffleHog, Bandit, or Semgrep.
+    """
+    violations = []
+    
+    try:
+        content = path.read_text(encoding="utf-8")
+    except (UnicodeDecodeError, PermissionError):
+        # Skip binary files or files we can't read
+        return violations
+    
+    lines = content.splitlines()
+    
+    for pattern_name, (pattern, description) in SECURITY_PATTERNS.items():
+        for line_num, line in enumerate(lines, 1):
+            # Skip comments in Python and YAML
+            stripped = line.strip()
+            if stripped.startswith("#"):
+                continue
+            
+            if re.search(pattern, line):
+                violations.append(
+                    Violation(
+                        "security",
+                        path,
+                        pattern_name,
+                        f"{description} at line {line_num}",
+                    )
+                )
+    
+    return violations
+
+
+def find_security_scan_paths():
+    """Find Python and YAML files to scan for security issues."""
+    paths = []
+    # Scan Python files
+    paths.extend(REPO_ROOT.glob("**/*.py"))
+    # Scan YAML files
+    paths.extend(REPO_ROOT.glob("**/*.yaml"))
+    paths.extend(REPO_ROOT.glob("**/*.yml"))
+    
+    # Exclude common directories we don't want to scan
+    excluded_patterns = [".git", "venv", "node_modules", "__pycache__"]
+    filtered_paths = []
+    for path in paths:
+        if not any(excluded in path.parts for excluded in excluded_patterns):
+            filtered_paths.append(path)
+    
+    return sorted(filtered_paths)
 
 
 def parse_args(argv):
@@ -663,12 +776,17 @@ def parse_args(argv):
         help="Validate the job inventory.",
     )
     parser.add_argument(
+        "--security",
+        action="store_true",
+        help="Scan for common security issues (secrets, credentials, SQL injection).",
+    )
+    parser.add_argument(
         "--coverage",
         action="store_true",
         help="Show validation coverage report and exit.",
     )
     args = parser.parse_args(argv)
-    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory or args.coverage):
+    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory or args.security or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
@@ -684,6 +802,7 @@ def main(argv):
     run_manifests = args.all or args.manifests
     run_artifacts = args.all or args.artifacts_catalog
     run_inventory = args.all or args.job_inventory
+    run_security = args.all or args.security
 
     violations = []
     pass_count = 0
@@ -714,6 +833,15 @@ def main(argv):
             violations.extend(inventory_violations)
         else:
             pass_count += 1
+    
+    if run_security:
+        security_paths = find_security_scan_paths()
+        for path in security_paths:
+            security_violations = validate_security(path)
+            if security_violations:
+                violations.extend(security_violations)
+            else:
+                pass_count += 1
 
     for violation in violations:
         print(violation.format())

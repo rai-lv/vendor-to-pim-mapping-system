@@ -1,4 +1,56 @@
 #!/usr/bin/env python3
+"""
+Repository Documentation and Manifest Validator
+
+This tool validates repository documentation and manifest files against
+specifications defined in docs/standards/.
+
+CURRENT VALIDATION COVERAGE:
+  ✅ Job Manifests (job_manifest.yaml)
+  ✅ Artifacts Catalog (docs/catalogs/artifacts_catalog.md)
+  ✅ Job Inventory (docs/catalogs/job_inventory.md)
+
+VALIDATION RULES:
+
+1. Job Manifests (per docs/standards/job_manifest_spec.md):
+   - Required fields: job_id, glue_job_name, runtime, parameters, inputs,
+     outputs, side_effects, logging_and_receipt
+   - job_id must match folder name
+   - Placeholder syntax: Must use ${NAME}, not <NAME> or {NAME}
+   - TBD handling: If any field contains "TBD", notes field is required with:
+     * TBD_EXPLANATIONS block in notes
+     * Each TBD field path mentioned in notes
+
+2. Artifacts Catalog (per docs/standards/artifacts_catalog_spec.md):
+   - Required fields (in order): artifact_id, file_name_pattern,
+     s3_location_pattern, format, producer_job_id, producers/consumers,
+     presence_on_success, purpose, content_contract, evidence_sources
+   - Optional governance fields (in order): producer_glue_job_name,
+     stability, breaking_change_rules
+   - Purpose must not be TBD
+   - Entries with "producers" field must be in shared artifacts allowlist
+
+3. Job Inventory (per docs/standards/job_inventory_spec.md):
+   - Required headings (in order): # Job Inventory, ## Scope and evidence,
+     ## Jobs, ## Dependency links, ## Open verification items
+   - Jobs table with required columns (in order)
+
+KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
+  ⚠️  Business Descriptions: NOT IMPLEMENTED
+  ⚠️  Script Cards: NOT IMPLEMENTED
+  ⚠️  Codable Task Specs: NOT IMPLEMENTED
+  ⚠️  Decision Records: NOT IMPLEMENTED
+  ⚠️  Context Documents: NOT IMPLEMENTED
+  ⚠️  Security Checks: NOT IMPLEMENTED
+  ⚠️  Consistency Checks: NOT IMPLEMENTED
+
+For detailed specifications and rationale, see:
+  - docs/standards/job_manifest_spec.md
+  - docs/standards/artifacts_catalog_spec.md
+  - docs/standards/job_inventory_spec.md
+  - docs/standards/validation_standard.md
+  - VALIDATION_ANALYSIS.md (validation coverage analysis)
+"""
 import argparse
 import re
 import sys
@@ -47,10 +99,12 @@ ARTIFACTS_REQUIRED_KEYS_WITHOUT_PRODUCERS = [
 ]
 
 # Optional governance fields allowed (in order) after evidence_sources in artifacts_catalog entries.
+# These are documented in docs/standards/artifacts_catalog_spec.md Section 6.
+# They provide additional metadata for governance and stability tracking.
 OPTIONAL_GOVERNANCE_FIELDS = [
-    "producer_glue_job_name",
-    "stability",
-    "breaking_change_rules",
+    "producer_glue_job_name",  # Glue job name (may differ from job_id)
+    "stability",               # Stability rating: experimental, stable, deprecated
+    "breaking_change_rules",   # Breaking change policies for this artifact
 ]
 
 JOB_INVENTORY_HEADINGS = [
@@ -121,8 +175,20 @@ def collect_tbd_paths(data):
 
 
 def contains_invalid_placeholder(value: str) -> bool:
+    """
+    Check if string contains invalid placeholder syntax.
+    
+    Valid placeholder syntax: ${NAME} (Bash-style variable references)
+    Invalid placeholder syntax:
+      - <NAME> (angle brackets reserved for non-placeholder values like URLs)
+      - {NAME} (curly braces alone are not valid)
+    
+    This enforces placeholder normalization per docs/standards/naming_standard.md.
+    """
+    # Check for <NAME> style (invalid)
     if re.search(r"<[^>]+>", value):
         return True
+    # Remove valid ${NAME} style, then check for remaining {NAME} style (invalid)
     cleaned = re.sub(r"\$\{[^}]+\}", "", value)
     return bool(re.search(r"\{[^}]+\}", cleaned))
 
@@ -207,6 +273,12 @@ def validate_manifest(path: Path):
             )
         )
 
+    # TBD EXPLANATION REQUIREMENT:
+    # Per docs/standards/job_manifest_spec.md, if any field contains "TBD",
+    # the manifest must include a "notes" field with:
+    #   1. A "TBD_EXPLANATIONS:" block
+    #   2. An explanation for each TBD field path
+    # This ensures TBD values are tracked and eventually resolved.
     tbd_paths = collect_tbd_paths(data)
     if tbd_paths:
         notes = data.get("notes")
@@ -506,8 +578,78 @@ def find_manifest_paths():
     return sorted(REPO_ROOT.glob("jobs/*/*/job_manifest.yaml"))
 
 
+def show_coverage():
+    """
+    Display validation coverage report.
+    
+    Shows which validation types are implemented vs not implemented.
+    Useful for understanding tool limitations and planning future work.
+    """
+    print("=" * 70)
+    print("VALIDATION COVERAGE REPORT")
+    print("=" * 70)
+    print()
+    print("IMPLEMENTED VALIDATORS:")
+    print("  ✅ Job Manifests (job_manifest.yaml)")
+    print("     - Required fields validation")
+    print("     - job_id matching folder name")
+    print("     - Placeholder syntax enforcement (${NAME} only)")
+    print("     - TBD explanation requirements")
+    print()
+    print("  ✅ Artifacts Catalog (docs/catalogs/artifacts_catalog.md)")
+    print("     - Entry structure validation")
+    print("     - Required fields in correct order")
+    print("     - Optional governance fields support")
+    print("     - Purpose not TBD enforcement")
+    print("     - Producers allowlist check")
+    print()
+    print("  ✅ Job Inventory (docs/catalogs/job_inventory.md)")
+    print("     - Required headings validation")
+    print("     - Heading order enforcement")
+    print("     - Jobs table structure validation")
+    print()
+    print("-" * 70)
+    print("NOT IMPLEMENTED (Future Work):")
+    print("  ⚠️  Business Descriptions")
+    print("     - See: docs/standards/business_job_description_spec.md")
+    print()
+    print("  ⚠️  Script Cards")
+    print("     - See: docs/standards/script_card_spec.md")
+    print()
+    print("  ⚠️  Codable Task Specifications")
+    print("     - See: docs/standards/codable_task_spec.md")
+    print()
+    print("  ⚠️  Decision Records")
+    print("     - See: docs/standards/decision_records_standard.md")
+    print()
+    print("  ⚠️  Context Layer Documents")
+    print("     - development_approach.md, target_agent_system.md,")
+    print("     - documentation_system_catalog.md, glossary.md, system_context.md")
+    print()
+    print("  ⚠️  Process Layer Documents")
+    print("     - workflow_guide.md, contribution_approval_guide.md")
+    print()
+    print("  ⚠️  Agent Layer Documents")
+    print("     - agent_role_charter.md, .github/agents/*.md")
+    print()
+    print("  ⚠️  Security Validation")
+    print("     - Secret detection, credential scanning, SQL injection checks")
+    print()
+    print("  ⚠️  Consistency Validation")
+    print("     - Cross-document reference checking, contradiction detection")
+    print()
+    print("-" * 70)
+    print("COVERAGE: 30% (3/10 validation types)")
+    print()
+    print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
+    print("=" * 70)
+
+
 def parse_args(argv):
-    parser = argparse.ArgumentParser(description="Validate repo standards compliance.")
+    parser = argparse.ArgumentParser(
+        description="Validate repo standards compliance.",
+        epilog="Run with --coverage to see validation coverage report."
+    )
     parser.add_argument("--all", action="store_true", help="Run all validations.")
     parser.add_argument("--manifests", action="store_true", help="Validate job manifests.")
     parser.add_argument(
@@ -520,14 +662,25 @@ def parse_args(argv):
         action="store_true",
         help="Validate the job inventory.",
     )
+    parser.add_argument(
+        "--coverage",
+        action="store_true",
+        help="Show validation coverage report and exit.",
+    )
     args = parser.parse_args(argv)
-    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory):
+    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
 
 def main(argv):
     args = parse_args(argv)
+    
+    # Handle coverage report request
+    if args.coverage:
+        show_coverage()
+        return 0
+    
     run_manifests = args.all or args.manifests
     run_artifacts = args.all or args.artifacts_catalog
     run_inventory = args.all or args.job_inventory

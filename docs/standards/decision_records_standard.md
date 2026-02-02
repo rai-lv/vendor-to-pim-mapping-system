@@ -363,6 +363,11 @@ All job identifiers MUST use snake_case format (lowercase with underscores). Exi
 - When a decision is superseded, the Status MUST change to "Superseded" and this section MUST reference the superseding decision
 - When creating a decision that supersedes others, MUST update the superseded decisions' status and cross-references
 
+**Handling partial supersession:**
+- If a decision is **fully replaced** by a single newer decision: Use "Superseded" status with single "Superseded by" reference
+- If a decision is **partially superseded** by multiple decisions (different aspects replaced separately): Use "Deprecated" status and list all superseding decisions in "Superseded by" field (comma-separated), or note in Status section which aspects are superseded
+- Example: "Superseded by: DR-0015 (length guidance), DR-0020 (casing rules); snake_case requirement still active"
+
 ### 3.2 Optional Sections (MAY)
 
 Decision records MAY include the following additional sections if helpful:
@@ -630,6 +635,12 @@ The decision log MUST contain:
 - Active decisions MUST be listed in reverse chronological order (newest first)
 - Tags SHOULD be used to enable filtering by topic area (see Section 6.2.4 for recommended tags)
 - Cross-references to decision files MUST use relative paths
+
+**Formatting conventions:**
+- **Decision ID column**: Use plain text (e.g., `DR-0001`) or markdown link (e.g., `[DR-0001](../decisions/DR-0001-adopt-snake-case-naming.md)`)
+- **Title column**: Keep concise (under 60 characters); truncate with "..." if needed for readability
+- **Tags column**: Use comma-separated format (e.g., `naming, standards`); leave empty or use `-` for decisions without tags
+- **Long content**: If table becomes unwieldy, consider splitting by year or status in separate sub-tables
 
 #### 6.2.3 Index Maintenance
 - Adding a new decision: Add entry to appropriate status section in decision log
@@ -958,6 +969,8 @@ This section documents decisions made about how to implement this standard itsel
   - Decision record templates MAY be generated (next Decision ID, pre-filled structure)
   - Cross-reference validation MAY be automated (check referenced decisions exist)
   - Status transition validation MAY be automated (enforce lifecycle rules)
+  - Decision ID uniqueness validation SHOULD be automated (check no duplicate IDs exist)
+  - **Manual process**: Before creating a new decision record, check `docs/catalogs/decision_log.md` to determine the next available Decision ID
 
 **Implementation guidance:**
 - Automation details belong in `docs/ops/tooling_reference.md` (not in this standard)

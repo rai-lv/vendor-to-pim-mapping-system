@@ -176,6 +176,34 @@ Make one capability implementable without uncontrolled decomposition.
    - task dependencies are explicit.
 5) Surface unknowns/assumptions and stop if unapproved assumptions would be required.
 
+### Documentation and storage
+
+**Capability plan storage:**
+Capability plans (including capability definitions and codable task breakdowns) SHOULD be stored in one of the following locations based on project workflow:
+
+1. **GitHub Issues** — For ongoing work tracked in issue form, capability plans can be documented in issue descriptions with task breakdowns in checklists.
+2. **Planning documents** — For more detailed or multi-capability planning, create Markdown documents in `docs/planning/capability_<name>.md` or similar project-specific location.
+3. **PR descriptions** — For smaller capabilities implemented in a single PR, the capability plan and task breakdown can be documented in the PR description.
+
+**Required elements regardless of storage location:**
+- Capability boundary statement (what it does and does NOT do)
+- Acceptance criteria (evaluable)
+- Codable task breakdown following the structure defined in `docs/standards/codable_task_spec.md`:
+  - Task identity (identifier and parent capability reference)
+  - Task purpose
+  - Task boundaries
+  - Dependencies
+  - Intended outputs
+  - Acceptance criteria
+  - Unknowns/assumptions (if present)
+
+**Traceability:**
+- Capability plans MUST reference the approved pipeline plan they derive from
+- Codable tasks MUST reference their parent capability
+- Implementation artifacts (PRs, commits) SHOULD reference the tasks they implement
+
+**Reference:** See `docs/standards/codable_task_spec.md` for the normative structure of codable task specifications.
+
 ### Exit criteria (human-checkable)
 - Capability boundary is unambiguous.
 - Acceptance criteria are evaluable.

@@ -849,64 +849,39 @@ Changes to this standard are considered breaking when:
 
 ## 10) Open items / TBD
 
-This section lists items that could not be fully grounded in existing documentation and require human decision or additional evidence.
+~~This section lists items that could not be fully grounded in existing documentation and require human decision or additional evidence.~~
+
+**Update 2026-02-02:** All open items have been resolved based on human decisions. This section is retained for traceability.
 
 ### 10.1 Task naming/identification conventions
 
-**Status:** TBD
+**Status:** RESOLVED
 
-**Issue:** This spec requires task identifiers but does not prescribe a specific naming convention.
+**Decision:** Option B — Leave flexible, require only that task identifiers be "clear descriptive phrases"
 
-**Current state:**
-- `docs/standards/naming_standard.md` defines naming for job_id, artifact_id, parameters, placeholders
-- No specific convention exists for task identifiers within capability plans
+**Rationale:** Task identifiers are primarily for human readability and tracking within capability plans. Flexibility allows task naming to adapt to context without introducing unnecessary constraints. If machine-parsing becomes necessary in the future, a specific convention can be added to `naming_standard.md` at that time.
 
-**Options:**
-1. **Option A:** Add task naming convention to naming_standard.md (e.g., "Task identifiers SHOULD use format: 'Task N: <verb> <object>'")
-2. **Option B:** Leave flexible, require only that task identifiers be "clear descriptive phrases"
-3. **Option C:** Recommend numbered format (Task 1, Task 2, ...) within each capability
-
-**Recommendation:** Option B (flexible) is sufficient for now. Add to naming_standard.md only if task identifiers need to be machine-parsed.
-
-**Impact if unresolved:** Low. Task identifiers are primarily for human readability and tracking. Flexibility is acceptable.
+**Implementation:** No changes required to this spec or naming_standard.md. Task identifiers remain flexible descriptive phrases as specified in Section 2.1.
 
 ### 10.2 Task specification storage location
 
-**Status:** TBD
+**Status:** RESOLVED
 
-**Issue:** This spec does not prescribe where task specifications are stored.
+**Decision:** Option C — Define in workflow_guide.md as part of Step 3 procedures
 
-**Current state:**
-- Capability plans are created during Step 3 but no canonical location is specified
-- Task specifications are part of capability plans but storage location undefined
+**Rationale:** Storage location is a workflow execution concern, not a standards concern. This spec correctly defines WHAT a task specification must contain (structure), while workflow_guide.md should define WHERE task specifications are stored and HOW they are created during Step 3.
 
-**Options:**
-1. **Option A:** Store capability plans with task breakdowns in `docs/planning/` or similar
-2. **Option B:** Store inline in Step 3 working documents (e.g., GitHub issues, planning docs)
-3. **Option C:** Define in workflow_guide.md as part of Step 3 procedures
-
-**Recommendation:** Defer to workflow_guide.md. This spec defines task structure, not where tasks are stored.
-
-**Impact if unresolved:** Low. Storage location is a workflow concern, not a standards concern.
+**Implementation:** Updated `docs/process/workflow_guide.md` Section 4 (Step 3) to include guidance on capability plan and task specification storage location.
 
 ### 10.3 Granularity thresholds (how to determine if a task is too large/small)
 
-**Status:** Partially resolved
+**Status:** RESOLVED
 
-**Issue:** Section 3 provides guidance on task size but does not define hard thresholds.
+**Decision:** Option B — Leave as qualitative guidance with examples
 
-**Current state:**
-- Guidance exists: "hours to 1-2 days, not weeks"
-- No quantitative thresholds for lines of code, number of outputs, etc.
+**Rationale:** Task size depends heavily on context (domain complexity, team experience, implementation approach). Quantitative thresholds (e.g., "3-7 acceptance criteria") would create artificial constraints that may not fit all situations. Qualitative guidance with examples (Section 3) provides sufficient direction while maintaining flexibility.
 
-**Options:**
-1. **Option A:** Add quantitative thresholds (e.g., "typically 1-5 intended outputs", "3-7 acceptance criteria")
-2. **Option B:** Leave as qualitative guidance with examples
-3. **Option C:** Provide thresholds per execution mode (human vs agent-assisted implementation)
-
-**Recommendation:** Option B (qualitative) is appropriate. Task size depends heavily on context and trying to quantify it may create rigid rules that don't fit all cases.
-
-**Impact if unresolved:** Low. Qualitative guidance with examples is sufficient. Over-prescription could be counterproductive.
+**Implementation:** No changes required. Section 3 provides appropriate qualitative guidance on task granularity with examples of too-coarse, too-fine, and appropriate task sizes.
 
 ---
 

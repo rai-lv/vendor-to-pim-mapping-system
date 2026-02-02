@@ -33,6 +33,11 @@ Anti-patterns are documented in standards to prevent recurring problems.
 A point where progression requires explicit human sign-off.
 Approval gates apply to step transitions (not to iterative refinement within a step).
 
+### Approval revocation
+The withdrawal of previously-given approval before work is merged, triggered by discovery of critical issues, material changes after approval, or dependency approval revocation.
+Requires documented reason and re-approval after concerns addressed.
+Process defined in `docs/process/contribution_approval_guide.md` Section 3.5.
+
 ### Assumption (controlled)
 An assumption is permitted only if it is:
 - explicitly labeled,
@@ -49,6 +54,11 @@ Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.1.
 A stable pattern describing a category of artifacts, distinguished from specific run instances.
 Example: artifact type = "vendor_products.json for vendor X", instance = "vendor_products.json written on 2026-01-30 at 14:23:45".
 Catalog entries document artifact types, not individual instances.
+
+### Auto-revocation
+Automatic invalidation of approval when specific conditions occur: material changes after approval, dependency approval revoked, required decision record rejected, or conflict discovered affecting approved work.
+Distinguished from manual approval revocation which requires explicit action.
+Defined in `docs/process/contribution_approval_guide.md` Section 3.5.
 
 ---
 
@@ -146,6 +156,11 @@ Adherence to standards, governance rules, and documentation specifications.
 Compliance is enforced through automated validation (where possible), human review, and periodic audits.
 Compliance checking ensures documentation and artifacts conform to approved formats, principles, and quality criteria.
 Specification: `docs/standards/documentation_spec.md` Section 7.
+
+### Concurrent approvals
+Multiple PRs in flight that reference the same approved artifacts or affect the same code/documents.
+Requires coordination: upstream merges require downstream re-review; first-merged PR takes precedence on conflicts.
+Coordination rules defined in `docs/process/contribution_approval_guide.md` Section 6.5.
 
 ### Configuration files
 Static configuration artifacts used by jobs to control their behavior (e.g., extraction rules, field mappings, vendor-specific settings).
@@ -272,6 +287,14 @@ Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
 
 ### Evidence
 Deterministic outputs that support approval decisions (e.g., validation reports, test results, run receipts, logs).
+Evidence must be reproducible and referenced explicitly when making "verified" or "confirmed" claims.
+Ref: `docs/context/target_agent_system.md` and `docs/standards/documentation_spec.md` Section 1.3.
+
+### Execution confirmation
+Artifacts that prove approved work was executed and integrated (e.g., merge commits) but are not approval evidence themselves.
+The approval must exist before execution.
+Distinguished from approval evidence which authorizes work to proceed.
+Defined in `docs/process/contribution_approval_guide.md` Section 3.1A.
 
 ### Evidence artifacts
 Audit artifacts produced by a job for tracking and validation purposes.
@@ -354,6 +377,12 @@ A key characteristic of codable tasks: the task can be understood and implemente
 An individuable task can be assigned to a single implementer without requiring coordination during implementation (coordination may be needed for integration), and does not depend on undocumented assumptions or implicit knowledge.
 Specification: `docs/standards/codable_task_spec.md` Section 1.1.
 
+### Independent reviewer
+A reviewer who did not author the work being approved, is not directly supervised by or supervising the author, and has no direct conflict of interest in the specific work.
+Required for approval in multi-person teams to maintain review independence.
+Not required for single-person teams where self-approval is permitted.
+Defined in `docs/process/contribution_approval_guide.md` Section 2.6.
+
 ### In-scope / Out-of-scope
 A boundary statement defining what the objective/capability includes and explicitly excludes.
 Used to prevent scope creep and ambiguity in planning and implementation.
@@ -404,12 +433,18 @@ A classification used to prevent mixing purposes and authority.
 Documentation is organized into distinct layers, each with a specific purpose that does not overlap with others.
 Canonical layers:
 - Context (`docs/context/`): intent, principles, operating model, framing
-- Standards (`docs/standards/`): enforceable rules, normative schemas, validation criteria
-- Process (`docs/process/`): step-by-step execution guidance, entry/exit criteria, approval gate procedures
-- Ops (`docs/ops/`): tool manuals, command syntax, CI/CD configuration, troubleshooting
-- Catalogs (`docs/catalogs/`): living inventories, compiled views, status tracking
-- Instance (`jobs/`, per-job docs): job-specific implementations, manifests, business descriptions, script cards
-Specification: `docs/standards/documentation_spec.md` Section 1.2
+- Standards (`docs/standards/`): normative rules, schemas, validation requirements
+- Process (`docs/process/`): step-by-step how-to guides, approval processes
+- Operations (`docs/ops/`): tool manuals, CLI syntax, troubleshooting
+- Catalogs (`docs/catalogs/`): compiled inventories, status tracking
+- Instance (`jobs/`, per-job docs): specific implementations
+Specification: `docs/standards/documentation_spec.md` Section 1.2.
+
+### Lightweight approval
+Accelerated approval process for low-risk changes meeting specific criteria: low risk (no contract/identifier/governance changes), narrow scope (single job internal, doc clarifications, tests), no breaking changes, and traceable.
+Requires single approver with 24-hour target review window.
+Distinguished from standard approval which may require multiple reviewers.
+Defined in `docs/process/contribution_approval_guide.md` Section 10.2.
 
 ---
 
@@ -420,6 +455,12 @@ A scaffolding tool that performs static analysis on `glue_script.py` to extract 
 Tool category: Scaffolding (per target agent system).
 Used by humans and agents to reduce manual manifest authoring.
 Location: `tools/manifest-generator/` (if implemented).
+
+### Material change
+A change that affects scope boundaries, success criteria, acceptance criteria, or approval conditions, requiring re-approval.
+Material changes include: adding/removing/modifying boundaries or criteria, changing capability/task boundaries, adding/removing unknowns/assumptions, changing traceability.
+Distinguished from non-material changes (wording, formatting, clarifications, typos) which do not require re-approval.
+Defined in `docs/process/contribution_approval_guide.md` Section 2.0.
 
 ### Markdown
 A lightweight markup language using plain text formatting syntax.
@@ -598,6 +639,12 @@ Related: Invariant, Processing logic (business flow).
 
 ### Scope boundary
 A statement that makes the objective/capability bounded and unambiguous, including explicit exclusions.
+
+### Self-approval
+The act of a contributor approving their own work.
+Permitted for single-person teams (sole member has absolute authority) but restricted in multi-person teams to maintain review independence.
+Distinguished from independent peer review where a separate reviewer approves the work.
+Defined in `docs/process/contribution_approval_guide.md` Section 2.6.
 
 ### S3 location pattern
 Stable S3 location pattern(s) for an artifact type, in the format `s3://${bucket}/${key_pattern}`.

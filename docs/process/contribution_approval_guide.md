@@ -1308,33 +1308,28 @@ The following examples illustrate the approval flow for common scenarios. These 
 
 ---
 
-## 10. Open Items / TBD
+## 10. Process Optimizations and Future Enhancements
 
-This section lists items that require human decision or clarification from other documentation.
+This section documents process optimizations that have been integrated into the approval workflow and planned future enhancements.
 
-### 10.1 Validation standard integration (RESOLVED)
+### 10.1 Validation Standard Integration
 
-**Status:** Validation standard is not yet finalized
+**Status:** Validation standard is not yet finalized.
 
-**Decision:** Option A selected — Leave as TBD until validation standard is finalized, then update this guide to integrate concrete validation requirements
+**Current approach:** This guide describes the intended relationship with the validation standard based on the documentation system catalog description.
 
-**Rationale:**
-- Minimal impact on approval process usability in current state
-- Avoids creating temporary validation requirements that would need to be replaced
-- Maintains clean separation: validation standard defines evidence validity; this guide defines approval process
-
-**Impact:**
+**Integration points:**
 - Section 3.4 (evidence discipline) references validation standard but cannot provide concrete integration details until standard is finalized
-- Section 8.3 (relationship to validation standard) describes intended relationship based on catalog description
+- Section 8.3 (relationship to validation standard) describes intended relationship
 - When validation standard is finalized: update Sections 3.4 and 8.3 with concrete integration details
 
-**Action required:** Update this guide when validation standard is approved (tracked as future work)
+**Future work:** Update this guide when validation standard is approved.
 
 ---
 
-### 10.2 Lightweight approval for low-risk changes (RESOLVED)
+### 10.2 Lightweight Approval for Low-Risk Changes
 
-**Decision:** Option B selected — Define lightweight approval criteria and accelerated process
+This section defines criteria and process for lightweight approval of low-risk changes, balancing speed with governance discipline.
 
 **Rationale:**
 - Reduces overhead for low-risk changes while maintaining governance discipline
@@ -1384,13 +1379,20 @@ Changes qualify for lightweight approval when ALL of the following are true:
 
 **Implementation note:** Lightweight approval is a process optimization, not a governance relaxation. All approval evidence requirements remain in effect.
 
-**Action required:** Update Section 7.1 (documentation-only changes) to reference lightweight approval option (completed below)
-
 ---
 
-### 10.3 Approval authority matrix (RESOLVED)
+### 10.3 Approval Authority Model
 
-**Decision:** Option A selected — Keep approval authority implicit; rely on team processes and PR ownership
+**Approach:** Approval authority is kept partially implicit to maintain flexibility as the team evolves.
+
+**Current implementation:**
+- User "rai_lv" has absolute approval authority (Section 2.6)
+- For other team members, "Human decision-maker" terminology is used
+- Actual approver identity determined by:
+  - PR ownership and assignment
+  - Team processes (e.g., code owners, area expertise)
+  - Change type context (governance changes naturally escalate to maintainers)
+  - GitHub's built-in approval mechanisms and notifications
 
 **Rationale:**
 - Approval authority is contextually clear for current team size
@@ -1398,23 +1400,13 @@ Changes qualify for lightweight approval when ALL of the following are true:
 - Team processes and PR ownership patterns naturally establish approver context
 - Flexibility preserved for evolving team structure
 
-**Current approach:**
-- "Human decision-maker" remains the documented approver in this guide
-- Actual approver identity determined by:
-  - PR ownership and assignment
-  - Team processes (e.g., code owners, area expertise)
-  - Change type context (governance changes naturally escalate to maintainers)
-  - GitHub's built-in approval mechanisms and notifications
-
-**Impact:** No changes to approval process; authority remains implicit and contextually determined
-
-**Future consideration:** If team grows significantly or approval bottlenecks emerge, revisit explicit authority matrix via decision record
+**Future consideration:** If team grows significantly or approval bottlenecks emerge, revisit explicit authority matrix via decision record.
 
 ---
 
-### 10.4 Automated approval gate checks (RESOLVED - Future Work)
+### 10.4 Automated Approval Gate Checks (Future Enhancement)
 
-**Decision:** Option B selected — Implement automated checks as CI/GitHub Actions (future enhancement)
+**Goal:** Implement automated checks as CI/GitHub Actions to complement human review.
 
 **Rationale:**
 - Automation reduces human error and ensures consistent enforcement
@@ -1444,9 +1436,9 @@ Changes qualify for lightweight approval when ALL of the following are true:
 - Custom scripts in `tools/approval-checks/` (if needed)
 - GitHub API for approval and reference validation
 
-**Current state:** Approval gates are manually enforced through review process (sufficient for current scale)
+**Current state:** Approval gates are manually enforced through review process (sufficient for current scale).
 
-**Action required:** Create GitHub issue to track automated approval gate implementation (future work, not blocking for this guide)
+**Future work:** Track automated approval gate implementation via GitHub issue.
 
 ---
 
@@ -1487,31 +1479,7 @@ This guide was drafted with explicit alignment to the following repository docum
 - **Conflict handling:** References workflow guide procedures without duplication
 - **Document boundaries:** Respects documentation system catalog placement rules
 
-### 11.3 Open items resolved
-
-Section 10 open items were resolved with the following decisions:
-
-**10.1 Validation standard integration:**
-- **Decision:** Option A (wait for validation standard)
-- **Status:** Resolved as future work; guide will be updated when validation standard is finalized
-- **Impact:** No immediate changes needed; Sections 3.4 and 8.3 describe intended integration
-
-**10.2 Lightweight approval for low-risk changes:**
-- **Decision:** Option B (define lightweight approval criteria)
-- **Status:** Resolved; lightweight approval criteria and process added to Section 10.2
-- **Impact:** Section 7.1 updated to reference lightweight approval option for documentation clarifications
-
-**10.3 Approval authority matrix:**
-- **Decision:** Option A (keep approval authority implicit)
-- **Status:** Resolved; no changes to approval process
-- **Impact:** "Human decision-maker" remains the documented approver; authority determined by team processes and PR ownership
-
-**10.4 Automated approval gate checks:**
-- **Decision:** Option B (implement automated checks as future enhancement)
-- **Status:** Resolved as future work; implementation approach documented in Section 10.4
-- **Impact:** Manual approval enforcement continues; automation tracked as future enhancement
-
-### 11.4 Assumptions introduced
+### 11.3 Assumptions introduced
 
 This section documents assumptions and design choices made in this guide, including those introduced during the 2026-02-02 revision to address identified gaps.
 
@@ -1519,7 +1487,7 @@ This section documents assumptions and design choices made in this guide, includ
 
 2. **Self-approval prohibition (Section 2.6):** This guide explicitly prohibits self-approval to maintain governance integrity. The independence definition provides clear criteria while avoiding over-specification of approval authority.
 
-3. **Approval authority model (Section 2.6):** This guide keeps approval authority partially implicit (ref: Section 10.3 rationale) while adding guardrails: independence requirements, unavailability escalation, and authority conflict resolution. This balances flexibility with governance discipline.
+3. **Approval authority model (Section 2.6):** This guide keeps approval authority partially implicit (ref: Section 10.3) while adding guardrails: independence requirements, unavailability escalation, and authority conflict resolution. This balances flexibility with governance discipline.
 
 4. **Merge commit classification (Section 3.1A):** This guide classifies merge commits as "execution confirmation" rather than "approval evidence" to eliminate circular logic. This distinction clarifies that approval must precede merge.
 

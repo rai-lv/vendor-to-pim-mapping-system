@@ -528,18 +528,29 @@ Decision records MUST reference evidence proportional to the decision's impact:
 - MAY have minimal evidence if the decision is straightforward
 - MUST still document rationale and approval
 
-### 5.2 Grandfathering Rules (TBD)
+### 5.2 Grandfathering Rules for Historical Decisions
 
-**Open item:** How to handle decisions made before this standard existed?
+**Policy:** Historical decisions made before this standard existed are documented **as-needed** when they become relevant to current work.
 
-**Impact:** Historical decisions may lack formal decision records but still affect current system contracts.
+**Approach:**
+- Decision records for pre-standard decisions are created **only when** one of the following conditions is met:
+  1. A new decision would supersede or conflict with the historical decision
+  2. A current change requires referencing the historical decision's rationale or approval
+  3. The historical decision is being questioned or re-evaluated
+  4. Documentation of the historical decision would prevent confusion or repeated discussion
 
-**Proposed options:**
-1. **Retroactive documentation:** Create decision records for significant historical decisions with "Approved (retroactive)" status, documenting known approval and context
-2. **Grandfathered status:** Mark historical decisions as "Grandfathered" with explanation of what was decided and when, but without full decision record format
-3. **As-needed documentation:** Only create decision records for historical decisions when they become relevant to current work (e.g., when considering superseding them)
+**When creating retroactive decision records:**
+- Use status **"Approved (retroactive)"** to indicate the decision was made before this standard
+- Document known context, rationale, and approval to the best available knowledge
+- Explicitly state in the Context section that this is retroactive documentation
+- Reference available evidence (commit messages, PR discussions, meeting notes, etc.)
+- Mark missing information as "Unknown - decision predates formal documentation" rather than inventing details
 
-**Requires human decision:** Which approach to use and what threshold defines "significant historical decision".
+**Rationale:**
+- Minimizes documentation burden while preserving critical governance history
+- Focuses effort on decisions that remain relevant to current work
+- Avoids creating unnecessary documentation for obsolete or superseded historical decisions
+- Allows organic discovery of which historical decisions matter through actual use
 
 ---
 
@@ -615,13 +626,45 @@ The decision log MUST contain:
 **Rules:**
 - Index MUST be kept up-to-date when decisions are created or status changes
 - Active decisions MUST be listed in reverse chronological order (newest first)
-- Tags SHOULD be used to enable filtering by topic area
+- Tags SHOULD be used to enable filtering by topic area (see Section 6.2.4 for recommended tags)
 - Cross-references to decision files MUST use relative paths
 
 #### 6.2.3 Index Maintenance
 - Adding a new decision: Add entry to appropriate status section in decision log
 - Status change: Move entry between sections and update status/date columns
 - Automation: Index maintenance MAY be automated but MUST be verified by humans
+
+#### 6.2.4 Recommended Decision Tags
+
+**Policy:** Tags are **recommended but not required**. Decision records SHOULD use tags from the suggested categories below to enable filtering, but custom tags MAY be added when existing tags are insufficient.
+
+**Recommended tag categories:**
+
+**Scope tags** (what area the decision affects):
+- `naming` - Naming conventions, identifiers, file names
+- `artifacts` - Artifact contracts, catalog entries, data formats
+- `workflow` - Development workflow, process steps, execution procedures
+- `governance` - Governance rules, approval gates, authority models
+- `standards` - Standard specifications, schemas, required fields
+- `architecture` - System architecture, design patterns, technology choices
+- `documentation` - Documentation structure, catalog, placement rules
+
+**Impact tags** (nature of the decision):
+- `breaking-change` - Breaks existing contracts or requires migration
+- `exception` - Exception to an established standard or principle
+- `conflict-resolution` - Resolves conflict between intent/rules/runtime/evidence
+
+**Usage guidelines:**
+- Use 1-3 tags per decision (avoid over-tagging)
+- Prefer existing tags over creating new ones
+- When creating custom tags, use lowercase with hyphens (kebab-case)
+- Document new tag meanings in decision log if they become commonly used
+
+**Rationale:**
+- Suggested tags provide consistency without rigid enforcement
+- Allows organic evolution of tag vocabulary based on actual needs
+- Scope tags enable filtering by functional area
+- Impact tags highlight decisions requiring special attention
 
 ### 6.3 Cross-Referencing Rules (MUST)
 
@@ -854,78 +897,97 @@ Trade-off: Slightly longer names in some contexts, but improved clarity outweigh
 
 ---
 
-## 9) Open Items / TBD
+## 9) Resolved Decisions on Standard Implementation
+
+This section documents decisions made about how to implement this standard itself.
 
 ### 9.1 Grandfathering Rules for Historical Decisions
 
-**Issue:** Section 5.2 identifies the need for grandfathering rules but does not define them.
+**Decision:** Adopted **as-needed documentation** approach (Option 3).
 
-**Impact:** Historical decisions made before this standard existed lack formal decision records. This creates ambiguity about whether they should be retroactively documented and how.
+**Rationale:** Minimizes documentation burden while preserving critical governance history. Historical decisions are documented only when they become relevant to current work.
 
-**Proposed options:**
-1. **Retroactive documentation (high effort):** Create decision records for all significant historical decisions with "Approved (retroactive)" status, best-effort reconstruction of context and approval
-2. **Grandfathered status (medium effort):** Add a "Grandfathered" status to the lifecycle for historical decisions; document them when relevant but with less detail
-3. **As-needed documentation (low effort):** Only create decision records for historical decisions when they become relevant to current work (e.g., when considering changes that would supersede them)
+**Implementation:** See Section 5.2 for complete policy and guidelines.
 
-**Requires human decision:** 
-- Which approach to use
-- What threshold defines "significant historical decision" worthy of retroactive documentation
-- Whether to add "Grandfathered" to the status lifecycle (would require updating Section 4)
+**Date resolved:** 2026-02-02
+
+---
 
 ### 9.2 Decision Review and Expiration Policy
 
-**Issue:** The standard does not define whether decisions should be periodically reviewed or if they have expiration dates.
+**Decision:** **No review policy** (Option 1) - decisions remain active until explicitly superseded.
 
-**Impact:** Long-lived decisions may become outdated without explicit review triggers. Some decisions may be time-bound (e.g., "use approach X for next 6 months") but lack enforcement.
+**Rationale:** 
+- Simpler to implement and maintain (reactive approach)
+- Avoids bureaucratic overhead of scheduled reviews
+- Natural supersession process when decisions become outdated
+- Teams can always initiate reviews when concerns arise
+- Aligns with reactive conflict resolution model (Section 2.1.3)
 
-**Proposed options:**
-1. **No review policy:** Decisions remain active until explicitly superseded (simpler, reactive)
-2. **Periodic review:** Certain decision types require review after a defined period (more proactive, more overhead)
-3. **Expiration dates:** Decisions can include optional expiration dates, after which they must be reviewed and renewed or superseded
+**Implementation:**
+- Decisions do not expire automatically
+- Decisions remain in "Approved" status until explicitly superseded or deprecated
+- If a decision becomes questionable, any team member can propose a superseding decision
+- Optional "Review History" section (Section 3.2.4) allows tracking when decisions are revisited
 
-**Requires human decision:**
-- Whether review/expiration policy is needed
-- If needed, what decision types require review and at what frequency
-- How to enforce review without creating excessive bureaucracy
+**Date resolved:** 2026-02-02
+
+---
 
 ### 9.3 Automation and Tooling Support
 
-**Issue:** This standard does not specify what automation support exists or should exist for decision record management.
+**Decision:** Automation is **recommended for documentation workflows** but not required.
 
-**Current state:** Manual creation and maintenance of decision records and decision log index.
+**Intended automation level:**
+- **When adding new documentation elements** (context docs, standards, process guides):
+  - Agents/tools SHOULD draft decision records when the change meets triggering conditions in Section 2.1
+  - Example: Adding a new document type to the catalog triggers Section 2.1.4 → agent drafts decision record
+  
+- **When creating PRs that introduce governance changes**:
+  - PR workflow SHOULD prompt for decision record creation if changes meet triggering conditions
+  - Decision records can be included in the same PR as the changes they document
+  - Example: PR modifying approval gate rules → includes draft decision record explaining change
 
-**Potential automation:**
-- Decision record file scaffolding tool (generate template with next Decision ID)
-- Decision log index auto-update (parse decision files and generate index)
-- Cross-reference validation (check that referenced decisions exist and are correctly linked)
-- Status transition validation (enforce lifecycle rules)
+- **Decision log index maintenance**:
+  - MAY be automated (parse decision files, generate index)
+  - MUST be verified by humans before committing
 
-**Requires human decision:**
-- What level of automation is desired
-- Whether automation is optional (MAY) or required (MUST) for certain operations
-- Whether to reference automation tools in this standard or in separate operational documentation
+- **Scaffolding and validation**:
+  - Decision record templates MAY be generated (next Decision ID, pre-filled structure)
+  - Cross-reference validation MAY be automated (check referenced decisions exist)
+  - Status transition validation MAY be automated (enforce lifecycle rules)
 
-**Documentation location:** If automation is implemented, usage details SHOULD go in `docs/ops/tooling_reference.md`, not in this standard.
+**Implementation guidance:**
+- Automation details belong in `docs/ops/tooling_reference.md` (not in this standard)
+- Automation is supportive, not mandatory - manual creation is always acceptable
+- Focus automation on reducing friction, not enforcing compliance
 
-### 9.4 Decision Categories or Tags
+**Rationale:**
+- Integrating decision record drafting into documentation/PR workflows reduces forgetting
+- Automation assists but doesn't replace human judgment on when decisions are needed
+- Keeps this standard focused on "what" not "how" (separation of concerns)
 
-**Issue:** Section 6.2.2 references "tags" for filtering decisions but does not define a normative tag set.
+**Date resolved:** 2026-02-02
 
-**Impact:** Without defined categories, tags may proliferate inconsistently, reducing their usefulness for filtering.
+---
 
-**Proposed options:**
-1. **No normative tags:** Let tags emerge organically (more flexible, less consistent)
-2. **Suggested tags:** Provide recommended tags but allow custom tags (balanced)
-3. **Required tags:** Define mandatory tag categories (most structured, most restrictive)
+### 9.4 Decision Categories and Tags
 
-**Suggested tag categories (if option 2 or 3):**
-- Scope: `naming`, `artifacts`, `workflow`, `governance`, `standards`, `architecture`
-- Impact: `breaking-change`, `exception`, `conflict-resolution`
-- Status: `active`, `superseded`, `deprecated` (may be redundant with Status field)
+**Decision:** Adopted **suggested tags** approach (Option 2).
 
-**Requires human decision:**
-- Whether to define normative tags
-- If yes, what categories and tag values are required/recommended
+**Rationale:**
+- Balances consistency with flexibility
+- Provides recommended tags for common categories without rigid enforcement
+- Allows organic evolution of tag vocabulary
+- Avoids over-engineering at start while providing useful structure
+
+**Implementation:** See Section 6.2.4 for recommended tag categories and usage guidelines.
+
+**Recommended tag categories:**
+- **Scope tags:** naming, artifacts, workflow, governance, standards, architecture, documentation
+- **Impact tags:** breaking-change, exception, conflict-resolution
+
+**Date resolved:** 2026-02-02
 
 ---
 
@@ -971,7 +1033,7 @@ This standard was aligned with the following documents:
 - Evidence discipline in `target_agent_system.md` is implemented in decision record structure
 - Approval gate rules in `target_agent_system.md` are enforced by decision record approval requirements
 
-### 10.3 Assumptions and TBDs Introduced
+### 10.3 Assumptions and Resolved Decisions
 
 **Assumptions made (bounded):**
 1. **Individual files per decision:** Assumed based on industry best practices (ADR pattern) and git history benefits; explicitly documented in Section 6.1.1
@@ -982,18 +1044,17 @@ This standard was aligned with the following documents:
 
 **Impact of assumptions:** Low risk. Assumptions follow industry best practices and can be adjusted if needed through decision records.
 
-**TBDs requiring human decision:**
-1. **Grandfathering rules (Section 9.1):** High priority - affects how historical decisions are handled
-2. **Review/expiration policy (Section 9.2):** Medium priority - affects long-term decision management
-3. **Automation support (Section 9.3):** Low priority - can be deferred to operational layer
-4. **Tag standardization (Section 9.4):** Low priority - tags can emerge organically initially
+**Implementation decisions resolved (Section 9):**
+1. ✅ **Grandfathering rules:** As-needed documentation approach adopted (Section 9.1, implemented in Section 5.2)
+2. ✅ **Review/expiration policy:** No review policy - decisions active until superseded (Section 9.2)
+3. ✅ **Automation support:** Recommended for documentation/PR workflows; details in ops layer (Section 9.3)
+4. ✅ **Tag standardization:** Suggested tags with recommended categories (Section 9.4, implemented in Section 6.2.4)
 
 **Next steps:**
 - Human review and approval of this standard
-- Decide on grandfathering approach (TBD 9.1)
 - Create `docs/decisions/` directory
-- Update `docs/catalogs/decision_log.md` with initial structure
-- Create first decision record (potentially retroactive documentation of key historical decisions)
+- Update `docs/catalogs/decision_log.md` with initial structure per Section 6.2.2
+- Optionally create retroactive decision records for historical decisions as they become relevant (per Section 5.2)
 
 ### 10.4 Validation Against Requirements
 
@@ -1020,4 +1081,4 @@ This standard was aligned with the following documents:
 - Uses normative keywords (MUST/SHOULD/MAY) correctly and consistently
 - Provides clear section headings and logical structure
 - Includes both normative rules and non-normative examples
-- Explicit about TBDs and open items requiring human decision
+- All implementation decisions resolved (grandfathering, review policy, automation, tags)

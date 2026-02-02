@@ -123,7 +123,7 @@ Supports Step 2.
 Supports Step 3.
 
 - Drafts implementable capability definitions: inputs/outputs, rules/constraints, acceptance criteria.
-- Breaks the capability into individuable codable tasks that can be executed and reviewed in a controlled way (task boundaries, dependencies, and intended outputs per task).
+- Breaks the capability into individuable codable tasks following the complete structure defined in `docs/standards/codable_task_spec.md` (task identity, purpose, boundaries, dependencies, intended outputs, acceptance criteria, and unknowns/assumptions).
 - Produces a structured implementation step outline that maps 1:1 (or many:1) to these tasks, so execution stays bounded and traceable.
 - Performs consistency checks against the objective and pipeline, and flags scope creep or missing prerequisites before execution begins.
 

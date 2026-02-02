@@ -555,6 +555,73 @@ Parameter names are job invocation arguments declared in the manifest `parameter
 
 ---
 
+### 4.7A Task Identifiers
+
+#### Definition
+A task identifier is a unique name or ID for a codable task within a capability, used for tracking and traceability during Step 3→4 execution.
+
+#### Format rule (SHOULD - guidance, not strict requirement)
+
+**Intentionally flexible:** Task identifiers are primarily for human readability and tracking within capability plans. The system intentionally avoids strict naming rules to allow adaptation to different contexts.
+
+**Recommended patterns:**
+
+**Pattern 1: Sequential with description**
+- Format: `Task <number>: <description>`
+- Examples: `Task 1: Implement XML validation`, `Task 2: Parse and extract data`
+- Use when: Tasks have clear sequential dependencies
+
+**Pattern 2: Functional identifier**
+- Format: `<action>_<component>`
+- Examples: `implement_xml_parser`, `create_validation_tests`, `update_manifest`
+- Use when: Tasks can be executed in parallel or have flexible ordering
+
+**Pattern 3: Component-based**
+- Format: `<component>-<action>`
+- Examples: `parser-implementation`, `tests-validation`, `docs-update`
+- Use when: Multiple tasks target the same component
+
+**Casing:** Flexible - use snake_case for functional identifiers, natural language for sequential identifiers
+
+**Length:** Keep under 64 characters for readability
+
+#### Requirements (MUST)
+
+- Task identifier MUST be unique within the capability
+- MUST be traceable (referenced in implementation artifacts like commit messages, PR descriptions)
+- MUST include parent capability reference in codable task specification
+
+#### Examples
+
+**Valid:**
+- `Task 1: Implement XML validation`
+- `Task 2: Parse XML and extract product data`
+- `implement_xml_parser`
+- `create_validation_tests`
+- `parser-implementation`
+
+**Acceptable variations:**
+- `1-xml-validation` (numbered with kebab-case)
+- `implement_parser` (short functional)
+- `XML validation implementation` (natural language)
+
+#### Rationale for flexibility
+
+Task identifiers serve tracking within capability plans (GitHub Issues, planning docs, PR descriptions) where context is clear. Strict naming rules would add unnecessary constraint without improving traceability or automation value.
+
+If machine-parsing of task identifiers becomes necessary, a specific convention can be added to this standard at that time.
+
+**Reference:** `docs/standards/codable_task_spec.md` Section 2.1
+
+#### Compatibility expectations
+
+**Evolving:**
+- Task identifiers are local to capability plans and implementation tracking
+- Not exposed in stable automation or cross-job interfaces
+- Can be adjusted during capability planning without breaking changes
+
+---
+
 ### 4.8 Artifact Identifiers (`artifact_id`)
 
 #### Definition

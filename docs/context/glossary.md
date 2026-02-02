@@ -88,6 +88,11 @@ Format: "Does not..." or "Boundary:..." followed by specific exclusions.
 Required in business descriptions (Section 1) and recommended for capability definitions.
 Specification: `docs/standards/business_job_description_spec.md` Section 1.
 
+### Boundedness
+A key characteristic of codable tasks: the task has explicit boundaries that define what it does and what it explicitly does NOT do.
+A bounded task has an explicit purpose statement, an explicit boundary statement (what it does NOT do), and scope that cannot expand silently during implementation without triggering escalation.
+Specification: `docs/standards/codable_task_spec.md` Section 1.2.
+
 ### Business description
 A per-job documentation file (`bus_description_<job_id>.md`) that captures business requirements, context, and rationale for a job.
 Location: `jobs/<job_group>/<job_id>/` or `docs/jobs/<job_id>/`
@@ -128,9 +133,13 @@ A structured block in `docs/catalogs/artifacts_catalog.md` that documents one ar
 Entries follow the schema defined in `docs/standards/artifacts_catalog_spec.md`.
 
 ### Codable task
-A bounded unit of implementation work derived from a capability definition.
-A codable task is defined so that it can be executed and reviewed in a controlled way (clear boundaries, dependencies, and intended outputs).
-Codable tasks are the primary work unit in Step 4 (Execute Development Tasks).
+A bounded unit of implementation work derived from an approved capability definition, characterized by four key properties: individuability (can be understood and implemented independently), boundedness (explicit scope with clear "does NOT do" statements), traceability (outcomes verifiable against acceptance criteria), and reviewability (another developer can validate implementation against specification).
+Codable tasks are the primary work unit in Step 4 (Execute Development Tasks) and are specified using the structure defined in `docs/standards/codable_task_spec.md`.
+
+### Codable task specification
+A structured description documenting a bounded unit of implementation work. Contains seven required elements: task identity (unique identifier and parent capability reference), task purpose (1-3 sentence outcome description), task boundaries (explicit in-scope and out-of-scope statements), dependencies (prerequisite tasks, required inputs, external dependencies), intended outputs (artifacts/changes produced), acceptance criteria (evaluable pass/fail conditions), and unknowns/assumptions (explicit handling of uncertainties).
+Created during Step 3 (Capability Planning) and executed during Step 4 (Execute Development Tasks).
+Specification: `docs/standards/codable_task_spec.md`.
 
 ### Compliance
 Adherence to standards, governance rules, and documentation specifications.
@@ -172,6 +181,12 @@ creating competing sources of authority and eventual inconsistency.
 A structured document that records significant decisions, their rationale, alternatives considered, and approval status.
 Decision records follow the format defined in `docs/standards/decision_records_standard.md`.
 They are essential for breaking changes, exceptions to principles, and governance decisions.
+
+### Development Step Document
+A container document that holds the list of codable task specifications for a capability, serving as a control instrument for implementation tracking and execution.
+The Development Step Document is created during Step 3 (Capability Planning) and contains the complete breakdown of codable tasks with their boundaries, dependencies, and acceptance criteria.
+Storage location options: GitHub Issues (for issue-tracked work), planning documents (`docs/planning/`), or PR descriptions (for single-PR capabilities).
+See `docs/process/workflow_guide.md` Section 4 and `docs/standards/codable_task_spec.md`.
 
 ### Deployment name
 The name of a job as deployed in its execution platform (e.g., AWS Glue job name).
@@ -315,6 +330,11 @@ Required by `docs/standards/documentation_spec.md` Section 2.3.
 ---
 
 ## I
+
+### Individuability
+A key characteristic of codable tasks: the task can be understood and implemented independently, given its stated dependencies and inputs.
+An individuable task can be assigned to a single implementer without requiring coordination during implementation (coordination may be needed for integration), and does not depend on undocumented assumptions or implicit knowledge.
+Specification: `docs/standards/codable_task_spec.md` Section 1.1.
 
 ### In-scope / Out-of-scope
 A boundary statement defining what the objective/capability includes and explicitly excludes.
@@ -537,6 +557,11 @@ Contrasts with prospective documentation created during development that capture
 See also: Documentation timing.
 Specification: `docs/standards/business_job_description_spec.md` Section 0.4.
 
+### Reviewability
+A key characteristic of codable tasks: another developer can understand the intent and validate that the implementation satisfies the task specification.
+A reviewable task has specification documented in a readable form, acceptance criteria with clear pass/fail conditions, and implementation validatable against the specification without requiring the implementer to explain undocumented decisions.
+Specification: `docs/standards/codable_task_spec.md` Section 1.4.
+
 ### Runtime truth
 The "what actually runs" layer:
 the effective behavior defined by code, deployed artifacts, and runtime configuration.
@@ -635,6 +660,13 @@ TBDs must be either resolved later or explicitly approved as controlled assumpti
 
 **In artifacts catalog:** Unknown list fields MUST use scalar string `TBD` (not `[TBD]` or omitted).
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 1.3.1.
+
+### Task identifier
+A unique name or ID for a codable task within a capability, used for tracking and traceability.
+Format: Short descriptive phrase or ID (e.g., "Task 1: Validate input schema", "implement_xml_parser").
+Naming follows clear descriptive conventions; formal naming rules are intentionally flexible to adapt to context.
+Required element in codable task specifications alongside parent capability reference.
+Specification: `docs/standards/codable_task_spec.md` Section 2.1.
 
 ### Tool
 A deterministic instrument used by humans and agents to scaffold, validate, and produce evidence.

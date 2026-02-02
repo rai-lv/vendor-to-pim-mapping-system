@@ -765,9 +765,18 @@ This section provides practical guidance for common contribution scenarios.
 #### Clarifications/wording improvements (no meaning change)
 
 **Approval process:**
-- Lightweight review focusing on accuracy and readability
+- **Option 1: Standard approval** — PR review and approval
+- **Option 2: Lightweight approval** — If change meets lightweight criteria (ref: Section 10.2), single approver with 24-hour target review window
+
+**Lightweight approval qualification:**
+- Documentation-only change (no code/manifest changes)
+- No meaning change (wording/readability improvement only)
+- No cross-references broken or changed
+- Traceable in PR description
+
+**Approval requirements:**
 - Reviewer confirms "no meaning change"
-- Standard PR approval mechanism
+- PR approval via GitHub mechanism (evidence maintained)
 
 **Decision record required:** No
 
@@ -1135,84 +1144,141 @@ The following examples illustrate the approval flow for common scenarios. These 
 
 This section lists items that require human decision or clarification from other documentation.
 
-### 10.1 Validation standard integration (TBD)
+### 10.1 Validation standard integration (RESOLVED)
 
-**Status:** Validation standard is not yet finalized (per problem statement)
+**Status:** Validation standard is not yet finalized
+
+**Decision:** Option A selected — Leave as TBD until validation standard is finalized, then update this guide to integrate concrete validation requirements
+
+**Rationale:**
+- Minimal impact on approval process usability in current state
+- Avoids creating temporary validation requirements that would need to be replaced
+- Maintains clean separation: validation standard defines evidence validity; this guide defines approval process
 
 **Impact:**
-- Section 3.4 (evidence discipline) references validation standard but cannot provide concrete integration details
-- Section 8.3 (relationship to validation standard) describes intended relationship but is based on catalog description, not actual standard content
+- Section 3.4 (evidence discipline) references validation standard but cannot provide concrete integration details until standard is finalized
+- Section 8.3 (relationship to validation standard) describes intended relationship based on catalog description
+- When validation standard is finalized: update Sections 3.4 and 8.3 with concrete integration details
 
-**Resolution options:**
-1. **Option A:** Leave as TBD until validation standard is finalized, then update this guide to integrate concrete validation requirements
-2. **Option B:** Define minimum validation evidence requirements in this guide temporarily, then align with validation standard when finalized
-
-**Recommendation:** Option A (wait for validation standard, minimal impact on approval process usability)
+**Action required:** Update this guide when validation standard is approved (tracked as future work)
 
 ---
 
-### 10.2 Lightweight approval for low-risk changes (assumption)
+### 10.2 Lightweight approval for low-risk changes (RESOLVED)
 
-**Assumption:** The approval process defined here applies uniformly to all contribution types requiring approval
+**Decision:** Option B selected — Define lightweight approval criteria and accelerated process
 
-**Question:** Should there be a "lightweight approval" path for low-risk changes that meet certain criteria?
+**Rationale:**
+- Reduces overhead for low-risk changes while maintaining governance discipline
+- Accelerates common contribution types (documentation clarifications, test improvements, internal refactoring)
+- Maintains traceability and approval evidence even for lightweight process
 
-**Examples of potentially low-risk changes:**
-- Documentation clarifications that don't change meaning
-- Internal job refactoring without manifest changes
-- Test-only changes that don't affect production code
+**Lightweight approval criteria:**
 
-**Current state:** All changes requiring approval follow the same process (PR review + approval)
+Changes qualify for lightweight approval when ALL of the following are true:
 
-**Resolution options:**
-1. **Option A:** Maintain uniform approval process for consistency and simplicity
-2. **Option B:** Define lightweight approval criteria and accelerated process (e.g., single approver, shorter review window)
+1. **Low risk:** Change does not affect:
+   - Cross-job contracts or automation
+   - Stable identifiers (job_id, artifact_id, parameter names)
+   - Governance rules or principles
+   - Approval gate requirements or evidence expectations
 
-**Recommendation:** Option A for initial version; revisit if approval process becomes bottleneck
+2. **Narrow scope:** Change is limited to:
+   - Single job internal implementation (no manifest changes)
+   - Documentation clarifications without meaning changes
+   - Test additions/improvements without changing production code
+   - Formatting/style improvements
+
+3. **No breaking changes:** Change requires no migration, deprecation, or consumer coordination
+
+4. **Traceable:** Change is still documented in PR with clear description and references
+
+**Lightweight approval process:**
+
+1. **Single approver:** Requires one human approval (vs. potentially multiple for standard process)
+2. **Shorter review window:** Target 24-hour review turnaround (vs. open-ended for standard process)
+3. **Focused review:** Reviewer confirms lightweight criteria met and spot-checks quality
+4. **Same evidence requirements:** PR approval still required; traceability maintained
+
+**Examples qualifying for lightweight approval:**
+- Documentation wording improvements (no meaning change)
+- Internal job function refactoring (no manifest/contract changes)
+- Test coverage additions (no production code changes)
+- Code style/formatting fixes (no behavior changes)
+- Comment improvements or addition
+
+**Examples NOT qualifying (require standard approval):**
+- Manifest changes (even minor)
+- Cross-job interface changes
+- Breaking changes (any scale)
+- Documentation meaning changes
+- Scope expansion during implementation
+
+**Implementation note:** Lightweight approval is a process optimization, not a governance relaxation. All approval evidence requirements remain in effect.
+
+**Action required:** Update Section 7.1 (documentation-only changes) to reference lightweight approval option (completed below)
 
 ---
 
-### 10.3 Approval authority matrix (potential enhancement)
+### 10.3 Approval authority matrix (RESOLVED)
 
-**Question:** Should this guide define who has approval authority for different types of changes?
+**Decision:** Option A selected — Keep approval authority implicit; rely on team processes and PR ownership
 
-**Current state:**
-- Approval authority is implicit ("human decision-maker")
-- No explicit mapping of change types to approver roles
+**Rationale:**
+- Approval authority is contextually clear for current team size
+- Explicit matrix would add overhead without providing value at current scale
+- Team processes and PR ownership patterns naturally establish approver context
+- Flexibility preserved for evolving team structure
 
-**Examples where authority matrix might help:**
-- Breaking changes: requires repository owner approval?
-- Documentation changes: requires documentation maintainer approval?
-- Standards changes: requires governance team approval?
+**Current approach:**
+- "Human decision-maker" remains the documented approver in this guide
+- Actual approver identity determined by:
+  - PR ownership and assignment
+  - Team processes (e.g., code owners, area expertise)
+  - Change type context (governance changes naturally escalate to maintainers)
+  - GitHub's built-in approval mechanisms and notifications
 
-**Resolution options:**
-1. **Option A:** Keep approval authority implicit; rely on team processes and PR ownership
-2. **Option B:** Define explicit approval authority matrix (change type → required approver role)
+**Impact:** No changes to approval process; authority remains implicit and contextually determined
 
-**Recommendation:** Option A for initial version; explicit matrix may be needed as team grows
-
-**Impact:** Currently low; approval authority is contextually clear for small team
+**Future consideration:** If team grows significantly or approval bottlenecks emerge, revisit explicit authority matrix via decision record
 
 ---
 
-### 10.4 Automated approval gate checks (future enhancement)
+### 10.4 Automated approval gate checks (RESOLVED - Future Work)
 
-**Potential enhancement:** Automated checks that verify approval gate requirements before allowing progression
+**Decision:** Option B selected — Implement automated checks as CI/GitHub Actions (future enhancement)
 
-**Examples:**
-- CI check that blocks Step 4 PR merge without approved capability plan reference
-- Pre-merge validation that checks for decision record reference when breaking changes detected
-- Automated "approval evidence check" that validates traceability
+**Rationale:**
+- Automation reduces human error and ensures consistent enforcement
+- Scales better as repository and team grow
+- Provides fast feedback to contributors (fail fast principle)
+- Complements human review rather than replacing it
 
-**Current state:** Approval gates are manually enforced through review process
+**Implementation approach (future work):**
 
-**Resolution options:**
-1. **Option A:** Rely on human review and manual checks (current approach)
-2. **Option B:** Implement automated checks as CI/GitHub Actions (future enhancement)
+**Phase 1: Basic traceability checks**
+- PR description must reference approved capability/task for Step 4 implementations
+- Breaking change PRs must reference decision record ID
+- Warn if PR lacks traceability references
 
-**Recommendation:** Option A initially; Option B as process matures and tooling developed
+**Phase 2: Approval evidence validation**
+- Check that capability plan approval exists before Step 4 PR merge
+- Validate decision record status is "Approved" when referenced
+- Check for approval evidence (PR approval, sign-off comment) before merge
 
-**Impact:** Manual process is sufficient for current scale; automation would reduce human error as scale increases
+**Phase 3: Content validation**
+- Detect potential breaking changes (manifest schema changes, identifier renames)
+- Flag missing decision records for governance-level changes
+- Validate documentation changes respect layer boundaries
+
+**Implementation tools:**
+- GitHub Actions workflows (`.github/workflows/approval-checks.yml`)
+- Custom scripts in `tools/approval-checks/` (if needed)
+- GitHub API for approval and reference validation
+
+**Current state:** Approval gates are manually enforced through review process (sufficient for current scale)
+
+**Action required:** Create GitHub issue to track automated approval gate implementation (future work, not blocking for this guide)
 
 ---
 
@@ -1253,17 +1319,43 @@ This guide was drafted with explicit alignment to the following repository docum
 - **Conflict handling:** References workflow guide procedures without duplication
 - **Document boundaries:** Respects documentation system catalog placement rules
 
-### 11.3 Assumptions introduced
+### 11.3 Open items resolved
 
-1. **Lightweight approval assumption (Section 10.2):** This guide assumes uniform approval process for all contribution types. Marked as TBD for potential future refinement.
+Section 10 open items were resolved with the following decisions:
 
-2. **Approval authority assumption (Section 10.3):** This guide assumes approval authority is contextually clear and does not define explicit role-based authority matrix. Marked as TBD for potential future enhancement.
+**10.1 Validation standard integration:**
+- **Decision:** Option A (wait for validation standard)
+- **Status:** Resolved as future work; guide will be updated when validation standard is finalized
+- **Impact:** No immediate changes needed; Sections 3.4 and 8.3 describe intended integration
 
-3. **Validation standard integration (Section 10.1):** This guide describes intended relationship with validation standard based on documentation system catalog description, not actual validation standard content (as validation standard is incomplete).
+**10.2 Lightweight approval for low-risk changes:**
+- **Decision:** Option B (define lightweight approval criteria)
+- **Status:** Resolved; lightweight approval criteria and process added to Section 10.2
+- **Impact:** Section 7.1 updated to reference lightweight approval option for documentation clarifications
+
+**10.3 Approval authority matrix:**
+- **Decision:** Option A (keep approval authority implicit)
+- **Status:** Resolved; no changes to approval process
+- **Impact:** "Human decision-maker" remains the documented approver; authority determined by team processes and PR ownership
+
+**10.4 Automated approval gate checks:**
+- **Decision:** Option B (implement automated checks as future enhancement)
+- **Status:** Resolved as future work; implementation approach documented in Section 10.4
+- **Impact:** Manual approval enforcement continues; automation tracked as future enhancement
+
+### 11.4 Assumptions introduced
+
+1. **Lightweight approval criteria (Section 10.2):** This guide now defines specific lightweight approval criteria for low-risk changes. These criteria balance speed with governance discipline and maintain full traceability.
+
+2. **Approval authority assumption (Section 10.3):** This guide assumes approval authority is contextually clear and does not define explicit role-based authority matrix. Future team growth may require revisiting via decision record.
+
+3. **Validation standard integration (Section 10.1):** This guide describes intended relationship with validation standard based on documentation system catalog description. When validation standard is finalized, Sections 3.4 and 8.3 will be updated with concrete integration.
 
 4. **Evidence retention assumption:** This guide assumes GitHub's standard retention policies for PR/issue records without specifying explicit retention requirements beyond "permanent via GitHub."
 
-5. **Review best practices assumption (Section 4.4):** This guide incorporates industry-standard PR review practices and aligns them with repository-specific governance without explicit evidence that these practices were previously adopted.
+5. **Review best practices assumption (Section 4.4):** This guide incorporates industry-standard PR review practices and aligns them with repository-specific governance.
+
+6. **Automated approval checks (Section 10.4):** Detailed implementation approach for future automated checks is documented but not yet implemented. Manual enforcement continues until automation is developed.
 
 ### 11.4 Cross-document integration notes
 

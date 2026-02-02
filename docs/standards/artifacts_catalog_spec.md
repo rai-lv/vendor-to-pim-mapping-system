@@ -715,7 +715,7 @@ This section defines what constitutes a **breaking change** vs a **non-breaking 
 
 **Purpose:** Enable consistent governance decisions and validation automation by providing a canonical definition of artifact contract compatibility.
 
-#### 6.4.1 Breaking changes (MUST require governance approval)
+#### 6.5.1 Breaking changes (MUST require governance approval)
 
 The following changes to an artifact catalog entry are **breaking changes** and MUST follow the governance approval process defined in `docs/standards/decision_records_standard.md`:
 
@@ -742,7 +742,7 @@ The following changes to an artifact catalog entry are **breaking changes** and 
 **Governance field changes (if used):**
 - Changing `stability` from `stable` to `evolving` or `experimental` (signals reduced reliability)
 
-#### 6.4.2 Non-breaking changes (allowed without special approval)
+#### 6.5.2 Non-breaking changes (allowed without special approval)
 
 The following changes are **non-breaking** and MAY be made without formal governance approval, though they SHOULD still be reviewed:
 
@@ -766,7 +766,7 @@ The following changes are **non-breaking** and MAY be made without formal govern
 **Format compatibility changes:**
 - Changing `format` to a compatible type if the file structure remains unchanged (e.g., `other` → `json` when format is clarified)
 
-#### 6.4.3 Backward compatibility expectations
+#### 6.5.3 Backward compatibility expectations
 
 When a breaking change is unavoidable, the following practices SHOULD be followed:
 
@@ -794,7 +794,7 @@ When a breaking change is unavoidable, the following practices SHOULD be followe
   - Migration plan and timeline
   - Backward compatibility approach (if any)
 
-#### 6.4.4 Relationship to `breaking_change_rules` field
+#### 6.5.4 Relationship to `breaking_change_rules` field
 
 The optional `breaking_change_rules` field (Section 6.3) MAY be used to override or augment these default rules for a specific artifact type:
 

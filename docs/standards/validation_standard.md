@@ -985,79 +985,34 @@ The following validation tools exist in this repository:
 
 This section lists items that could not be fully grounded in existing documentation, along with assumptions, uncertainties, and questions requiring human decision.
 
-### 11.1 TBD: Specific Validation Tool Requirements
+### Resolved Items
 
-**Issue:** Existing documentation does not specify comprehensive requirements for validation tools beyond `validate_repo_docs.py`.
+The following items have been resolved per governance decision:
 
-**Assumptions made:**
-- Validation tools should check structure and conformance (grounded in tool purpose)
-- Multiple tools can exist for different validation types (reasonable inference)
-- Tools should produce deterministic, reviewable evidence (grounded in evidence discipline)
+**11.1 - Validation Tool Requirements (RESOLVED - Option 1):**
+- **Decision:** Accept current level of detail. Tools implement validation categories as defined.
+- **Rationale:** Validation categories are well-defined; specific tool implementations can vary. Tool details belong in ops layer, not standards layer.
 
-**Impact:** Low. Validation categories are well-defined; specific tool implementations can vary.
+**11.2 - Performance Validation Standards (RESOLVED - Option 2):**
+- **Decision:** Performance validation is optional unless specified in acceptance criteria.
+- **Rationale:** Performance standards can be added later if needed. Acceptance criteria govern validation requirements on a per-case basis.
 
-**Resolution options:**
-1. Accept current level of detail (tools implement validation categories as defined)
-2. Create detailed tool requirements specification (separate document in ops layer)
+**11.3 - Security Validation Requirements (RESOLVED - Option 2):**
+- **Decision:** Security checks are part of runtime validation with tool-specific requirements.
+- **Rationale:** Security validation is part of runtime validation; specific tools and checks can be defined in ops layer as needed.
 
-**Recommendation:** Accept current level. Tool details belong in ops layer, not standards layer.
+**11.4 - Validation Frequency for Long-Running Work (RESOLVED - Option 2):**
+- **Decision:** Validation frequency is left to developer judgment with PR validation as gate.
+- **Rationale:** CI validation at PR time is sufficient gate; additional validation during development is encouraged but not required. Continuous validation during development is developer choice.
 
-### 11.2 TBD: Performance Validation Standards
+### Agreed Assumptions
 
-**Issue:** Existing documentation does not define when performance testing is required or what performance criteria must be met.
+The following assumptions are agreed and finalized:
 
-**Assumptions made:**
-- Performance validation is optional unless specified in acceptance criteria (reasonable inference from "acceptance criteria govern validation")
-
-**Impact:** Medium. Without performance standards, performance issues may not be caught.
-
-**Resolution options:**
-1. Define performance standards in separate document (per-job or system-wide)
-2. Leave performance validation as "optional unless specified in acceptance criteria"
-
-**Recommendation:** Option 2 for now. Performance standards can be added later if needed.
-
-### 11.3 TBD: Security Validation Requirements
-
-**Issue:** Existing documentation does not define comprehensive security validation requirements.
-
-**Assumptions made:**
-- Security issues should trigger validation failure (reasonable inference from general quality expectations)
-- Security validation is part of runtime validation (code security checks)
-
-**Impact:** Medium. Security validation is important but not fully specified.
-
-**Resolution options:**
-1. Define comprehensive security validation standard (separate document)
-2. Treat security checks as part of runtime validation with tool-specific requirements
-
-**Recommendation:** Option 2 for now. Security validation is part of runtime validation; specific tools and checks can be defined in ops layer.
-
-### 11.4 TBD: Validation Frequency for Long-Running Work
-
-**Issue:** Existing documentation does not specify how often validation should be run during long-running development work (weeks/months).
-
-**Assumptions made:**
-- Validation before commits/PRs is sufficient (grounded in CI integration)
-- Continuous validation during development is encouraged but not required (reasonable inference)
-
-**Impact:** Low. CI validation catches issues before merge.
-
-**Resolution options:**
-1. Require validation at specific intervals (e.g., weekly) for long-running work
-2. Leave validation frequency to developer judgment with PR validation as gate
-
-**Recommendation:** Option 2. CI validation at PR time is sufficient gate; additional validation is developer choice.
-
-### 11.5 Assumption: Test Coverage Requirements
-
-**Assumption:** This standard does not define minimum test coverage requirements (e.g., "80% line coverage").
-
-**Rationale:** Coverage requirements are project-specific and may vary by component.
-
-**Impact:** Low. Tests are required; coverage is quality metric.
-
-**Resolution:** If coverage requirements are needed, define them in separate testing standards document or per-job requirements.
+**11.5 - Test Coverage Requirements (AGREED):**
+- **Assumption:** This standard does not define minimum test coverage requirements (e.g., "80% line coverage").
+- **Rationale:** Coverage requirements are project-specific and may vary by component. Tests are required; coverage is a quality metric that can be defined separately if needed.
+- **Impact:** Low. If coverage requirements are needed, they can be defined in separate testing standards document or per-job requirements.
 
 ---
 
@@ -1116,17 +1071,22 @@ This standard:
 - Does not contain workflow procedures (properly references workflow guide)
 - Maintains proper layer separation (standards layer, not context or ops)
 
-### 12.3 Assumptions Introduced
+### 12.3 Resolved Decisions and Agreed Assumptions
 
-See Section 11 (Open Items / TBD) for detailed list of assumptions.
+See Section 11 (Open Items / TBD) for detailed status.
 
-**Summary of key assumptions:**
-1. Validation tools implement validation categories as defined (grounded in existing tool purposes)
-2. Performance validation is optional unless specified in acceptance criteria (reasonable inference)
-3. Security validation is part of runtime validation (reasonable inference)
-4. Test coverage requirements not defined in this standard (project-specific)
+**Resolved decisions (Section 11 "Resolved Items"):**
+1. Validation tools implement validation categories as defined (governance decision - option 1)
+2. Performance validation is optional unless specified in acceptance criteria (governance decision - option 2)
+3. Security validation is part of runtime validation with tool-specific requirements (governance decision - option 2)
+4. Validation frequency for long-running work left to developer judgment with PR validation as gate (governance decision - option 2)
 
-**Impact:** Low. All assumptions are bounded and have minimal impact on validation effectiveness.
+**Agreed assumptions (Section 11 "Agreed Assumptions"):**
+5. Test coverage requirements not defined in this standard (project-specific, can be added later if needed)
+
+**Impact:** Low. All decisions and assumptions are bounded and have minimal impact on validation effectiveness.
+
+**Status:** All open items from initial draft have been resolved or agreed. This standard is complete.
 
 ### 12.4 Cross-Document Impact
 

@@ -237,7 +237,7 @@ Parent capability: "Process incoming BMEcat files" (see capability_plan_001.md)
 - Criteria must be evaluable (checkable by someone other than the implementer)
 - Each criterion should have a clear pass/fail condition
 - Criteria must not require subjective judgment where objective evidence is possible
-- At least 2-3 criteria per task (if task has only 1 criterion, consider if task is too small)
+- Tasks typically have 3-7 acceptance criteria; single-criterion tasks are acceptable when the task represents a focused, verifiable unit of work (e.g., renaming, simple file creation, focused refactoring)
 
 **Format:** Numbered or bulleted list of criteria.
 
@@ -279,7 +279,9 @@ Parent capability: "Process incoming BMEcat files" (see capability_plan_001.md)
 
 ---
 
-## 3) Task granularity and decomposition guidance
+## 3) Task granularity and decomposition guidance (non-normative)
+
+**Note:** This section provides guidance on applying the normative structure defined in Section 2. The guidance is advisory to help with task decomposition decisions, not prescriptive requirements.
 
 ### 3.1 Appropriate task size
 
@@ -314,7 +316,7 @@ Split a task when:
 - It has multiple distinct outputs that could be implemented separately
 - It crosses architectural boundaries (e.g., validation + transformation + storage)
 - Dependencies are such that one part could be implemented/tested while another is blocked
-- Acceptance criteria cannot be cleanly grouped (more than 5-7 criteria may indicate multiple logical tasks)
+- Acceptance criteria cannot be cleanly grouped (significantly more than 7 criteria typically indicates the task should be decomposed into multiple logical tasks)
 
 ### 3.3 When to keep tasks unified
 

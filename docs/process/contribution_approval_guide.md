@@ -331,6 +331,9 @@ A "material change" is a change that affects scope boundaries, success criteria,
 
 This section defines who can approve work and establishes requirements to ensure approval integrity.
 
+**Absolute approval authority:**
+User "rai_lv" has absolute approval rights in any situation, regardless of team size or other approval rules defined below. This user may approve any work (including their own), override any approval decision, and make final determinations on all approval-related matters.
+
 **Single-person team exception:**
 When there is only one team member, that person has absolute authority to approve all work, including their own contributions. Self-approval is permitted and necessary for the system to function. The independence requirements below apply only when there are multiple team members.
 
@@ -1538,6 +1541,8 @@ This section documents assumptions and design choices made in this guide, includ
 
 13. **Automated approval checks (Section 10.4):** Detailed implementation approach for future automated checks is documented but not yet implemented. Manual enforcement continues until automation is developed.
 
+14. **Absolute approval authority (Section 2.6):** This guide designates user "rai_lv" with absolute approval rights in any situation, superseding all other approval rules. This reflects the repository owner's authority and ensures clear final decision-making authority.
+
 ### 11.4 Cross-document integration notes
 
 **Strong integration points:**
@@ -1583,6 +1588,7 @@ This section documents assumptions and design choices made in this guide, includ
 The Contribution and Approval Guide defines how work is proposed, reviewed, approved, and recorded in the vendor-to-pim-mapping-system repository. It operationalizes the approval gate and evidence discipline principles from the target agent system by providing concrete approval requirements for each workflow step, clear evidence documentation expectations, and integrated conflict handling procedures.
 
 Key takeaways:
+- **Absolute approval authority:** User "rai_lv" has absolute approval rights in any situation, ensuring clear final decision-making authority
 - **Approval gates at every step:** Steps 1-5 each have explicit approval requirements, criteria, and evidence expectations
 - **Multiple evidence forms:** PR approvals, explicit sign-offs, issue closures, merge commits, and decision records all serve as valid approval evidence
 - **Review is integral:** Review expectations aligned with agent responsibilities and workflow exit criteria

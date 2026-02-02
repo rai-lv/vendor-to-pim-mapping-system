@@ -79,7 +79,10 @@ The following work types do NOT require the formal approval process:
 
 - **Typo fixes** and **formatting improvements** that don't change meaning
 - **Clarifications** that improve wording/readability without altering intent or rules (Path A in workflow guide)
-- **Bug fixes** that restore intended behavior without changing contracts
+- **Bug fixes** that restore originally approved behavior without changing contracts
+  - **Qualifies for exemption:** Fix aligns implementation with manifest/documentation that was previously approved (restores intent)
+  - **Does NOT qualify for exemption:** Fix changes manifest/documentation to match current implementation (updates intent—requires approval)
+  - **When in doubt:** If fixing the bug requires deciding "what should the correct behavior be?" rather than "what was the approved behavior?", seek approval
 - **Internal refactoring** within a job that doesn't affect its manifest or cross-job contracts
 - **Temporary/intermediate artifacts** within a job that aren't consumed by other jobs
 
@@ -101,6 +104,27 @@ For canonical definitions, see `docs/context/glossary.md`:
 ## 2. Approval Gate Requirements Per Workflow Step
 
 This section defines approval requirements for each of the 5 workflow steps. For step execution procedures, see `workflow_guide.md`.
+
+### 2.0 Definition: Material Change
+
+A "material change" is a change that affects scope boundaries, success criteria, acceptance criteria, or approval conditions. Material changes require re-approval.
+
+**Material changes include:**
+- Adding, removing, or modifying scope boundaries or out-of-scope statements
+- Adding, removing, or modifying success criteria or acceptance criteria
+- Changing capability boundaries or task boundaries
+- Adding or removing unknowns/assumptions
+- Changing traceability (pointing to different parent artifact)
+- Modifying approval conditions or gate requirements
+
+**Non-material changes include:**
+- Wording improvements that don't change meaning
+- Formatting or structural reorganization
+- Adding clarifications that make existing criteria more explicit
+- Correcting typos or grammatical errors
+- Adding examples that illustrate existing criteria
+
+**When in doubt:** Treat as material and seek re-approval. It's better to over-communicate than to bypass approval gates.
 
 ### 2.1 Step 1: Define the Objective
 
@@ -137,7 +161,7 @@ This section defines approval requirements for each of the 5 workflow steps. For
 
 **Iteration:**
 - Iteration within Step 1 is allowed and does not require re-approval
-- Re-approval required only if scope boundaries or success criteria change materially
+- Re-approval required only if changes are material (per Section 2.0 definition)
 
 ---
 
@@ -176,7 +200,7 @@ This section defines approval requirements for each of the 5 workflow steps. For
 
 **Iteration:**
 - Iteration within Step 2 is allowed
-- Re-approval required if capability boundaries or ordering change materially
+- Re-approval required if changes are material (per Section 2.0 definition)
 
 ---
 
@@ -222,7 +246,7 @@ This section defines approval requirements for each of the 5 workflow steps. For
 
 **Iteration:**
 - Iteration within Step 3 is allowed
-- Re-approval required if acceptance criteria, boundaries, or task scope change materially
+- Re-approval required if changes are material (per Section 2.0 definition)
 
 ---
 
@@ -303,11 +327,49 @@ This section defines approval requirements for each of the 5 workflow steps. For
 
 ---
 
+### 2.6 Approval Authority and Independence
+
+This section defines who can approve work and establishes requirements to ensure approval integrity.
+
+**Single-person team exception:**
+When there is only one team member, that person has absolute authority to approve all work, including their own contributions. Self-approval is permitted and necessary for the system to function. The independence requirements below apply only when there are multiple team members.
+
+**Self-approval rules (multi-person teams):**
+When there are two or more team members:
+- Contributors should not approve their own work when independent reviewers are available
+- All approvals should involve independent peer review when feasible
+- Self-approval may be necessary in exceptional cases (emergency fixes, sole domain expert) but should be documented with rationale
+
+**Independence definition (multi-person teams):**
+An independent reviewer is someone who:
+- Did not author the work being approved
+- Is not directly supervised by or supervising the author
+- Has no direct conflict of interest in the specific work being approved
+
+**Approval authority by workflow step:**
+
+- **Steps 1-3 (Planning):** Any qualified team member can approve. "Qualified" means familiar with the domain and governance process. For single-person team: sole member approves.
+- **Step 4 (Implementation):** Code owners or designated reviewers for affected areas. When formal code owners are not defined, any qualified team member. For single-person team: sole member approves.
+- **Step 5 (Validation):** Same authority as Step 4, with focus on evidence review rather than implementation details. For single-person team: sole member approves.
+- **Governance decisions (Decision records):** Team maintainers or designated decision-makers as defined by team processes. For single-person team: sole member approves.
+
+**When designated approver is unavailable (multi-person teams):**
+- **Planned absence:** Designate backup approver before absence begins
+- **Unplanned absence:** Escalate to team lead, maintainers, or next available qualified reviewer
+- **Maximum wait time:** 5 business days before auto-escalation to team maintainers
+
+**Authority conflicts:**
+If approval authority is unclear for a specific contribution, escalate to team maintainers for clarification. For single-person team: sole member decides. Document the clarification for future reference.
+
+**Scaling note:** As the team grows from one to multiple members, the independence requirements and self-approval restrictions automatically apply. No decision record required for this transition—it's an organic scaling of the approval model. However, when first adding team members, document the team's approach to code review and approval authority.
+
+---
+
 ## 3. Approval Evidence Expectations
 
 This section defines what constitutes valid approval evidence and how it must be documented.
 
-### 3.1 Forms of approval
+### 3.1 Forms of approval evidence
 
 The following forms constitute valid approval evidence:
 
@@ -333,16 +395,22 @@ The following forms constitute valid approval evidence:
 - **Approver identity:** Issue closer (typically same as approver)
 - **Usage:** When objectives or capabilities are tracked as issues
 
-#### Merge commit (with PR review)
-- **Mechanism:** Merge commit that includes PR approval evidence
-- **Context:** Merge alone is insufficient; must be accompanied by PR approval
-- **Usage:** Step 4 implementation changes; merge commit serves as execution approval when combined with PR review
-
 #### Decision record approval
 - **Mechanism:** Approved decision record (status: Approved) per `decision_records_standard.md`
 - **Required elements:** Decision record with Status section showing "Approved", approver identity, approval date
 - **Usage:** Governance-level decisions (breaking changes, principle changes, conflict resolutions)
-- **Cross-reference:** See Section 6 (Decision Recording Guidance)
+- **Cross-reference:** See Section 5 (Decision Recording Guidance)
+
+### 3.1A Execution confirmation (not approval evidence)
+
+The following artifacts confirm that approved work was executed, but are not approval evidence themselves:
+
+#### Merge commit
+- **Mechanism:** Merge commit SHA in Git history
+- **Purpose:** Confirms that approved changes were merged into the repository
+- **Required context:** Must reference PR number or approval evidence (e.g., "Merge PR #124")
+- **Usage:** Proves execution of work that was already approved via PR approval or decision record
+- **Important distinction:** Merge commit is **execution confirmation**, not approval evidence. The approval must exist before merge (via PR approval mechanism or other approval forms above). Merge commit demonstrates that approved work was completed and integrated.
 
 ### 3.2 Evidence documentation requirements
 
@@ -408,6 +476,49 @@ These rules apply to all approval evidence:
 - Agents may summarize evidence but **must not substitute narrative for proof**
 - Lack of evidence must be **recorded explicitly** (e.g., "evidence missing / TBD") and blocks approval unless human explicitly approves proceeding under controlled assumption
 - Agents may use "verified" or "confirmed" **only when explicit evidence is referenced**
+
+### 3.5 Approval Withdrawal and Revocation
+
+Approval can be withdrawn before work is merged if circumstances change or errors are discovered.
+
+#### Who can revoke approval
+
+- **Original approver** can withdraw their own approval at any time before merge
+- **Any reviewer** who discovers critical issues can request approval revocation
+- **Team maintainers** can revoke approval for governance or security reasons
+
+#### Process for revoking approval
+
+**Step 1: Document reason**
+- Add comment to PR/Issue stating reason for revocation
+- Reference specific concern (e.g., "Security vulnerability discovered in lines 45-60", "Conflicts with newly-approved DR-0042")
+- Tag the PR author and any other approvers
+
+**Step 2: Notify stakeholders**
+- Notify PR author and other approvers
+- If multiple approvals exist, specify which approval(s) are revoked
+- Provide clear guidance on what must be addressed
+
+**Step 3: Resolution required**
+- Author addresses concern or discusses with revoker
+- Changes may require re-review by multiple reviewers depending on scope
+- Once adequately addressed, new approval sought (same process as original approval)
+
+#### Auto-revocation conditions
+
+Approval is automatically considered invalid (and should be formally revoked) if:
+
+- **Material changes after approval:** Approved artifact is materially changed after approval was given (per Section 2.0 definition). GitHub's "Dismiss stale reviews" setting can help enforce this.
+- **Dependency approval revoked:** If PR B depends on approved PR A, and PR A's approval is revoked, PR B's approval should also be reviewed and may need revocation.
+- **Decision record rejected:** If a decision record approval was required for the work, and the decision record is subsequently rejected, the dependent work's approval is invalid.
+- **Conflict discovered:** If a runtime, intent, rules, or evidence conflict is discovered after approval that affects the approved work (per Section 6).
+
+#### Re-approval after revocation
+
+After approval is revoked and concerns are addressed:
+- Author updates the work and notifies reviewers
+- Re-approval follows the same process as initial approval (same evidence requirements, same authority rules from Section 2.6)
+- Revocation and resolution should be documented in the approval trail (PR comments or issue updates)
 
 ---
 
@@ -539,47 +650,27 @@ This section defines when and how to use decision records in the approval proces
 
 ### 5.1 When a decision record is required
 
-Decision records are REQUIRED for the following triggering conditions (ref: `decision_records_standard.md` Section 2.1):
+Decision records are required when governance-level decisions must be documented and approved.
 
-#### Breaking changes to stable contracts
-- Renaming `job_id`, `artifact_id`, or other stable identifiers
-- Changing artifact filename patterns, bucket locations, or format contracts
-- Modifying job manifest schema or required fields
-- Changing parameter names, types, or semantics in deployed jobs
+**Authoritative source:** See `decision_records_standard.md` Section 2.1 for the complete list of triggering conditions and detailed examples.
 
-#### Changes to foundational principles or governance rules
-- Modifying approval gate requirements or evidence expectations
-- Changing the 5-step workflow structure or entry/exit criteria
-- Altering separation of concerns or single-source-of-truth principles
-- Changing agent role responsibilities or escalation triggers
+**Common scenarios in approval workflows:**
 
-#### Resolution of conflicts
-- Intent conflicts (approved artifacts disagree)
-- Rules conflicts (standards vs artifacts)
-- Runtime conflicts (implementation vs approved intent)
-- Evidence conflicts (evidence contradicts claims)
-- Decision conflicts (two approved decision records contradict each other)
+- **Breaking changes:** Renaming identifiers, changing artifact contracts, modifying manifest schemas (requires decision record BEFORE implementation approval)
+- **Governance changes:** Modifying approval gates, changing workflow structure, altering principles or operating rules
+- **Conflict resolutions:** When resolving conflicts that change governance rules or principles (implementation-level conflicts don't require decision records—see Section 6)
+- **Scope expansions:** When approved scope must change during execution (affects approved objective, pipeline, or capability)
+- **Standards exceptions:** When specific case requires exception to established standard or principle
+- **Architecture decisions:** Significant design decisions affecting multiple components or system-wide behavior
 
-#### Document type or canonical placement changes
-- Adding new document type to the catalog
-- Moving document type's canonical location
-- Removing unneeded document type
-- Redefining content boundaries
+**Integration with approval process:**
+When a triggering condition occurs during the approval workflow:
+1. Pause the current approval process
+2. Create and approve decision record per Section 5.4 below
+3. Resume original approval process with decision record reference
 
-#### Explicit scope changes during execution
-- Objective scope expands beyond original boundaries
-- Capability definition adds new acceptance criteria not in original approval
-- Implementation requires additional assumptions not in approved capability plan
-
-#### Exceptions to standards or principles
-- Job requires non-standard naming due to external constraints
-- Document requires exception to standard metadata format
-- Validation cannot be performed due to infrastructure limitations
-
-#### Significant architecture or design decisions
-- Choosing between alternative implementation approaches for shared functionality
-- Technology stack or tool choices affecting multiple components
-- Cross-job integration patterns or data flow conventions
+**Cross-reference discipline:**
+This guide defines WHEN decision records integrate with approvals and HOW they serve as approval evidence. `decision_records_standard.md` remains the authoritative source for decision record structure, lifecycle, triggering conditions, and storage requirements.
 
 ### 5.2 How to reference decision records in approvals
 
@@ -693,7 +784,37 @@ The following conflict types MUST be surfaced and cannot proceed to approval:
 
 ### 6.2 How to surface conflicts
 
-When a conflict is detected, the following procedure applies:
+When reviewing work, systematically check for conflicts before approval:
+
+#### Conflict detection checklist
+
+Use this checklist to systematically detect conflicts during review:
+
+**For Steps 1-3 (Planning reviews):**
+- [ ] **Alignment check:** Does this artifact align with its parent artifact? (objective → pipeline → capability)
+- [ ] **Consistency check:** Do success/acceptance criteria contradict each other within or across artifacts?
+- [ ] **Scope check:** Do scope boundaries align across all related artifacts?
+- [ ] **Decision check:** Review decision log for relevant decisions that might conflict with this work
+- [ ] **Standards check:** Does this planning artifact comply with repository standards?
+
+**For Step 4 (Implementation reviews):**
+- [ ] **Capability alignment:** Does implementation match the approved capability plan and task definitions?
+- [ ] **Contract consistency:** Do manifest declarations match code behavior? (e.g., required fields, output contracts)
+- [ ] **Standards compliance:** Does code follow naming conventions, documentation standards, and structure requirements?
+- [ ] **Traceability:** Can changes be traced back to approved tasks or capabilities?
+- [ ] **Cross-reference check:** If implementation references other jobs/artifacts, are those references correct and current?
+
+**For Step 5 (Validation reviews):**
+- [ ] **Evidence validity:** Does evidence actually support the claims being made?
+- [ ] **Documentation accuracy:** Does documentation reflect implemented reality (not aspirational behavior)?
+- [ ] **Double truth check:** Does documentation duplicate content that should only exist in standards or other authoritative locations?
+- [ ] **Layer separation:** Is content in the correct document type/layer?
+
+**If any checklist item fails or raises concern:** Surface the conflict using the process below.
+
+#### Conflict surfacing procedure
+
+When a conflict is detected (via checklist or observation), the following procedure applies:
 
 **Step 1: Stop work and do not proceed with approval**
 - Halt progression immediately
@@ -753,6 +874,50 @@ Once a resolution path is selected:
 **Cross-reference rule:**
 - This guide MUST NOT duplicate workflow guide conflict handling procedures
 - When workflow guide procedures change, this guide remains stable
+
+### 6.5 Concurrent Approvals and Merge Coordination
+
+When multiple PRs are in flight that depend on the same approved artifacts or affect the same code/documents, coordination is required to prevent conflicts and ensure approval validity.
+
+#### Upstream changes require downstream re-review
+
+**Rule:** If PR A merges before PR B, and both reference the same capability or affect the same artifacts, PR B requires re-review after PR A merges.
+
+**Process:**
+1. PR B author rebases or merges latest main branch (incorporating PR A changes)
+2. PR B author notifies original reviewer: "Rebased after PR #[A]; conflicts resolved; ready for re-review"
+3. Reviewer confirms:
+   - PR B still aligns with approved capability plan
+   - No conflicts introduced with merged PR A
+   - Changes remain within approved scope
+4. If conflicts detected, surface and resolve per Section 6
+
+**Automated enforcement:**
+- GitHub's "Require branches to be up to date before merging" setting helps enforce this
+- Planned: Automated checks to detect concurrent changes (Section 10.4)
+
+#### Conflicting approved changes
+
+**Prevention:** When reviewing PR B, reviewer should check for conflicts with recently-merged or in-flight PRs affecting the same artifacts.
+
+**Resolution if conflict detected after both approved:**
+- First-merged PR takes precedence (its approval remains valid)
+- Second PR's approval is considered stale/invalid
+- Author of second PR must:
+  1. Resolve conflict with first PR
+  2. Seek re-approval (same process as initial approval)
+  3. Document resolution in PR comments
+
+#### Merge sequence coordination
+
+**Best practice:** When multiple PRs affect the same artifacts and have interdependencies:
+- Coordinate merge sequence with other PR authors
+- Consider merging in the same sequence approvals were given
+- Document dependencies in PR descriptions
+
+**When sequence matters:** PRs modifying the same job manifest, artifact contracts, or cross-job interfaces should be merged sequentially with explicit coordination.
+
+**Enforcement:** Manual coordination currently; automated dependency detection planned (Section 10.4).
 
 ---
 
@@ -1345,17 +1510,33 @@ Section 10 open items were resolved with the following decisions:
 
 ### 11.4 Assumptions introduced
 
-1. **Lightweight approval criteria (Section 10.2):** This guide now defines specific lightweight approval criteria for low-risk changes. These criteria balance speed with governance discipline and maintain full traceability.
+This section documents assumptions and design choices made in this guide, including those introduced during the 2026-02-02 revision to address identified gaps.
 
-2. **Approval authority assumption (Section 10.3):** This guide assumes approval authority is contextually clear and does not define explicit role-based authority matrix. Future team growth may require revisiting via decision record.
+1. **Material change definition (Section 2.0):** This guide defines "material change" objectively to make re-approval triggers enforceable. The definition balances specificity with flexibility by providing concrete examples while allowing "when in doubt" rule.
 
-3. **Validation standard integration (Section 10.1):** This guide describes intended relationship with validation standard based on documentation system catalog description. When validation standard is finalized, Sections 3.4 and 8.3 will be updated with concrete integration.
+2. **Self-approval prohibition (Section 2.6):** This guide explicitly prohibits self-approval to maintain governance integrity. The independence definition provides clear criteria while avoiding over-specification of approval authority.
 
-4. **Evidence retention assumption:** This guide assumes GitHub's standard retention policies for PR/issue records without specifying explicit retention requirements beyond "permanent via GitHub."
+3. **Approval authority model (Section 2.6):** This guide keeps approval authority partially implicit (ref: Section 10.3 rationale) while adding guardrails: independence requirements, unavailability escalation, and authority conflict resolution. This balances flexibility with governance discipline.
 
-5. **Review best practices assumption (Section 4.4):** This guide incorporates industry-standard PR review practices and aligns them with repository-specific governance.
+4. **Merge commit classification (Section 3.1A):** This guide classifies merge commits as "execution confirmation" rather than "approval evidence" to eliminate circular logic. This distinction clarifies that approval must precede merge.
 
-6. **Automated approval checks (Section 10.4):** Detailed implementation approach for future automated checks is documented but not yet implemented. Manual enforcement continues until automation is developed.
+5. **Approval revocation process (Section 3.5):** This guide establishes revocation process including auto-revocation conditions. Assumes human judgment required for revocation decisions (not automated) except for clearly defined auto-revocation triggers.
+
+6. **Concurrent approval coordination (Section 6.5):** This guide establishes coordination rules for concurrent PRs. Assumes manual coordination is sufficient initially; automated detection is future enhancement (Section 10.4).
+
+7. **Conflict detection checklist (Section 6.2):** This guide provides systematic checklist for conflict detection. Assumes reviewers will use checklist proactively rather than relying on automated conflict detection.
+
+8. **Bug fix exemption clarification (Section 1.2):** This guide distinguishes "restoring approved behavior" vs "updating approved intent" to eliminate contradiction. Assumes contributors can make this distinction with "when in doubt" guidance.
+
+9. **Lightweight approval criteria (Section 10.2):** This guide defines specific lightweight approval criteria for low-risk changes. These criteria balance speed with governance discipline and maintain full traceability.
+
+10. **Validation standard integration (Section 10.1):** This guide describes intended relationship with validation standard based on documentation system catalog description. When validation standard is finalized, Sections 3.4 and 8.3 will be updated with concrete integration.
+
+11. **Evidence retention assumption:** This guide assumes GitHub's standard retention policies for PR/issue records without specifying explicit retention requirements beyond "permanent via GitHub."
+
+12. **Review best practices (Section 4.4):** This guide incorporates industry-standard PR review practices and aligns them with repository-specific governance.
+
+13. **Automated approval checks (Section 10.4):** Detailed implementation approach for future automated checks is documented but not yet implemented. Manual enforcement continues until automation is developed.
 
 ### 11.4 Cross-document integration notes
 

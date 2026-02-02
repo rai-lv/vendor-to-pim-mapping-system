@@ -177,10 +177,28 @@ Format: `docs/context/development_approach.md` (not absolute URLs for internal d
 A failure mode where the same “contract” or meaning is defined in more than one place (e.g., a standard is duplicated inside a workflow doc),
 creating competing sources of authority and eventual inconsistency.
 
+### Decision ID
+A unique identifier for a decision record using the format `DR-NNNN` where `NNNN` is a zero-padded 4-digit sequential number (e.g., `DR-0001`, `DR-0042`).
+Decision IDs are stable and MUST NOT be reused even if the decision is superseded.
+Each decision record file is named using its Decision ID: `DR-NNNN-short-slug.md`.
+Specification: `docs/standards/decision_records_standard.md` Section 3.1.1 and Section 6.1.2.
+
+### Decision log
+The canonical index of all decision records, maintained at `docs/catalogs/decision_log.md`.
+The decision log provides navigable access to decisions with status, date, and tags, organized by status (Active, Superseded, Rejected/Withdrawn).
+Purpose: Maintains continuity and governance transparency through decision record traceability.
+Specification: `docs/standards/decision_records_standard.md` Section 6.2.
+
 ### Decision record
 A structured document that records significant decisions, their rationale, alternatives considered, and approval status.
 Decision records follow the format defined in `docs/standards/decision_records_standard.md`.
 They are essential for breaking changes, exceptions to principles, and governance decisions.
+
+### Decision status
+The lifecycle state of a decision record, indicating its current validity and applicability.
+Valid status values: **Proposed** (drafted, under review), **Approved** (in effect), **Superseded** (replaced by newer decision), **Deprecated** (being phased out), **Rejected** (proposed but not accepted), **Withdrawn** (proposal withdrawn before review).
+Status transitions follow defined rules: Proposed can become Approved/Rejected/Withdrawn; Approved can become Superseded/Deprecated; terminal states are Rejected and Withdrawn.
+Specification: `docs/standards/decision_records_standard.md` Section 4.
 
 ### Development Step Document
 A container document that holds the list of codable task specifications for a capability, serving as a control instrument for implementation tracking and execution.
@@ -608,6 +626,14 @@ Handling rules:
 - Multiple producers: register as shared artifact exception per `artifacts_catalog_spec.md` Section 3.6
 - External artifacts: use `external__*` prefix
 Specification: `docs/standards/job_inventory_spec.md` Section 2.2.3.
+
+### Supersede / Superseded / Supersession
+The relationship where a newer decision record explicitly replaces an older decision record.
+**Supersede (verb):** To replace a decision with a newer one. The new decision MUST reference which decisions it supersedes.
+**Superseded (status/adjective):** A decision that has been replaced. Status transitions to "Superseded" with reference to the superseding decision.
+**Supersession (noun):** The act or relationship of replacement. Can be full (entire decision replaced) or partial (some aspects replaced while others remain active).
+When a decision is superseded, both the old and new decision records MUST be updated with cross-references to maintain bidirectional traceability.
+Specification: `docs/standards/decision_records_standard.md` Sections 3.1.9, 4.1.3, and 4.1.6.
 
 ### Shadow specification
 An anti-pattern where normative requirements are embedded in the wrong documentation layer.

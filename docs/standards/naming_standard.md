@@ -380,9 +380,12 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - Pattern: `<catalog_name>.md`
 - Examples: `job_inventory.md`, `artifacts_catalog.md`, `decision_log.md`
 
-**Decision records (`docs/decisions/` if present):**
-- Pattern: `<YYYYMMDD>_<decision_topic>.md` or following `decision_records_standard.md`
-- Examples: `20260129_job_naming_migration.md`
+**Decision records (`docs/decisions/`):**
+- Pattern: `DR-NNNN-short-slug.md`
+- Format: `DR-` prefix + zero-padded 4-digit number + kebab-case slug (under 50 characters)
+- Examples: `DR-0001-adopt-snake-case-naming.md`, `DR-0042-migrate-artifacts-catalog-schema.md`
+- Reference: `docs/standards/decision_records_standard.md` Section 6.1.2
+- Note: Decision ID (DR-NNNN) must match the ID in the file content
 
 **Per-job docs (`jobs/<job_group>/<job_id>/`):**
 - Business description: `bus_description_<job_id>.md`
@@ -405,7 +408,8 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - `workflow_guide.md`
 - `agent_role_charter.md`
 - `bus_description_preprocessIncomingBmecat.md`
-- `20260129_job_naming_migration.md` (decision record)
+- `DR-0001-adopt-snake-case-naming.md` (decision record)
+- `DR-0042-migrate-artifacts-catalog-schema.md` (decision record)
 - `code-reviewer.md` (agent profile in `.github/agents/`)
 - `README.md` (repository root, exempted from standard rules)
 

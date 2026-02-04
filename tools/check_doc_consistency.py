@@ -195,8 +195,28 @@ def is_in_example_context(content: str, ref_position: int) -> bool:
     
     # Check if we're in an "Example" section (look back up to 500 chars for section header)
     search_back = content[max(0, ref_position - 500):ref_position]
+    
+    # Check for example sections
     if re.search(r'##+ .*[Ee]xample', search_back):
         return True
+    
+    # Check for negative example contexts (wrong patterns, incorrect usage, etc.)
+    negative_patterns = [
+        r'##+ .*[Ww]rong',
+        r'##+ .*[Ii]ncorrect',
+        r'##+ .*[Aa]void',
+        r'##+ .*[Bb]ad',
+        r'##+ .*[Nn]egative',
+        r'##+ .*[Dd]on\'?t',
+        r'[Ww]rong [Ee]xample',
+        r'[Ii]ncorrect [Pp]attern',
+        r'[Dd]on\'?t use',
+        r'[Aa]void:',
+    ]
+    
+    for pattern in negative_patterns:
+        if re.search(pattern, search_back):
+            return True
     
     # Check if line contains "Example:" or "e.g." indicators
     line_start = content.rfind('\n', 0, ref_position) + 1
@@ -209,6 +229,73 @@ def is_in_example_context(content: str, ref_position: int) -> bool:
         return True
     
     return False
+
+
+def resolve_cross_layer_reference(ref: str, source_file: Path, docs_dir: Path) -> Path:
+    """
+    Resolve a cross-layer reference by searching across documentation layers.
+    
+    Handles:
+    - Absolute paths (starting with /)
+    - Relative paths (../)
+    - Bare filenames that might be in different layers
+    """
+    # Handle absolute paths - strip leading / and resolve from repo root
+    if ref.startswith('/'):
+        ref = ref.lstrip('/')
+        candidate = REPO_ROOT / ref
+        if candidate.exists():
+            return candidate
+    
+    # Try as-is from source file's directory
+    candidate = (source_file.parent / ref).resolve()
+    if candidate.exists():
+        return candidate
+    
+    # Build a file index for fast lookup (cache this if performance is an issue)
+    file_index = {}
+    for md_file in docs_dir.rglob("*.md"):
+        file_index[md_file.name] = md_file
+    
+    # If reference is just a filename, search in the file index
+    ref_name = Path(ref).name
+    if ref_name in file_index:
+        return file_index[ref_name]
+    
+    # Try common cross-layer patterns
+    source_layer = None
+    if 'context' in source_file.parts:
+        source_layer = 'context'
+    elif 'process' in source_file.parts:
+        source_layer = 'process'
+    elif 'standards' in source_file.parts:
+        source_layer = 'standards'
+    elif 'agents' in source_file.parts:
+        source_layer = 'agents'
+    elif 'ops' in source_file.parts:
+        source_layer = 'ops'
+    
+    if source_layer:
+        # Try other layers
+        layers = ['context', 'process', 'standards', 'agents', 'ops', 'catalogs']
+        for layer in layers:
+            if layer != source_layer:
+                candidate = docs_dir / layer / ref_name
+                if candidate.exists():
+                    return candidate
+    
+    # Try in catalogs subdirectory
+    candidate = docs_dir / 'catalogs' / ref_name
+    if candidate.exists():
+        return candidate
+    
+    # Try in decision_records subdirectory
+    candidate = docs_dir / 'decision_records' / ref_name
+    if candidate.exists():
+        return candidate
+    
+    # Return original path (will fail existence check later)
+    return (source_file.parent / ref).resolve()
 
 
 def validate_cross_references() -> List[Violation]:
@@ -264,41 +351,10 @@ def validate_cross_references() -> List[Violation]:
                 # Clean up the reference
                 ref_clean = ref.strip()
                 
-                # Try repo root relative (docs/...)
-                if ref_clean.startswith('docs/') or ref_clean.startswith('jobs/') or ref_clean.startswith('.github/'):
-                    candidate = REPO_ROOT / ref_clean
-                    if candidate.exists():
-                        ref_path = candidate
-                # Try relative to current doc
-                elif not ref_clean.startswith('/'):
-                    candidate = doc_path.parent / ref_clean
-                    if candidate.exists():
-                        ref_path = candidate
-                    # Also try as if it's relative to docs/ or standards/
-                    else:
-                        # If current path is in .github/agents/, references might be relative to docs/
-                        if '.github/agents' in str(doc_path):
-                            for try_base in ['docs/standards', 'docs/context', 'docs/process', 'docs/agents', 'docs']:
-                                candidate = REPO_ROOT / try_base / ref_clean
-                                if candidate.exists():
-                                    ref_path = candidate
-                                    break
-                        # If in docs/process, try docs/standards, docs/context, docs/agents
-                        elif 'docs/process' in str(doc_path):
-                            for try_base in ['docs/standards', 'docs/context', 'docs/agents']:
-                                candidate = REPO_ROOT / try_base / ref_clean
-                                if candidate.exists():
-                                    ref_path = candidate
-                                    break
-                        # If in docs/standards, try other standards or context
-                        elif 'docs/standards' in str(doc_path):
-                            for try_base in ['docs/standards', 'docs/context', 'docs/decisions']:
-                                candidate = REPO_ROOT / try_base / ref_clean
-                                if candidate.exists():
-                                    ref_path = candidate
-                                    break
+                # Use enhanced path resolution
+                ref_path = resolve_cross_layer_reference(ref_clean, doc_path, docs_dir)
                 
-                if not ref_path:
+                if not ref_path.exists():
                     violations.append(Violation(
                         "consistency", doc_path, "broken_reference",
                         f"Broken reference to '{ref}'"

@@ -56,7 +56,8 @@ def validate_workflow_guide(path: Path) -> List[Violation]:
     # Check for 5 workflow steps (## 2 through ## 6)
     step_sections = []
     for i in range(1, 6):
-        # Pattern: "## N) Step M" where N = i+1, M = i
+        # Pattern matches section number (i+1) with step number (i)
+        # e.g., "## 2) Step 1", "## 3) Step 2", etc.
         pattern = f"## {i+1}) Step {i}"
         if pattern not in content:
             violations.append(Violation(

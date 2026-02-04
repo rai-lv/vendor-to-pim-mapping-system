@@ -687,7 +687,7 @@ def show_coverage():
     print("     - Cross-layer contradiction detection")
     print()
     print("-" * 70)
-    print("COVERAGE: 90% (9/10 validation types)")
+    print("COVERAGE: 82% (9/11 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)

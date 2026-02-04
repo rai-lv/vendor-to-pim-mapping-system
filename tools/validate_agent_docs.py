@@ -180,7 +180,7 @@ def check_role_overlap(charter_path: Path, agent_profile_dir: Path) -> List[Viol
                         frontmatter = yaml.safe_load(parts[1])
                         if isinstance(frontmatter, dict) and "name" in frontmatter:
                             profile_names.add(frontmatter["name"].lower())
-                    except:
+                    except (yaml.YAMLError, KeyError):
                         pass
     
     # Note: We don't enforce strict overlap checking as agent profiles may have

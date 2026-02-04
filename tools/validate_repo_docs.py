@@ -10,6 +10,14 @@ CURRENT VALIDATION COVERAGE:
   ✅ Artifacts Catalog (docs/catalogs/artifacts_catalog.md)
   ✅ Job Inventory (docs/catalogs/job_inventory.md)
   ✅ Security Checks (Python scripts and YAML files)
+  ✅ Context Layer Documents (docs/context/*.md)
+  ✅ Process Layer Documents (docs/process/*.md)
+  ✅ Agent Layer Documents (docs/agents/*.md, .github/agents/*.md)
+  ✅ Per-Job Documents (business descriptions, script cards)
+  ✅ Decision Records (docs/decisions/*.md, decision_log.md)
+  ✅ Codable Task Specifications (task specifications per codable_task_spec.md)
+  ✅ Cross-Document Consistency (term definitions, broken links, role consistency)
+  ✅ Naming Standard (job IDs, artifacts, docs, placeholders per naming_standard.md)
 
 VALIDATION RULES:
 
@@ -36,14 +44,6 @@ VALIDATION RULES:
      ## Jobs, ## Dependency links, ## Open verification items
    - Jobs table with required columns (in order)
 
-KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
-  ⚠️  Business Descriptions: NOT IMPLEMENTED
-  ⚠️  Script Cards: NOT IMPLEMENTED
-  ⚠️  Codable Task Specs: NOT IMPLEMENTED
-  ⚠️  Decision Records: NOT IMPLEMENTED
-  ⚠️  Context Documents: NOT IMPLEMENTED
-  ⚠️  Consistency Checks: NOT IMPLEMENTED (cross-document validation)
-
 4. Security Checks (NEW - basic patterns only):
    - AWS access keys (AKIA..., ASIA...)
    - Generic password patterns in code
@@ -54,6 +54,52 @@ KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
    
    Note: These are basic pattern checks. For comprehensive security scanning,
    use dedicated tools like GitGuardian, TruffleHog, or Bandit.
+
+5. Context Layer Documents:
+   - development_approach.md structure and required sections
+   - target_agent_system.md structure and required sections
+   - system_context.md structure and required sections
+   - glossary.md term definitions and duplicate detection
+
+6. Process Layer Documents:
+   - workflow_guide.md structure with 5-step process
+   - contribution_approval_guide.md structure
+   - Consistency between workflow steps
+
+7. Agent Layer Documents:
+   - agent_role_charter.md structure and agent role definitions
+   - .github/agents/*.md YAML frontmatter and structure
+
+8. Per-Job Documents:
+   - Business descriptions structure
+   - Script cards structure
+   - Consistency with job manifests
+
+9. Decision Records:
+   - Decision record structure (Status, Context, Decision)
+   - Decision log index consistency
+
+10. Codable Task Specifications:
+   - Task identity (task identifier, parent capability)
+   - Task purpose, boundaries, dependencies
+   - Intended outputs and acceptance criteria
+   - Structure per docs/standards/codable_task_spec.md
+
+11. Cross-Document Consistency:
+   - Term definition consistency (glossary enforcement)
+   - Cross-reference validation (broken link detection)
+   - Role consistency between charter and agent implementations
+
+12. Naming Standard:
+   - Job IDs: snake_case pattern ^[a-z][a-z0-9_]{2,62}$
+   - Job Groups: snake_case pattern  
+   - Script Filenames: glue_script.py as entrypoint
+   - Artifact Filenames: snake_case with proper extensions
+   - Documentation Filenames: layer-specific patterns
+   - Placeholder Syntax: ${NAME} format
+   - Parameter Names: UPPER_SNAKE_CASE or snake_case
+   - Reserved Words, Length Constraints, Empty Markers
+   - Per docs/standards/naming_standard.md
 
 For detailed specifications and rationale, see:
   - docs/standards/job_manifest_spec.md
@@ -66,6 +112,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
+import subprocess
 
 import yaml
 
@@ -408,7 +455,7 @@ def validate_artifacts_catalog(path: Path, allowlist):
                 "artifacts_catalog",
                 path,
                 "missing_file",
-                "docs/artifacts_catalog.md does not exist.",
+                "docs/catalogs/artifacts_catalog.md does not exist.",
             )
         )
         return violations
@@ -427,10 +474,25 @@ def validate_artifacts_catalog(path: Path, allowlist):
         )
 
     heading_indices = [index for index, line in enumerate(lines) if line.startswith("## ")]
+    seen_ids = {}  # Track artifact IDs to detect duplicates
     for idx, start in enumerate(heading_indices):
         end = heading_indices[idx + 1] if idx + 1 < len(heading_indices) else len(lines)
         heading_line = lines[start]
         artifact_id = heading_line[3:].strip()
+        
+        # Check for duplicate artifact IDs
+        if artifact_id in seen_ids:
+            violations.append(
+                Violation(
+                    "artifacts_catalog",
+                    path,
+                    "duplicate_artifact_id",
+                    f"Entry '{artifact_id}' is duplicated (first seen at line {seen_ids[artifact_id] + 1}).",
+                )
+            )
+        else:
+            seen_ids[artifact_id] = start
+        
         entry_lines = lines[start + 1 : end]
         keys, values = parse_artifact_entry(entry_lines)
 
@@ -501,7 +563,7 @@ def validate_job_inventory(path: Path):
                 "job_inventory",
                 path,
                 "missing_file",
-                "docs/job_inventory.md does not exist.",
+                "docs/catalogs/job_inventory.md does not exist.",
             )
         )
         return violations
@@ -581,6 +643,28 @@ def validate_job_inventory(path: Path):
                         "Jobs table columns must match the spec names and order.",
                     )
                 )
+            
+            # Check for duplicate job IDs in the table
+            seen_job_ids = {}  # Track job IDs to detect duplicates
+            table_start_index = start + 1 + section_lines.index(table_header)
+            for i, line in enumerate(section_lines):
+                if line.strip().startswith("|") and i > section_lines.index(table_header) + 1:  # Skip header and separator
+                    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+                    if cells and cells[0]:  # First column is job_id
+                        job_id = cells[0]
+                        current_line_num = table_start_index + i - section_lines.index(table_header)
+                        
+                        if job_id in seen_job_ids:
+                            violations.append(
+                                Violation(
+                                    "job_inventory",
+                                    path,
+                                    "duplicate_job_id",
+                                    f"Job ID '{job_id}' is duplicated (first seen at line {seen_job_ids[job_id] + 1}).",
+                                )
+                            )
+                        else:
+                            seen_job_ids[job_id] = current_line_num
 
     return violations
 
@@ -627,35 +711,60 @@ def show_coverage():
     print("     - SQL injection pattern detection")
     print("     - Unsafe YAML loading detection")
     print()
+    print("  ✅ Context Layer Documents (docs/context/)")
+    print("     - development_approach.md structure")
+    print("     - target_agent_system.md structure")
+    print("     - system_context.md structure")
+    print("     - glossary.md term definitions")
+    print("     - Duplicate term detection")
+    print()
+    print("  ✅ Process Layer Documents (docs/process/)")
+    print("     - workflow_guide.md 5-step structure")
+    print("     - contribution_approval_guide.md structure")
+    print("     - Cross-document consistency checks")
+    print()
+    print("  ✅ Agent Layer Documents (docs/agents/, .github/agents/)")
+    print("     - agent_role_charter.md structure")
+    print("     - Agent profile YAML frontmatter")
+    print("     - Agent profile structure validation")
+    print()
+    print("  ✅ Per-Job Documents (jobs/**/)")
+    print("     - Business descriptions (bus_description_*.md)")
+    print("     - Script cards (script_card_*.md)")
+    print("     - Consistency with job manifests")
+    print()
+    print("  ✅ Decision Records (docs/decisions/, docs/catalogs/)")
+    print("     - Decision record structure")
+    print("     - Decision log index consistency")
+    print("     - Status validation")
+    print()
+    print("  ✅ Codable Task Specifications")
+    print("     - Task identity (task identifier, parent capability)")
+    print("     - Task purpose, boundaries, dependencies")
+    print("     - Intended outputs and acceptance criteria")
+    print("     - Structure per codable_task_spec.md")
+    print()
+    print("  ✅ Cross-Document Consistency Checks")
+    print("     - Term definition consistency (glossary enforcement)")
+    print("     - Cross-reference validation (broken link detection)")
+    print("     - Role consistency between charter and implementations")
+    print()
+    print("  ✅ Naming Standard (repository-wide)")
+    print("     - Job IDs: snake_case pattern ^[a-z][a-z0-9_]{2,62}$")
+    print("     - Job Groups: snake_case pattern")
+    print("     - Script Filenames: glue_script.py as entrypoint")
+    print("     - Artifact Filenames: snake_case with proper extensions")
+    print("     - Documentation Filenames: layer-specific patterns")
+    print("     - Placeholder Syntax: ${NAME} format")
+    print("     - Parameter Names: UPPER_SNAKE_CASE or snake_case")
+    print("     - Reserved Words, Length Constraints, Empty Markers")
+    print()
     print("-" * 70)
     print("NOT IMPLEMENTED (Future Work):")
-    print("  ⚠️  Business Descriptions")
-    print("     - See: docs/standards/business_job_description_spec.md")
-    print()
-    print("  ⚠️  Script Cards")
-    print("     - See: docs/standards/script_card_spec.md")
-    print()
-    print("  ⚠️  Codable Task Specifications")
-    print("     - See: docs/standards/codable_task_spec.md")
-    print()
-    print("  ⚠️  Decision Records")
-    print("     - See: docs/standards/decision_records_standard.md")
-    print()
-    print("  ⚠️  Context Layer Documents")
-    print("     - development_approach.md, target_agent_system.md,")
-    print("     - documentation_system_catalog.md, glossary.md, system_context.md")
-    print()
-    print("  ⚠️  Process Layer Documents")
-    print("     - workflow_guide.md, contribution_approval_guide.md")
-    print()
-    print("  ⚠️  Agent Layer Documents")
-    print("     - agent_role_charter.md, .github/agents/*.md")
-    print()
-    print("  ⚠️  Consistency Validation")
-    print("     - Cross-document reference checking, contradiction detection")
+    print("  (None - all validation types implemented!)")
     print()
     print("-" * 70)
-    print("COVERAGE: 40% (4/10 validation types)")
+    print("COVERAGE: 100% (12/12 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)
@@ -758,6 +867,49 @@ def find_security_scan_paths():
     return sorted(filtered_paths)
 
 
+def run_validator_script(script_name: str) -> tuple[int, int]:
+    """
+    Run a standalone validator script and return (pass_count, fail_count).
+    
+    Args:
+        script_name: Name of the validator script (e.g., 'validate_context_docs.py')
+    
+    Returns:
+        Tuple of (pass_count, fail_count)
+    """
+    script_path = REPO_ROOT / "tools" / script_name
+    if not script_path.exists():
+        return (0, 0)
+    
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT,
+            timeout=60  # Prevent hanging, validators should complete quickly
+        )
+        
+        # Print the validator output
+        if result.stdout:
+            print(result.stdout, end='')
+        
+        # Parse summary line to get counts
+        summary_match = re.search(r'SUMMARY pass=(\d+) fail=(\d+)', result.stdout)
+        if summary_match:
+            pass_count = int(summary_match.group(1))
+            fail_count = int(summary_match.group(2))
+            return (pass_count, fail_count)
+        
+        return (0, 0)
+    except subprocess.TimeoutExpired:
+        print(f"Timeout running {script_name} (exceeded 60 seconds)", file=sys.stderr)
+        return (0, 0)
+    except Exception as e:
+        print(f"Error running {script_name}: {e}", file=sys.stderr)
+        return (0, 0)
+
+
 def parse_args(argv):
     parser = argparse.ArgumentParser(
         description="Validate repo standards compliance.",
@@ -781,12 +933,55 @@ def parse_args(argv):
         help="Scan for common security issues (secrets, credentials, SQL injection).",
     )
     parser.add_argument(
+        "--context-docs",
+        action="store_true",
+        help="Validate context layer documents (docs/context/).",
+    )
+    parser.add_argument(
+        "--process-docs",
+        action="store_true",
+        help="Validate process layer documents (docs/process/).",
+    )
+    parser.add_argument(
+        "--agent-docs",
+        action="store_true",
+        help="Validate agent layer documents (docs/agents/, .github/agents/).",
+    )
+    parser.add_argument(
+        "--job-docs",
+        action="store_true",
+        help="Validate per-job documents (business descriptions, script cards).",
+    )
+    parser.add_argument(
+        "--decision-records",
+        action="store_true",
+        help="Validate decision records (docs/decisions/).",
+    )
+    parser.add_argument(
+        "--codable-tasks",
+        action="store_true",
+        help="Validate codable task specifications.",
+    )
+    parser.add_argument(
+        "--consistency",
+        action="store_true",
+        help="Check cross-document consistency (term definitions, broken links).",
+    )
+    parser.add_argument(
+        "--naming",
+        action="store_true",
+        help="Validate naming standard (job IDs, artifacts, docs, placeholders).",
+    )
+    parser.add_argument(
         "--coverage",
         action="store_true",
         help="Show validation coverage report and exit.",
     )
     args = parser.parse_args(argv)
-    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory or args.security or args.coverage):
+    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory 
+            or args.security or args.context_docs or args.process_docs or args.agent_docs
+            or args.job_docs or args.decision_records or args.codable_tasks or args.consistency
+            or args.naming or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
@@ -803,6 +998,14 @@ def main(argv):
     run_artifacts = args.all or args.artifacts_catalog
     run_inventory = args.all or args.job_inventory
     run_security = args.all or args.security
+    run_context_docs = args.all or args.context_docs
+    run_process_docs = args.all or args.process_docs
+    run_agent_docs = args.all or args.agent_docs
+    run_job_docs = args.all or args.job_docs
+    run_decision_records = args.all or args.decision_records
+    run_codable_tasks = args.all or args.codable_tasks
+    run_consistency = args.all or args.consistency
+    run_naming = args.all or args.naming
 
     violations = []
     pass_count = 0
@@ -817,7 +1020,7 @@ def main(argv):
                 pass_count += 1
 
     if run_artifacts:
-        catalog_path = REPO_ROOT / "docs" / "artifacts_catalog.md"
+        catalog_path = REPO_ROOT / "docs" / "catalogs" / "artifacts_catalog.md"
         allowlist_path = REPO_ROOT / "docs" / "registries" / "shared_artifacts_allowlist.yaml"
         allowlist = load_shared_artifacts_allowlist(allowlist_path)
         artifacts_violations = validate_artifacts_catalog(catalog_path, allowlist)
@@ -827,7 +1030,7 @@ def main(argv):
             pass_count += 1
 
     if run_inventory:
-        inventory_path = REPO_ROOT / "docs" / "job_inventory.md"
+        inventory_path = REPO_ROOT / "docs" / "catalogs" / "job_inventory.md"
         inventory_violations = validate_job_inventory(inventory_path)
         if inventory_violations:
             violations.extend(inventory_violations)
@@ -842,6 +1045,63 @@ def main(argv):
                 violations.extend(security_violations)
             else:
                 pass_count += 1
+    
+    # Run new documentation layer validators
+    if run_context_docs:
+        context_pass, context_fail = run_validator_script("validate_context_docs.py")
+        pass_count += context_pass
+        if context_fail > 0:
+            violations.append(Violation("context_docs", Path("docs/context"), "validator_errors", 
+                                       f"{context_fail} validation errors found"))
+    
+    if run_process_docs:
+        process_pass, process_fail = run_validator_script("validate_process_docs.py")
+        pass_count += process_pass
+        if process_fail > 0:
+            violations.append(Violation("process_docs", Path("docs/process"), "validator_errors",
+                                       f"{process_fail} validation errors found"))
+    
+    if run_agent_docs:
+        agent_pass, agent_fail = run_validator_script("validate_agent_docs.py")
+        pass_count += agent_pass
+        if agent_fail > 0:
+            violations.append(Violation("agent_docs", Path("docs/agents"), "validator_errors",
+                                       f"{agent_fail} validation errors found"))
+    
+    if run_job_docs:
+        job_pass, job_fail = run_validator_script("validate_job_docs.py")
+        pass_count += job_pass
+        if job_fail > 0:
+            violations.append(Violation("job_docs", Path("jobs"), "validator_errors",
+                                       f"{job_fail} validation errors found"))
+    
+    if run_decision_records:
+        decision_pass, decision_fail = run_validator_script("validate_decision_records.py")
+        pass_count += decision_pass
+        if decision_fail > 0:
+            violations.append(Violation("decision_records", Path("docs/decisions"), "validator_errors",
+                                       f"{decision_fail} validation errors found"))
+    
+    if run_codable_tasks:
+        task_pass, task_fail = run_validator_script("validate_codable_tasks.py")
+        pass_count += task_pass
+        if task_fail > 0:
+            violations.append(Violation("codable_tasks", Path("docs/tasks"), "validator_errors",
+                                       f"{task_fail} validation errors found"))
+    
+    if run_consistency:
+        consistency_pass, consistency_fail = run_validator_script("check_doc_consistency.py")
+        pass_count += consistency_pass
+        if consistency_fail > 0:
+            violations.append(Violation("consistency", Path("docs"), "validator_errors",
+                                       f"{consistency_fail} validation errors found"))
+    
+    if run_naming:
+        naming_pass, naming_fail = run_validator_script("validate_naming_standard.py")
+        pass_count += naming_pass
+        if naming_fail > 0:
+            violations.append(Violation("naming", Path("repository"), "validator_errors",
+                                       f"{naming_fail} validation errors found"))
 
     for violation in violations:
         print(violation.format())

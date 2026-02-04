@@ -156,7 +156,7 @@ See `python tools/validate_repo_docs.py --coverage` for detailed report.
 
 - **Validation Standards**: `docs/standards/validation_standard.md`
 - **CI Reference**: `docs/ops/ci_automation_reference.md`
-- **Workflow Diagram**: `.github/workflows/WORKFLOW_DIAGRAM.md`
+- **Workflow Architecture**: `docs/ops/ci_workflow_architecture.md`
 
 ## Questions?
 

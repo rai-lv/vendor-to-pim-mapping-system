@@ -59,6 +59,11 @@ This guide **references** but does not redefine:
 **Agent responsibilities when using scaffolding tools:**
 - **Review tool output:** Scaffolding tools produce drafts, not final answers. Agents must review and enhance generated content.
 - **Resolve placeholders:** Tools may output `TBD`, `null`, or placeholder values. Agents must identify these and either resolve them (if information is available) or flag them for human review.
+  - **Information is available when:**
+    1. Value is explicitly stated in approved objective/pipeline/capability plan
+    2. Value can be directly extracted from existing artifacts without interpretation
+    3. Value is specified in referenced standards/specifications
+  - **If none of these apply, escalate:** Resolving the placeholder requires a new assumption and must be flagged for human decision
 - **Check alignment:** Ensure generated scaffolding aligns with approved intent (objectives, pipeline, capability definitions).
 - **Evidence citation:** When referencing scaffolding tool output, cite the tool name and version (if known) and note what was auto-generated vs manually refined.
 
@@ -84,10 +89,19 @@ S3 operations. The manifest is now ready for human review."
 **Purpose:** Check conformance to repository standards and flag violations deterministically.
 
 **When agents should use them:**
-- Before requesting human approval of draft artifacts (Step 1–3).
-- After implementing changes, before advancing to Step 5 (Step 4).
-- During Step 5 validation to confirm structural and conformance requirements.
-- Whenever an agent modifies documentation, manifests, or governed artifacts.
+- After completing a logical unit of work (artifact creation or significant modification)
+- Before requesting human approval of draft artifacts (Step 1–3)
+- After implementing changes, before advancing to Step 5 (Step 4)
+- During Step 5 validation to confirm structural and conformance requirements
+- Whenever an agent modifies documentation, manifests, or governed artifacts
+- Before pushing changes to remote repository (as final check)
+
+**Validation timing sequence:**
+1. **During work:** Run validation after completing each logical work unit (e.g., after generating/modifying an artifact)
+2. **Before human review:** Ensure artifacts pass validation before requesting approval
+3. **Before pushing:** Run final validation check before committing and pushing to remote
+
+This sequence ensures artifacts are validated iteratively during work, not just at final submission.
 
 **Agent responsibilities when using validation tools:**
 - **Run validation before approval requests:** Do not ask humans to review artifacts that fail basic validation.
@@ -129,6 +143,12 @@ I corrected both issues and re-ran validation. The manifest now passes all struc
 - **Identify evidence gaps:** If acceptance criteria cannot be fully covered by available evidence tools, flag the gap explicitly.
 - **Escalate contradictions:** If evidence contradicts expectations (e.g., test fails when success was expected), surface the conflict immediately.
 - **Evidence citation:** When claiming "acceptance criterion X is met," cite the specific evidence output (e.g., "test log line 42: 'All records processed successfully'").
+- **Handle conflicting evidence:** If multiple evidence tools produce conflicting results:
+  1. **Report all evidence:** Never suppress or omit conflicting evidence
+  2. **Assume failure:** If any evidence tool indicates failure, the overall status is failure
+  3. **Investigate discrepancies:** Check for environmental differences, test coverage gaps, or tool configuration issues
+  4. **Escalate with full context:** Provide all evidence outputs and investigation notes to human reviewer
+  5. **Never claim "verified" with conflicting evidence:** Use "partial verification" or "evidence conflict detected" instead
 
 **Evidence expectations:**
 - Agents **must** produce or reference deterministic evidence when using "verified" or "confirmed" (ref: `docs/standards/validation_standard.md`).
@@ -167,9 +187,10 @@ validation. The output file matches the expected schema defined in the artifacts
 
 When multiple tools can provide the same evidence category:
 
-1. **Prefer local validation tools before CI:**
-   - Run `validate_repo_docs.py` locally before pushing
-   - CI validation serves as final confirmation, not first check
+1. **Prefer local validation tools for iterative work:**
+   - Run `validate_repo_docs.py` locally during development
+   - Use local tools after each logical work unit for fast feedback
+   - CI validation serves as final confirmation after all local validation passes
 
 2. **Layer validation tools by scope:**
    - Use targeted tools for specific artifacts (e.g., validate single manifest)
@@ -178,6 +199,37 @@ When multiple tools can provide the same evidence category:
 3. **Reference the most granular evidence available:**
    - Cite specific tool output lines when available
    - Fall back to broader CI results when targeted evidence isn't available
+
+---
+
+## Tool Execution Order
+
+When multiple tool types are needed for a task, follow this sequence to ensure efficient and correct results:
+
+**Standard execution sequence:**
+1. **Scaffolding** (if generating new artifacts): Use scaffolding tools to create initial structure
+2. **Manual review and enhancement**: Review tool output, resolve placeholders (per criteria above)
+3. **Validation** (structure + conformance): Run validation tools to check artifact correctness
+4. **Fix violations** (if any): Correct issues identified by validation
+5. **Re-validate** (if fixes were made): Confirm fixes resolved all violations
+6. **Evidence collection** (if runtime verification needed): Run tests, generate logs, collect evidence
+7. **Final validation** (if evidence collection modified artifacts): Ensure generated evidence artifacts also pass validation
+
+**Rationale:**
+- Validate before evidence collection to avoid wasting resources testing invalid artifacts
+- Re-validate after fixes to confirm resolution
+- Validate evidence artifacts to ensure they meet documentation standards
+
+**Example scenario (Step 4 - Creating new job manifest):**
+```
+1. Run manifest-generator tool → generates draft job_manifest.yaml
+2. Review output, resolve TBD values using approved capability plan
+3. Run validate_repo_docs.py --manifests → identifies missing 'runtime' field
+4. Add missing field based on script analysis
+5. Re-run validate_repo_docs.py --manifests → 0 violations
+6. (If acceptance criteria require runtime test) Run integration test
+7. Validate test output artifacts (if any were generated)
+```
 
 ---
 
@@ -214,31 +266,14 @@ The `docs/standards/validation_standard.md` defines five validation categories. 
 
 ## Evidence Citation Format
 
-When agents reference tool outputs in evidence summaries or approval requests, use this format:
+When referencing tool outputs in evidence summaries or approval requests, follow the standard citation formats defined in `docs/standards/validation_standard.md` Section 2.5.
 
-**For validation tools:**
-```
-Validated using [tool name] [version if known].
-Result: [pass/fail summary]
-Violations found: [count and brief description]
-Evidence: [location of full report or key output lines]
-```
+The validation standard defines citation templates for:
+- Validation tools (structure, conformance checks)
+- Evidence tools (tests, runtime verification)
+- Scaffolding tools (draft generation)
 
-**For evidence tools:**
-```
-Verified using [tool name/test suite name].
-Result: [outcome summary]
-Acceptance criterion: [specific criterion being verified]
-Evidence: [location of logs/reports/screenshots with line numbers or timestamps]
-```
-
-**For scaffolding tools:**
-```
-Draft generated using [tool name] [version if known].
-Tool extracted: [list of auto-generated content]
-Manual additions: [list of human/agent enhancements]
-Status: [ready for review / requires further refinement]
-```
+Using standard citation formats ensures consistency and traceability across all agent outputs and supports evidence discipline requirements.
 
 ---
 

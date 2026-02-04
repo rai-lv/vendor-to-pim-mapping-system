@@ -15,6 +15,8 @@ CURRENT VALIDATION COVERAGE:
   ✅ Agent Layer Documents (docs/agents/*.md, .github/agents/*.md)
   ✅ Per-Job Documents (business descriptions, script cards)
   ✅ Decision Records (docs/decisions/*.md, decision_log.md)
+  ✅ Codable Task Specifications (task specifications per codable_task_spec.md)
+  ✅ Cross-Document Consistency (term definitions, broken links, role consistency)
 
 VALIDATION RULES:
 
@@ -75,6 +77,17 @@ VALIDATION RULES:
 9. Decision Records:
    - Decision record structure (Status, Context, Decision)
    - Decision log index consistency
+
+10. Codable Task Specifications:
+   - Task identity (task identifier, parent capability)
+   - Task purpose, boundaries, dependencies
+   - Intended outputs and acceptance criteria
+   - Structure per docs/standards/codable_task_spec.md
+
+11. Cross-Document Consistency:
+   - Term definition consistency (glossary enforcement)
+   - Cross-reference validation (broken link detection)
+   - Role consistency between charter and agent implementations
 
 For detailed specifications and rationale, see:
   - docs/standards/job_manifest_spec.md
@@ -676,18 +689,23 @@ def show_coverage():
     print("     - Decision log index consistency")
     print("     - Status validation")
     print()
+    print("  ✅ Codable Task Specifications")
+    print("     - Task identity (task identifier, parent capability)")
+    print("     - Task purpose, boundaries, dependencies")
+    print("     - Intended outputs and acceptance criteria")
+    print("     - Structure per codable_task_spec.md")
+    print()
+    print("  ✅ Cross-Document Consistency Checks")
+    print("     - Term definition consistency (glossary enforcement)")
+    print("     - Cross-reference validation (broken link detection)")
+    print("     - Role consistency between charter and implementations")
+    print()
     print("-" * 70)
     print("NOT IMPLEMENTED (Future Work):")
-    print("  ⚠️  Codable Task Specifications")
-    print("     - See: docs/standards/codable_task_spec.md")
-    print()
-    print("  ⚠️  Cross-Document Consistency Checks")
-    print("     - Term definition consistency across documents")
-    print("     - Schema reference consistency")
-    print("     - Cross-layer contradiction detection")
+    print("  (None - all validation types implemented!)")
     print()
     print("-" * 70)
-    print("COVERAGE: 82% (9/11 validation types)")
+    print("COVERAGE: 100% (11/11 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)
@@ -881,6 +899,16 @@ def parse_args(argv):
         help="Validate decision records (docs/decisions/).",
     )
     parser.add_argument(
+        "--codable-tasks",
+        action="store_true",
+        help="Validate codable task specifications.",
+    )
+    parser.add_argument(
+        "--consistency",
+        action="store_true",
+        help="Check cross-document consistency (term definitions, broken links).",
+    )
+    parser.add_argument(
         "--coverage",
         action="store_true",
         help="Show validation coverage report and exit.",
@@ -888,7 +916,8 @@ def parse_args(argv):
     args = parser.parse_args(argv)
     if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory 
             or args.security or args.context_docs or args.process_docs or args.agent_docs
-            or args.job_docs or args.decision_records or args.coverage):
+            or args.job_docs or args.decision_records or args.codable_tasks or args.consistency
+            or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
@@ -910,6 +939,8 @@ def main(argv):
     run_agent_docs = args.all or args.agent_docs
     run_job_docs = args.all or args.job_docs
     run_decision_records = args.all or args.decision_records
+    run_codable_tasks = args.all or args.codable_tasks
+    run_consistency = args.all or args.consistency
 
     violations = []
     pass_count = 0
@@ -985,6 +1016,20 @@ def main(argv):
         if decision_fail > 0:
             violations.append(Violation("decision_records", Path("docs/decisions"), "validator_errors",
                                        f"{decision_fail} validation errors found"))
+    
+    if run_codable_tasks:
+        task_pass, task_fail = run_validator_script("validate_codable_tasks.py")
+        pass_count += task_pass
+        if task_fail > 0:
+            violations.append(Violation("codable_tasks", Path("docs/tasks"), "validator_errors",
+                                       f"{task_fail} validation errors found"))
+    
+    if run_consistency:
+        consistency_pass, consistency_fail = run_validator_script("check_doc_consistency.py")
+        pass_count += consistency_pass
+        if consistency_fail > 0:
+            violations.append(Violation("consistency", Path("docs"), "validator_errors",
+                                       f"{consistency_fail} validation errors found"))
 
     for violation in violations:
         print(violation.format())

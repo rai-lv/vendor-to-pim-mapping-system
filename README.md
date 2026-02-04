@@ -49,24 +49,32 @@ This repository is an **AI-supported development system** for building and maint
 
 This repository uses a layered documentation system to prevent duplication and maintain a single source of truth:
 
-- **Context documents** define intent and framing
-- **Standards** define enforceable rules and schemas
-- **Process documents** describe how to execute the workflow
-- **Ops documents** describe how to run tooling and interpret outputs
-- **Per-job documents** capture job-local intent and operational behavior
+- **Context layer**: Intent, shared meaning, and system framing
+- **Standards layer**: Enforceable rules and schemas (validator-enforceable)
+- **Agent documentation layer**: Agent roles and interaction guidance
+- **Process layer**: How-to guidance for executing the workflow
+- **Ops layer**: Technical manuals for tools and automation
+- **Living catalogs and per-job docs**: Instance data and job-local documentation
 
 For complete documentation catalog, see [`docs/context/documentation_system_catalog.md`](docs/context/documentation_system_catalog.md).
 
-## Agent System
+### Agent Roles
 
-This repository uses specialized agents to accelerate development while maintaining human oversight:
+The system uses specialized agent roles to accelerate development under human oversight:
 
-- **Combined Planning Agent**: Supports Steps 1-3 (Objective, Pipeline, Capability planning)
-- **Coding Agent**: Supports Step 4 (Implementation)
-- **Validation Support Agent**: Supports Step 5 (Evidence assembly)
-- **Documentation Support Agent**: Maintains consistency across all steps
+**Planning Support (Steps 1-3):**
+- **Objective Support Agent**: Refines objectives with clear scope and success criteria (Step 1)
+- **Pipeline Support Agent**: Decomposes objectives into ordered capabilities (Step 2)
+- **Capability Support Agent**: Defines detailed capability specifications with acceptance criteria (Step 3)
 
-For agent roles and responsibilities, see [`docs/agents/agent_role_charter.md`](docs/agents/agent_role_charter.md).  
+**Execution Support (Steps 4-5):**
+- **Coding Agent**: Implements approved codable tasks (Step 4)
+- **Validation Support Agent**: Assembles evidence against acceptance criteria (Step 5)
+
+**Continuous Support:**
+- **Documentation Support Agent**: Maintains documentation consistency across all steps
+
+For detailed agent responsibilities, see [`docs/agents/agent_role_charter.md`](docs/agents/agent_role_charter.md).  
 For the agent operating model, see [`docs/context/target_agent_system.md`](docs/context/target_agent_system.md).
 
 ## How to Contribute

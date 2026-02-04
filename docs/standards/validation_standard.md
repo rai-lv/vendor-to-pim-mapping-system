@@ -185,7 +185,7 @@ Status: [ready for review / requires further refinement]
 
 ---
 
-### 2.5 Relationship Between Verification and Approval
+### 2.6 Relationship Between Verification and Approval
 
 **Verification provides evidence for approval but is not approval itself.**
 

@@ -163,6 +163,24 @@ validation. The output file matches the expected schema defined in the artifacts
 
 ---
 
+## Tool Selection When Multiple Options Exist
+
+When multiple tools can provide the same evidence category:
+
+1. **Prefer local validation tools before CI:**
+   - Run `validate_repo_docs.py` locally before pushing
+   - CI validation serves as final confirmation, not first check
+
+2. **Layer validation tools by scope:**
+   - Use targeted tools for specific artifacts (e.g., validate single manifest)
+   - Use comprehensive tools for full system checks (e.g., validate all docs)
+
+3. **Reference the most granular evidence available:**
+   - Cite specific tool output lines when available
+   - Fall back to broader CI results when targeted evidence isn't available
+
+---
+
 ## Evidence Output Expectations by Validation Category
 
 The `docs/standards/validation_standard.md` defines five validation categories. Agents should understand which tool types produce evidence for each category:
@@ -246,6 +264,17 @@ Status: [ready for review / requires further refinement]
 
 ---
 
+## When Required Tools Don't Exist
+
+If a needed tool doesn't exist:
+
+1. **Escalate to human review:** Explain the tool gap and request guidance
+2. **Document the gap:** Note in task documentation that manual evidence is required
+3. **Use manual evidence with extra care:** Provide detailed descriptions, screenshots, or step-by-step verification notes
+4. **Never claim "verified" without evidence:** Use "manually reviewed" or "human-inspected" instead of "verified" when automated tools aren't available
+
+---
+
 ## Relationship to Other Documents
 
 ### This guide complements:
@@ -259,6 +288,9 @@ Status: [ready for review / requires further refinement]
 
 ### This guide references:
 - `docs/context/glossary.md` (for shared term definitions like "verified," "evidence," "validation categories")
+
+### This guide assumes familiarity with:
+- `docs/process/workflow_guide.md` (provides step-by-step execution procedures that this guide supports with tool usage patterns)
 
 ---
 

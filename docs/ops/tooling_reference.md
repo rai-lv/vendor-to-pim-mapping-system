@@ -19,6 +19,7 @@ This section catalogs available tools in the repository, their purpose, and loca
 **Location:** `tools/manifest-generator/`
 **Category:** Scaffolding tool (per `docs/context/target_agent_system.md`)
 **Purpose:** Performs static analysis on `glue_script.py` files to extract job interface facts and produce draft `job_manifest.yaml` files.
+**Usage patterns:** See `docs/agents/agent_tool_interaction_guide.md` for guidance on when and how agents should use this tool.
 
 **When to use:**
 - Creating a new job manifest from an existing or new `glue_script.py`

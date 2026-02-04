@@ -443,7 +443,7 @@ def validate_artifacts_catalog(path: Path, allowlist):
                 "artifacts_catalog",
                 path,
                 "missing_file",
-                "docs/artifacts_catalog.md does not exist.",
+                "docs/catalogs/artifacts_catalog.md does not exist.",
             )
         )
         return violations
@@ -536,7 +536,7 @@ def validate_job_inventory(path: Path):
                 "job_inventory",
                 path,
                 "missing_file",
-                "docs/job_inventory.md does not exist.",
+                "docs/catalogs/job_inventory.md does not exist.",
             )
         )
         return violations
@@ -955,7 +955,7 @@ def main(argv):
                 pass_count += 1
 
     if run_artifacts:
-        catalog_path = REPO_ROOT / "docs" / "artifacts_catalog.md"
+        catalog_path = REPO_ROOT / "docs" / "catalogs" / "artifacts_catalog.md"
         allowlist_path = REPO_ROOT / "docs" / "registries" / "shared_artifacts_allowlist.yaml"
         allowlist = load_shared_artifacts_allowlist(allowlist_path)
         artifacts_violations = validate_artifacts_catalog(catalog_path, allowlist)
@@ -965,7 +965,7 @@ def main(argv):
             pass_count += 1
 
     if run_inventory:
-        inventory_path = REPO_ROOT / "docs" / "job_inventory.md"
+        inventory_path = REPO_ROOT / "docs" / "catalogs" / "job_inventory.md"
         inventory_violations = validate_job_inventory(inventory_path)
         if inventory_violations:
             violations.extend(inventory_violations)

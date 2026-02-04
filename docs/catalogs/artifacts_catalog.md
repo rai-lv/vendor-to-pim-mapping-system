@@ -1,4 +1,4 @@
-# Artifacts Catalog (instance)
+# Artifacts Catalog
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Living catalog of artifact contracts, conforming to Artifact Contract Spec.

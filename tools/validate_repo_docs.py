@@ -17,6 +17,7 @@ CURRENT VALIDATION COVERAGE:
   ✅ Decision Records (docs/decisions/*.md, decision_log.md)
   ✅ Codable Task Specifications (task specifications per codable_task_spec.md)
   ✅ Cross-Document Consistency (term definitions, broken links, role consistency)
+  ✅ Naming Standard (job IDs, artifacts, docs, placeholders per naming_standard.md)
 
 VALIDATION RULES:
 
@@ -88,6 +89,17 @@ VALIDATION RULES:
    - Term definition consistency (glossary enforcement)
    - Cross-reference validation (broken link detection)
    - Role consistency between charter and agent implementations
+
+12. Naming Standard:
+   - Job IDs: snake_case pattern ^[a-z][a-z0-9_]{2,62}$
+   - Job Groups: snake_case pattern  
+   - Script Filenames: glue_script.py as entrypoint
+   - Artifact Filenames: snake_case with proper extensions
+   - Documentation Filenames: layer-specific patterns
+   - Placeholder Syntax: ${NAME} format
+   - Parameter Names: UPPER_SNAKE_CASE or snake_case
+   - Reserved Words, Length Constraints, Empty Markers
+   - Per docs/standards/naming_standard.md
 
 For detailed specifications and rationale, see:
   - docs/standards/job_manifest_spec.md
@@ -700,12 +712,22 @@ def show_coverage():
     print("     - Cross-reference validation (broken link detection)")
     print("     - Role consistency between charter and implementations")
     print()
+    print("  ✅ Naming Standard (repository-wide)")
+    print("     - Job IDs: snake_case pattern ^[a-z][a-z0-9_]{2,62}$")
+    print("     - Job Groups: snake_case pattern")
+    print("     - Script Filenames: glue_script.py as entrypoint")
+    print("     - Artifact Filenames: snake_case with proper extensions")
+    print("     - Documentation Filenames: layer-specific patterns")
+    print("     - Placeholder Syntax: ${NAME} format")
+    print("     - Parameter Names: UPPER_SNAKE_CASE or snake_case")
+    print("     - Reserved Words, Length Constraints, Empty Markers")
+    print()
     print("-" * 70)
     print("NOT IMPLEMENTED (Future Work):")
     print("  (None - all validation types implemented!)")
     print()
     print("-" * 70)
-    print("COVERAGE: 100% (11/11 validation types)")
+    print("COVERAGE: 100% (12/12 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)
@@ -909,6 +931,11 @@ def parse_args(argv):
         help="Check cross-document consistency (term definitions, broken links).",
     )
     parser.add_argument(
+        "--naming",
+        action="store_true",
+        help="Validate naming standard (job IDs, artifacts, docs, placeholders).",
+    )
+    parser.add_argument(
         "--coverage",
         action="store_true",
         help="Show validation coverage report and exit.",
@@ -917,7 +944,7 @@ def parse_args(argv):
     if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory 
             or args.security or args.context_docs or args.process_docs or args.agent_docs
             or args.job_docs or args.decision_records or args.codable_tasks or args.consistency
-            or args.coverage):
+            or args.naming or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
@@ -941,6 +968,7 @@ def main(argv):
     run_decision_records = args.all or args.decision_records
     run_codable_tasks = args.all or args.codable_tasks
     run_consistency = args.all or args.consistency
+    run_naming = args.all or args.naming
 
     violations = []
     pass_count = 0
@@ -1030,6 +1058,13 @@ def main(argv):
         if consistency_fail > 0:
             violations.append(Violation("consistency", Path("docs"), "validator_errors",
                                        f"{consistency_fail} validation errors found"))
+    
+    if run_naming:
+        naming_pass, naming_fail = run_validator_script("validate_naming_standard.py")
+        pass_count += naming_pass
+        if naming_fail > 0:
+            violations.append(Violation("naming", Path("repository"), "validator_errors",
+                                       f"{naming_fail} validation errors found"))
 
     for violation in violations:
         print(violation.format())

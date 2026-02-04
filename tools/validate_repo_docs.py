@@ -474,10 +474,25 @@ def validate_artifacts_catalog(path: Path, allowlist):
         )
 
     heading_indices = [index for index, line in enumerate(lines) if line.startswith("## ")]
+    seen_ids = {}  # Track artifact IDs to detect duplicates
     for idx, start in enumerate(heading_indices):
         end = heading_indices[idx + 1] if idx + 1 < len(heading_indices) else len(lines)
         heading_line = lines[start]
         artifact_id = heading_line[3:].strip()
+        
+        # Check for duplicate artifact IDs
+        if artifact_id in seen_ids:
+            violations.append(
+                Violation(
+                    "artifacts_catalog",
+                    path,
+                    "duplicate_artifact_id",
+                    f"Entry '{artifact_id}' is duplicated (first seen at line {seen_ids[artifact_id] + 1}).",
+                )
+            )
+        else:
+            seen_ids[artifact_id] = start
+        
         entry_lines = lines[start + 1 : end]
         keys, values = parse_artifact_entry(entry_lines)
 
@@ -628,6 +643,28 @@ def validate_job_inventory(path: Path):
                         "Jobs table columns must match the spec names and order.",
                     )
                 )
+            
+            # Check for duplicate job IDs in the table
+            seen_job_ids = {}  # Track job IDs to detect duplicates
+            table_start_index = start + 1 + section_lines.index(table_header)
+            for i, line in enumerate(section_lines):
+                if line.strip().startswith("|") and i > section_lines.index(table_header) + 1:  # Skip header and separator
+                    cells = [cell.strip() for cell in line.strip().strip("|").split("|")]
+                    if cells and cells[0]:  # First column is job_id
+                        job_id = cells[0]
+                        current_line_num = table_start_index + i - section_lines.index(table_header)
+                        
+                        if job_id in seen_job_ids:
+                            violations.append(
+                                Violation(
+                                    "job_inventory",
+                                    path,
+                                    "duplicate_job_id",
+                                    f"Job ID '{job_id}' is duplicated (first seen at line {seen_job_ids[job_id] + 1}).",
+                                )
+                            )
+                        else:
+                            seen_job_ids[job_id] = current_line_num
 
     return violations
 

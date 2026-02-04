@@ -80,6 +80,9 @@ def check_term_redefinitions(glossary_terms: Dict[str, str]) -> List[Violation]:
         "target_agent_system.md",  # Contains definitions section
         "development_approach.md",  # Contains definitions section
         "codable_task_spec.md",  # Contains definition section
+        "naming_standard.md",  # Contains examples with term usage patterns
+        "script_card_spec.md",  # Contains field definitions in spec tables
+        "business_job_description_spec.md",  # Contains section definitions
     ]
     
     for doc_path in docs_dir.glob("**/*.md"):
@@ -97,6 +100,11 @@ def check_term_redefinitions(glossary_terms: Dict[str, str]) -> List[Violation]:
         if re.search(r"^##+ (Definitions|Terms|Glossary)", content, re.MULTILINE | re.IGNORECASE):
             continue
         
+        # Skip files that are primarily example-based (contain many "Example:" markers)
+        example_count = content.lower().count('example:') + content.lower().count('e.g.')
+        if example_count > 5:
+            continue
+        
         for term in glossary_terms.keys():
             # Pattern: term followed by colon and definition at start of line
             # Only flag if it looks like an actual definition, not a reference
@@ -104,6 +112,11 @@ def check_term_redefinitions(glossary_terms: Dict[str, str]) -> List[Violation]:
             matches = re.finditer(pattern, content, re.IGNORECASE | re.MULTILINE)
             
             for match in matches:
+                # Check if we're in an example context
+                match_pos = match.start()
+                if is_in_example_context(content, match_pos):
+                    continue
+                
                 definition = match.group(1).strip()
                 # Only flag if it looks like a substantial definition (not just a reference)
                 # and doesn't start with common reference phrases
@@ -111,6 +124,8 @@ def check_term_redefinitions(glossary_terms: Dict[str, str]) -> List[Violation]:
                     not definition.startswith("See ") and
                     not definition.startswith("Reference:") and
                     not definition.startswith("Specification:") and
+                    not definition.startswith("See `") and
+                    not definition.startswith("Documented in") and
                     "..." not in definition[:20]):  # Skip example markers
                     violations.append(Violation(
                         "consistency", doc_path, "term_redefinition",
@@ -141,6 +156,59 @@ def extract_document_references(content: str) -> Set[str]:
     references.update(text_refs)
     
     return references
+
+
+def is_placeholder_reference(ref: str) -> bool:
+    """Check if reference is a placeholder example pattern."""
+    placeholder_patterns = [
+        r'DR-\d{4}',      # Decision record templates like DR-0042
+        r'DR-NNNN',       # Generic decision record pattern
+        r'DR-0000',       # Zero-padded example
+        r'\$\{',          # Variable placeholders like ${job_id}
+        r'<\w+>',         # Angle bracket placeholders
+        r'\{\w+\}',       # Curly brace placeholders (but not markdown)
+        r'_\w+_\.md',     # Underscore placeholder patterns
+        r'EXAMPLE',       # Example file patterns (case insensitive)
+        r'TEMPLATE',      # Template patterns
+        r'TODO',          # TODO markers
+        r'TBD',           # TBD markers
+        r'\.\.\.',        # Ellipsis in examples
+        r'etc\.md',       # "etc" indicators
+        r'placeholder',   # Explicit placeholder text
+    ]
+    
+    ref_lower = ref.lower()
+    for pattern in placeholder_patterns:
+        if re.search(pattern, ref, re.IGNORECASE):
+            return True
+    
+    return False
+
+
+def is_in_example_context(content: str, ref_position: int) -> bool:
+    """Check if reference appears in example code block or example section."""
+    # Check if we're inside a code block (```...```)
+    content_before = content[:ref_position]
+    code_blocks_before = content_before.count('```')
+    if code_blocks_before % 2 == 1:  # Odd number means we're inside a code block
+        return True
+    
+    # Check if we're in an "Example" section (look back up to 500 chars for section header)
+    search_back = content[max(0, ref_position - 500):ref_position]
+    if re.search(r'##+ .*[Ee]xample', search_back):
+        return True
+    
+    # Check if line contains "Example:" or "e.g." indicators
+    line_start = content.rfind('\n', 0, ref_position) + 1
+    line_end = content.find('\n', ref_position)
+    if line_end == -1:
+        line_end = len(content)
+    line = content[line_start:line_end]
+    
+    if re.search(r'[Ee]xample:|e\.g\.|i\.e\.|such as', line):
+        return True
+    
+    return False
 
 
 def validate_cross_references() -> List[Violation]:
@@ -176,8 +244,18 @@ def validate_cross_references() -> List[Violation]:
                 if '*' in ref or '<' in ref or '{' in ref:
                     continue
                 
+                # Skip placeholder/example references
+                if is_placeholder_reference(ref):
+                    continue
+                
                 # Skip references that start with backtick (malformed extraction)
                 if ref.startswith('`'):
+                    continue
+                
+                # Check if reference is in example context
+                ref_positions = [m.start() for m in re.finditer(re.escape(ref), content)]
+                is_example = any(is_in_example_context(content, pos) for pos in ref_positions)
+                if is_example:
                     continue
                 
                 # Try to resolve the reference

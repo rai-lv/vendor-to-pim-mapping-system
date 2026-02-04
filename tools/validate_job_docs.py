@@ -31,7 +31,18 @@ class Violation:
 
 
 def validate_business_description(path: Path) -> List[Violation]:
-    """Validate business job description structure per spec."""
+    """Validate business job description structure per business_job_description_spec.md Section 2.
+    
+    The spec requires 8 numbered sections in exact order:
+    1. Business purpose and context
+    2. Inputs (business view)
+    3. Outputs (business view)
+    4. Processing logic (business flow)
+    5. Business rules and controls
+    6. What the job does not do
+    7. Operational notes (optional)
+    8. Evidence notes and assumptions
+    """
     violations = []
     
     if not path.exists():
@@ -39,69 +50,67 @@ def validate_business_description(path: Path) -> List[Violation]:
     
     content = path.read_text(encoding="utf-8")
     
-    # Required sections based on business_job_description_spec.md
-    # Section 1: Business purpose and context
-    # Section 2-7: Variable depending on the document
-    # At minimum, we check for:
-    # - A title (# header)
-    # - Business purpose section
-    # - Inputs/outputs sections
-    # - Boundary statement
+    # Required sections per spec Section 2
+    required_sections = [
+        (r"## 1\).*[Bb]usiness purpose", "## 1) Business purpose and context"),
+        (r"## 2\).*[Ii]nputs", "## 2) Inputs (business view)"),
+        (r"## 3\).*[Oo]utputs", "## 3) Outputs (business view)"),
+        (r"## 4\).*[Pp]rocessing logic", "## 4) Processing logic (business flow)"),
+        (r"## 5\).*[Bb]usiness rules", "## 5) Business rules and controls"),
+        (r"## 6\).*[Dd]oes not do", "## 6) What the job does not do"),
+        (r"## 8\).*[Ee]vidence", "## 8) Evidence notes and assumptions"),
+    ]
     
-    # Check for a title (# or ## header at start)
-    if not re.search(r"^##? ", content, re.MULTILINE):
+    # Section 7 is optional, so we don't check for it
+    
+    # Check for title (# header)
+    if not re.search(r"^# ", content, re.MULTILINE):
         violations.append(Violation(
             "job_docs", path, "missing_title",
-            "Business description must have a title (# or ## header)"
+            "Business description must have a top-level title (# header)"
         ))
     
-    # Check for business purpose (flexible pattern)
-    has_purpose = (
-        re.search(r"## .*[Pp]urpose", content) or
-        re.search(r"[Bb]usiness purpose", content)
-    )
-    if not has_purpose:
-        violations.append(Violation(
-            "job_docs", path, "missing_business_purpose",
-            "Business description should include business purpose section"
-        ))
+    # Check each required section
+    for pattern, section_name in required_sections:
+        if not re.search(pattern, content):
+            violations.append(Violation(
+                "job_docs", path, "missing_required_section",
+                f"Business description must include section: {section_name}"
+            ))
     
-    # Check for inputs section
-    has_inputs = re.search(r"## .*[Ii]nputs", content)
-    if not has_inputs:
-        violations.append(Violation(
-            "job_docs", path, "missing_inputs_section",
-            "Business description should include inputs section"
-        ))
-    
-    # Check for outputs section (flexible patterns)
-    has_outputs = (
-        re.search(r"## .*[Oo]utputs?", content) or
-        re.search(r"## .*[Oo]utput files?", content)
-    )
-    if not has_outputs:
-        violations.append(Violation(
-            "job_docs", path, "missing_outputs_section",
-            "Business description should include outputs section"
-        ))
-    
-    # Check for boundary statement (flexible patterns)
-    has_boundary = (
-        re.search(r"[Dd]oes not", content) or
-        re.search(r"[Bb]oundary", content) or
-        re.search(r"not do", content, re.IGNORECASE)
-    )
-    if not has_boundary:
-        violations.append(Violation(
-            "job_docs", path, "missing_boundary",
-            "Business description should include explicit boundary statement"
-        ))
+    # Check section order (sections should appear in numbered order)
+    # Extract all numbered section headings
+    section_matches = list(re.finditer(r"## (\d+)\)", content))
+    if section_matches:
+        section_numbers = [int(m.group(1)) for m in section_matches]
+        # Check if they are in ascending order (allowing gaps for optional sections)
+        for i in range(len(section_numbers) - 1):
+            if section_numbers[i] >= section_numbers[i + 1]:
+                violations.append(Violation(
+                    "job_docs", path, "section_order",
+                    f"Sections must be in numbered order: found section {section_numbers[i]} before {section_numbers[i + 1]}"
+                ))
+                break
     
     return violations
 
 
 def validate_script_card(path: Path) -> List[Violation]:
-    """Validate script card structure per spec."""
+    """Validate script card structure per script_card_spec.md Section 2.
+    
+    The spec requires 10 sections (9 MUST + 1 OPTIONAL):
+    2.1 Identity (MUST) - 5 required fields
+    2.2 Purpose (MUST)
+    2.3 Trigger and Parameters (MUST)
+    2.3A Configuration Files (OPTIONAL)
+    2.4 Interface: Inputs (MUST)
+    2.5 Interface: Outputs (MUST)
+    2.6 Side Effects (MUST)
+    2.7 Runtime Behavior (MUST)
+    2.8 Invariants (MUST)
+    2.9 Failure Modes and Observability (MUST)
+    2.10 References (MUST)
+    """
     violations = []
     
     if not path.exists():
@@ -109,28 +118,49 @@ def validate_script_card(path: Path) -> List[Violation]:
     
     content = path.read_text(encoding="utf-8")
     
-    # Required sections based on script_card_spec.md
-    # Script cards document operational behavior
-    
+    # Check for title
     if not re.search(r"^# ", content, re.MULTILINE):
         violations.append(Violation(
             "job_docs", path, "missing_title",
-            "Script card must have a title (# header)"
+            "Script card must have a top-level title (# header)"
         ))
     
-    # Check for key operational sections
-    operational_sections = [
-        r"## .*[Rr]untime",
-        r"## .*[Ff]ailure",
-        r"## .*[Ii]nvariants",
+    # Required sections per spec
+    required_sections = [
+        (r"## Identity|## 2\.1", "## Identity (or ## 2.1)"),
+        (r"## Purpose|## 2\.2", "## Purpose (or ## 2.2)"),
+        (r"## Trigger and [Pp]arameters|## 2\.3", "## Trigger and Parameters (or ## 2.3)"),
+        (r"## Interface:? Inputs|## 2\.4", "## Interface: Inputs (or ## 2.4)"),
+        (r"## Interface:? Outputs|## 2\.5", "## Interface: Outputs (or ## 2.5)"),
+        (r"## Side [Ee]ffects|## 2\.6", "## Side Effects (or ## 2.6)"),
+        (r"## Runtime [Bb]ehavior|## 2\.7", "## Runtime Behavior (or ## 2.7)"),
+        (r"## Invariants|## 2\.8", "## Invariants (or ## 2.8)"),
+        (r"## Failure [Mm]odes|## 2\.9", "## Failure Modes and Observability (or ## 2.9)"),
+        (r"## References|## 2\.10", "## References (or ## 2.10)"),
     ]
     
-    for pattern in operational_sections:
+    for pattern, section_name in required_sections:
         if not re.search(pattern, content):
             violations.append(Violation(
-                "job_docs", path, "missing_operational_section",
-                f"Script card should include operational section matching pattern: {pattern}"
+                "job_docs", path, "missing_required_section",
+                f"Script card must include section: {section_name}"
             ))
+    
+    # Check Identity section has required fields (if section exists)
+    if re.search(r"## Identity|## 2\.1", content):
+        identity_fields = [
+            (r"job_id", "job_id"),
+            (r"glue_job_name", "glue_job_name"),
+            (r"runtime", "runtime"),
+            (r"repo_path", "repo_path"),
+            (r"manifest_path", "manifest_path"),
+        ]
+        for field_pattern, field_name in identity_fields:
+            if not re.search(field_pattern, content):
+                violations.append(Violation(
+                    "job_docs", path, "missing_identity_field",
+                    f"Identity section must include field: {field_name}"
+                ))
     
     return violations
 

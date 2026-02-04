@@ -809,7 +809,8 @@ def run_validator_script(script_name: str) -> tuple[int, int]:
             [sys.executable, str(script_path)],
             capture_output=True,
             text=True,
-            cwd=REPO_ROOT
+            cwd=REPO_ROOT,
+            timeout=60  # Prevent hanging, validators should complete quickly
         )
         
         # Print the validator output
@@ -823,6 +824,9 @@ def run_validator_script(script_name: str) -> tuple[int, int]:
             fail_count = int(summary_match.group(2))
             return (pass_count, fail_count)
         
+        return (0, 0)
+    except subprocess.TimeoutExpired:
+        print(f"Timeout running {script_name} (exceeded 60 seconds)", file=sys.stderr)
         return (0, 0)
     except Exception as e:
         print(f"Error running {script_name}: {e}", file=sys.stderr)

@@ -63,23 +63,30 @@ The following validators run on every PR:
 - Validates task specifications per codable_task_spec.md
 - Ready for when task files are created
 
+✅ **Naming Standard** (`--naming`)
+- Validates job IDs, job groups, script filenames
+- Validates artifact filenames, documentation filenames
+- Validates placeholder syntax, parameter names
+- Checks reserved words, length constraints
+- Per docs/standards/naming_standard.md
+
 ### Validators NOT Currently Blocking PRs
 
 ⚠️ **Cross-Document Consistency** (`--consistency`)
 - **Status**: Runs as informational only (does not block PRs)
-- **Reason**: Currently finds 56 pre-existing issues (broken document references)
-- **Action**: These will be fixed in a follow-up cleanup task
-- **Future**: Will be enabled as blocking check once references are fixed
+- **Reason**: Currently finds 26 issues (mostly legitimate broken cross-layer references)
+- **Action**: Path resolution improvements and broken reference fixes needed
+- **Future**: Will be enabled as blocking check once issues are addressed
 
 ## Running Validators Locally
 
 Before submitting a PR, run validators locally:
 
 ```bash
-# Run all validators (including consistency checks)
+# Run all validators (including consistency and naming checks)
 python tools/validate_repo_docs.py --all
 
-# Run only blocking validators (same as CI)
+# Run only blocking validators (same as CI, without consistency)
 python tools/validate_repo_docs.py \
   --manifests \
   --artifacts-catalog \
@@ -90,10 +97,14 @@ python tools/validate_repo_docs.py \
   --agent-docs \
   --job-docs \
   --decision-records \
-  --codable-tasks
+  --codable-tasks \
+  --naming
 
 # Run specific validator
 python tools/validate_repo_docs.py --context-docs
+
+# Run naming standard validator
+python tools/validate_repo_docs.py --naming
 
 # Check coverage
 python tools/validate_repo_docs.py --coverage
@@ -132,11 +143,32 @@ FAIL consistency docs/path/file.md broken_reference Broken reference to 'other.m
 ```
 **Note**: Currently informational only, will not block PR
 
+**5. Naming Standard Violations**
+```
+FAIL naming jobs/.../job_manifest.yaml artifact_casing Artifact 'MyFile.json' contains uppercase letters
+```
+**Fix**: Rename artifacts to use snake_case (e.g., `my_file.json`)
+
 ## Validator Coverage
 
-Current coverage: **100% (11/11 validation types implemented)**
+Current coverage: **100% (12/12 validation types implemented)**
 
 See `python tools/validate_repo_docs.py --coverage` for detailed report.
+
+### All Validators
+
+1. ✅ Job Manifests
+2. ✅ Artifacts Catalog
+3. ✅ Job Inventory
+4. ✅ Security Checks
+5. ✅ Context Layer Documents
+6. ✅ Process Layer Documents
+7. ✅ Agent Layer Documents
+8. ✅ Per-Job Documents
+9. ✅ Decision Records
+10. ✅ Codable Task Specifications
+11. ✅ Cross-Document Consistency (informational)
+12. ✅ Naming Standard (NEW)
 
 ## Future Enhancements
 

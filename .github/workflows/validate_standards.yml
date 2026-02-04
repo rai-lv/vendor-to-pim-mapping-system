@@ -22,7 +22,7 @@ jobs:
       - name: Validate standards
         run: |
           echo "Running repository standards validation..."
-          # Run all validators except consistency checker (which finds 56 pre-existing issues)
+          # Run all validators except consistency checker (which finds 26 issues)
           # Consistency checker will be enabled after broken references are fixed
           python tools/validate_repo_docs.py \
             --manifests \
@@ -34,4 +34,5 @@ jobs:
             --agent-docs \
             --job-docs \
             --decision-records \
-            --codable-tasks
+            --codable-tasks \
+            --naming

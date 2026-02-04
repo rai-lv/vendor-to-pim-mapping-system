@@ -111,7 +111,7 @@ jobs:
       - name: Run repository standards validation
         run: |
           echo "Running repository-wide standards validation..."
-          # Run all validators except consistency checker (which finds 56 pre-existing issues)
+          # Run all validators except consistency checker (which finds 26 issues)
           # Consistency checker will be enabled after broken references are fixed
           # Issue: Cross-document consistency checker finds legitimate broken refs in existing docs
           # TODO: Fix broken references and re-enable with --consistency flag
@@ -125,7 +125,8 @@ jobs:
             --agent-docs \
             --job-docs \
             --decision-records \
-            --codable-tasks
+            --codable-tasks \
+            --naming
       
       - name: Run consistency checks (informational only)
         continue-on-error: true

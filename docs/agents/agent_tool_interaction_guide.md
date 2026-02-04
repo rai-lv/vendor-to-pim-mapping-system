@@ -159,7 +159,8 @@ I corrected both issues and re-ran validation. The manifest now passes all struc
 - Test runners (pytest, unittest, integration tests)
 - Runtime execution logs and run receipts
 - CI automation test workflows
-- Manual observation and screenshots (when automated evidence is not available)
+
+**Note on manual observation:** Manual observation and screenshots are part of **Manual Review Validation** (not evidence tools), as they rely on human judgment rather than deterministic tool outputs. See the "Manual Review Validation" section for guidance on manual evidence.
 
 **Example agent usage:**
 ```
@@ -254,7 +255,7 @@ The `docs/standards/validation_standard.md` defines five validation categories. 
 
 ### Runtime Validation
 **Tools:** Evidence tools (test runners, runtime execution, log analysis)  
-**Evidence format:** Test results, execution logs, run receipts, screenshots, recordings  
+**Evidence format:** Test results, execution logs, run receipts, automated screenshots/recordings (from test tools)  
 **Agent action:** Run tests and capture execution evidence; map evidence to acceptance criteria; escalate failures
 
 ### Manual Review Validation

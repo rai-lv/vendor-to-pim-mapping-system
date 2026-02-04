@@ -310,8 +310,9 @@ Rules for how evidence is used:
 
 ### Evidence tools
 A category of tools that produce deterministic, reviewable outputs to support approval decisions and verify acceptance criteria.
-Evidence tools include test runners, runtime execution logs, CI automation test workflows, and manual observation methods.
+Evidence tools include test runners, runtime execution logs, and CI automation test workflows.
 Required for claims of "verified" or "confirmed" status.
+Note: Manual observation and screenshots are part of manual review validation (not evidence tools), as they rely on human judgment rather than deterministic tool outputs.
 Ref: `docs/agents/agent_tool_interaction_guide.md` Section "Evidence Tools" and `docs/standards/validation_standard.md`.
 
 ### Escalation

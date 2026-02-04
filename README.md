@@ -26,6 +26,7 @@ This repository is an **AI-supported development system** for building and maint
 - **Documentation system overview**: [`docs/context/documentation_system_catalog.md`](docs/context/documentation_system_catalog.md)
 - **Glossary**: [`docs/context/glossary.md`](docs/context/glossary.md)
 - **Workflow guide**: [`docs/process/workflow_guide.md`](docs/process/workflow_guide.md)
+- **Agent roles**: [`docs/agents/agent_role_charter.md`](docs/agents/agent_role_charter.md)
 - **Standards**: `docs/standards/`
 
 ## Repository Structure
@@ -55,6 +56,18 @@ This repository uses a layered documentation system to prevent duplication and m
 - **Per-job documents** capture job-local intent and operational behavior
 
 For complete documentation catalog, see [`docs/context/documentation_system_catalog.md`](docs/context/documentation_system_catalog.md).
+
+## Agent System
+
+This repository uses specialized agents to accelerate development while maintaining human oversight:
+
+- **Combined Planning Agent**: Supports Steps 1-3 (Objective, Pipeline, Capability planning)
+- **Coding Agent**: Supports Step 4 (Implementation)
+- **Validation Support Agent**: Supports Step 5 (Evidence assembly)
+- **Documentation Support Agent**: Maintains consistency across all steps
+
+For agent roles and responsibilities, see [`docs/agents/agent_role_charter.md`](docs/agents/agent_role_charter.md).  
+For the agent operating model, see [`docs/context/target_agent_system.md`](docs/context/target_agent_system.md).
 
 ## How to Contribute
 

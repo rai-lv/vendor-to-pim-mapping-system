@@ -24,6 +24,11 @@ A definition file in `.github/agents/` that specifies agent instructions, tools,
 Agent profiles use YAML frontmatter for metadata (GitHub Copilot requirement) and contain complete agent instructions in a single file.
 Specification: `docs/standards/documentation_spec.md` Section 3.6.
 
+### AI-supported
+A development approach where humans remain the decision-makers (approval gates), agents accelerate drafting/review/implementation under human oversight, and tools provide deterministic scaffolding/validation/evidence.
+This describes the fundamental operating model of the vendor-to-PIM mapping system.
+Reference: `docs/context/system_context.md`.
+
 ### Anti-pattern
 A prohibited pattern in documentation or code that violates foundational principles or quality criteria.
 Examples include shadow specifications, double truth, circular documentation, and implicit assumptions.
@@ -439,13 +444,13 @@ The manifest is evidence-based (derived from script analysis) and supports autom
 A classification used to prevent mixing purposes and authority.
 Documentation is organized into distinct layers, each with a specific purpose that does not overlap with others.
 Canonical layers:
-- Context (`docs/context/`): intent, principles, operating model, framing
-- Standards (`docs/standards/`): normative rules, schemas, validation requirements
-- Process (`docs/process/`): step-by-step how-to guides, approval processes
-- Operations (`docs/ops/`): tool manuals, CLI syntax, troubleshooting
-- Catalogs (`docs/catalogs/`): compiled inventories, status tracking
-- Instance (`jobs/`, per-job docs): specific implementations
-Specification: `docs/standards/documentation_spec.md` Section 1.2.
+- Context layer (`docs/context/`): intent, shared meaning, system framing
+- Governance and standards layer (`docs/standards/`): normative rules, schemas, validation requirements
+- Agent documentation layer (`docs/agents/`): agent roles and interaction guidance
+- Process layer (`docs/process/`): how-to guidance for executing the workflow
+- Operational reference layer (`docs/ops/`): technical manuals for tools and automation
+- Living catalogs and per-job docs (`docs/catalogs/`, `jobs/`): instances describing concrete system and per-job intent/operations
+Specification: `docs/context/documentation_system_catalog.md` Section "Layers and Intent".
 
 ### Lightweight approval
 Accelerated approval process for low-risk changes meeting specific criteria: low risk (no contract/identifier/governance changes), narrow scope (single job internal, doc clarifications, tests), no breaking changes, and traceable.

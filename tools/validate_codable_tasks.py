@@ -67,6 +67,7 @@ def validate_codable_task(path: Path) -> List[Violation]:
     if purpose_match:
         purpose_text = purpose_match.group(1).strip()
         # Count sentences (rough heuristic: count periods, exclamation marks, question marks)
+        # Note: This will miscount abbreviations (e.g., U.S., Dr.) but serves as a rough check
         sentence_count = len(re.findall(r'[.!?]', purpose_text))
         if sentence_count > 5:
             violations.append(Violation(
@@ -89,15 +90,8 @@ def validate_codable_task(path: Path) -> List[Violation]:
     return violations
 
 
-def validate_codable_tasks() -> List[Violation]:
-    """Validate all codable task specification files in the repository."""
-    violations = []
-    
-    # Look for codable task files in common locations:
-    # - docs/tasks/
-    # - jobs/**/tasks/
-    # - Any file matching codable_task_*.md or task_*.md pattern
-    
+def find_codable_task_files() -> List[Path]:
+    """Find all codable task specification files in the repository."""
     search_patterns = [
         REPO_ROOT / "docs" / "tasks",
         REPO_ROOT / "jobs",
@@ -115,7 +109,14 @@ def validate_codable_tasks() -> List[Violation]:
                     task_files.extend(tasks_dir.glob("*.md"))
     
     # Remove duplicates and filter out README files
-    task_files = [f for f in set(task_files) if f.name.lower() != "readme.md"]
+    return [f for f in set(task_files) if f.name.lower() != "readme.md"]
+
+
+def validate_codable_tasks() -> List[Violation]:
+    """Validate all codable task specification files in the repository."""
+    violations = []
+    
+    task_files = find_codable_task_files()
     
     for task_file in task_files:
         violations.extend(validate_codable_task(task_file))
@@ -130,21 +131,7 @@ def main():
         print(violation.format())
     
     # Count files that were successfully validated
-    search_patterns = [
-        REPO_ROOT / "docs" / "tasks",
-        REPO_ROOT / "jobs",
-    ]
-    
-    task_files = []
-    for base_path in search_patterns:
-        if base_path.exists():
-            task_files.extend(base_path.glob("**/codable_task_*.md"))
-            task_files.extend(base_path.glob("**/task_*.md"))
-            for tasks_dir in base_path.glob("**/tasks"):
-                if tasks_dir.is_dir():
-                    task_files.extend(tasks_dir.glob("*.md"))
-    
-    task_files = [f for f in set(task_files) if f.name.lower() != "readme.md"]
+    task_files = find_codable_task_files()
     
     files_with_violations = set(v.path for v in violations)
     pass_count = sum(1 for f in task_files if f not in files_with_violations)

@@ -19,6 +19,7 @@ This section catalogs available tools in the repository, their purpose, and loca
 **Location:** `tools/manifest-generator/`
 **Category:** Scaffolding tool (per `docs/context/target_agent_system.md`)
 **Purpose:** Performs static analysis on `glue_script.py` files to extract job interface facts and produce draft `job_manifest.yaml` files.
+**Usage patterns:** See `docs/agents/agent_tool_interaction_guide.md` for guidance on when and how agents should use this tool.
 
 **When to use:**
 - Creating a new job manifest from an existing or new `glue_script.py`
@@ -123,7 +124,63 @@ python tools/manifest-generator/generate.py \
 
 ## Validation Tools
 
-*[To be documented as validation tools are created]*
+### Repository Documentation Validator
+
+**Location:** `tools/validate_repo_docs.py`
+**Category:** Validation tool (per `docs/context/target_agent_system.md`)
+**Purpose:** Validates repository documentation and artifacts against defined standards and specifications.
+**Usage patterns:** See `docs/agents/agent_tool_interaction_guide.md` for guidance on when and how agents should use this tool.
+
+**When to use:**
+- Before requesting human approval of draft artifacts
+- After modifying job manifests, artifacts catalog, or job inventory
+- During Step 5 validation to confirm structural and conformance requirements
+- As part of iterative development for fast feedback
+
+**Usage:**
+
+```bash
+# Validate all documentation
+python tools/validate_repo_docs.py --all
+
+# Validate specific artifact types
+python tools/validate_repo_docs.py --manifests
+python tools/validate_repo_docs.py --artifacts-catalog
+python tools/validate_repo_docs.py --job-inventory
+
+# Security scanning
+python tools/validate_repo_docs.py --security
+
+# Show validation coverage report
+python tools/validate_repo_docs.py --coverage
+```
+
+**Parameters:**
+- `--all`: Run all available validations
+- `--manifests`: Validate job manifest files against job_manifest_spec.md
+- `--artifacts-catalog`: Validate artifacts catalog against artifacts_catalog_spec.md
+- `--job-inventory`: Validate job inventory against job_inventory_spec.md
+- `--security`: Scan for common security issues (secrets, credentials, SQL injection patterns)
+- `--coverage`: Display validation coverage report showing what is/isn't validated
+
+**What it validates:**
+- Job manifests: Required fields, placeholder syntax, naming conventions, structural correctness
+- Artifacts catalog: Entry schema, content expectations, producer/consumer relationships
+- Job inventory: Entry fields, reference links, status semantics
+- Security: Credential patterns, hardcoded secrets, SQL injection risks
+
+**Output:**
+- Exit code 0: All validations passed
+- Exit code 1: Validation failures detected
+- Detailed violation reports with file locations and line numbers
+- Human-readable summaries of validation results
+
+**Requirements:**
+- Python 3.8+
+- PyYAML (for manifest parsing)
+- Standard library only otherwise
+
+**Version:** Current (check tool for version info)
 
 ---
 

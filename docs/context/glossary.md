@@ -308,6 +308,13 @@ Rules for how evidence is used:
 - Agents may summarize evidence but must not substitute narrative for proof.
 - “Verified” / “confirmed” may be used only when the evidence is explicitly referenced.
 
+### Evidence tools
+A category of tools that produce deterministic, reviewable outputs to support approval decisions and verify acceptance criteria.
+Evidence tools include test runners, runtime execution logs, and CI automation test workflows.
+Required for claims of "verified" or "confirmed" status.
+Note: Manual observation and screenshots are part of manual review validation (not evidence tools), as they rely on human judgment rather than deterministic tool outputs.
+Ref: `docs/agents/agent_tool_interaction_guide.md` Section "Evidence Tools" and `docs/standards/validation_standard.md`.
+
 ### Escalation
 A required stop-and-surface behavior:
 when an agent cannot proceed without introducing new assumptions, expanding scope, or changing agreed rules/criteria,
@@ -658,6 +665,12 @@ Location: `jobs/<job_group>/<job_id>/`
 Specification: `docs/standards/script_card_spec.md`
 Related: Business description (WHY/WHAT from business perspective).
 
+### Scaffolding tools
+A category of tools that generate empty or minimally-filled structures to reduce manual effort and ensure consistency with repository standards.
+Scaffolding tools produce drafts that require agent review and enhancement, often with TBD or placeholder values.
+Examples: manifest-generator (generates draft job_manifest.yaml).
+Ref: `docs/agents/agent_tool_interaction_guide.md` Section "Scaffolding Tools".
+
 ### Separation of concerns
 A rule that documentation and artifacts must not mix layers:
 - principles/intent,
@@ -785,6 +798,12 @@ The five categories of validation used in this repository, each with specific pu
 5. **Manual Review Validation** - Judgment-based quality checks that cannot be fully automated
 Each category has defined blocking severity (MUST or SHOULD block progression when failing).
 Specification: `docs/standards/validation_standard.md` Section 4.
+
+### Validation tools
+A category of tools that check conformance to repository standards and flag violations deterministically.
+Validation tools are used iteratively during work (after each logical unit), before human approval, and before pushing changes.
+Examples: validate_repo_docs.py (validates manifests, artifacts catalog, job inventory).
+Ref: `docs/agents/agent_tool_interaction_guide.md` Section "Validation Tools".
 
 ### Versioning (documentation)
 The approach to tracking changes in documentation over time.

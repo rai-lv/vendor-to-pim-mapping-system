@@ -149,7 +149,43 @@ The following are NOT sufficient evidence on their own:
 - Breaking changes require comprehensive validation
 - Approval gates require multiple evidence types
 
-### 2.5 Relationship Between Verification and Approval
+### 2.5 Evidence Citation Format
+
+When referencing tool outputs in evidence summaries, approval requests, or validation reports, use the following standard formats to ensure consistency and traceability:
+
+**For validation tools:**
+```
+Validated using [tool name] [version if known].
+Result: [pass/fail summary]
+Violations found: [count and brief description]
+Evidence: [location of full report or key output lines]
+```
+
+**For evidence tools (tests, runtime verification):**
+```
+Verified using [tool name/test suite name].
+Result: [outcome summary]
+Acceptance criterion: [specific criterion being verified]
+Evidence: [location of logs/reports/screenshots with line numbers or timestamps]
+```
+
+**For scaffolding tools:**
+```
+Draft generated using [tool name] [version if known].
+Tool extracted: [list of auto-generated content]
+Manual additions: [list of human/agent enhancements]
+Status: [ready for review / requires further refinement]
+```
+
+**Version citation guidance:**
+- For Python tools: Include version from `--version` flag or `__version__` attribute
+- For CI/CD tools: Include workflow run ID or build number
+- If version unavailable: Note "version unspecified" and include tool location/commit hash if possible
+- Version specification helps ensure evidence reproducibility
+
+---
+
+### 2.6 Relationship Between Verification and Approval
 
 **Verification provides evidence for approval but is not approval itself.**
 
@@ -443,6 +479,65 @@ Judgment-based quality checks that cannot be fully automated.
 - Human reviewers have authority to block progression
 - Rejection requires documented reason
 - Re-review required after addressing concerns
+
+---
+
+## 4.6 Escalation Criteria for Validation Failures
+
+This section defines when validation failures should be escalated to human decision rather than automatically fixed by agents.
+
+### Ambiguous Validation Failures
+
+A validation failure is considered **ambiguous** and MUST be escalated when:
+
+1. **Violation message contradicts approved standards:**
+   - Validation tool reports a violation that conflicts with a documented standard or specification
+   - Multiple interpretations of the requirement exist
+   - Example: Tool says field is required, but spec marks it optional
+
+2. **Fix requires interpreting requirements:**
+   - Resolution cannot be achieved through mechanical reformatting
+   - Agent must make judgment about intent or meaning
+   - Example: "Choose between INPUT_BUCKET or VENDOR_DATA_BUCKET based on context"
+
+3. **Multiple valid interpretations exist:**
+   - Specification allows multiple correct values
+   - Agent cannot determine correct choice without additional context
+   - Example: Enum allows both "pending" and "in_progress" with unclear distinction
+
+4. **Validation rule conflicts with workflow guidance:**
+   - Validation tool enforces a rule that contradicts approved capability plan or objective
+   - Following validation rule would change approved intent
+   - Example: Validation requires field but approved plan explicitly excludes it
+
+### Clear Validation Failures (Can Be Fixed)
+
+Validation failures that SHOULD be fixed automatically (no escalation needed):
+
+1. **Formatting issues:**
+   - Incorrect indentation, spacing, or line breaks
+   - Missing quotation marks or brackets
+   - Trailing whitespace or empty lines
+
+2. **Mechanical completeness:**
+   - Missing required field that has obvious default value
+   - Field present but empty when non-empty required
+   - Placeholder using wrong syntax (e.g., `{placeholder}` should be `{{placeholder}}`)
+
+3. **Cross-reference resolution:**
+   - Reference to entity that exists but with typo in ID
+   - Reference format incorrect but target is clear
+   - Example: "job_id: vendor input" should be "job_id: vendor_input"
+
+### Escalation Process
+
+When escalating validation failures:
+
+1. **Provide full context:** Include validation output, affected artifact, and approved intent
+2. **Explain the ambiguity:** State why automatic fix is not appropriate
+3. **Propose options:** If multiple resolutions exist, list them with trade-offs
+4. **Reference standards:** Point to conflicting requirements or specifications
+5. **Await human decision:** Do not proceed with implementation until guidance received
 
 ---
 

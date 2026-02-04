@@ -206,15 +206,15 @@ def main():
     for violation in violations:
         print(violation.format())
     
-    # Count files
+    # Count files that were successfully validated (exist and have no violations)
     jobs_base = REPO_ROOT / "jobs"
-    total_files = 0
+    job_doc_files = []
     if jobs_base.exists():
-        total_files += len(list(jobs_base.glob("*/*/bus_description_*.md")))
-        total_files += len(list(jobs_base.glob("*/*/script_card_*.md")))
+        job_doc_files.extend(jobs_base.glob("*/*/bus_description_*.md"))
+        job_doc_files.extend(jobs_base.glob("*/*/script_card_*.md"))
     
-    files_with_violations = len(set(v.path for v in violations))
-    pass_count = total_files - files_with_violations
+    files_with_violations = set(v.path for v in violations)
+    pass_count = sum(1 for f in job_doc_files if f.exists() and f not in files_with_violations)
     fail_count = len(violations)
     
     print(f"SUMMARY pass={pass_count} fail={fail_count}")

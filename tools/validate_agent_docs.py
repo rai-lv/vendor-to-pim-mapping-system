@@ -218,14 +218,18 @@ def main():
     for violation in violations:
         print(violation.format())
     
-    # Count unique files with violations
+    # Count files that were successfully validated (exist and have no violations)
+    agents_dir = REPO_ROOT / "docs" / "agents"
     github_agents_dir = REPO_ROOT / ".github" / "agents"
-    profile_count = len(list(github_agents_dir.glob("*.md"))) if github_agents_dir.exists() else 0
-    total_files = 1 + profile_count  # charter + profiles
-    files_with_violations = len(set(v.path for v in violations))
     
-    pass_count = total_files - files_with_violations
+    agent_files = [agents_dir / "agent_role_charter.md"]
+    if github_agents_dir.exists():
+        agent_files.extend(github_agents_dir.glob("*.md"))
+    
+    files_with_violations = set(v.path for v in violations)
+    pass_count = sum(1 for f in agent_files if f.exists() and f not in files_with_violations)
     fail_count = len(violations)
+    
     print(f"SUMMARY pass={pass_count} fail={fail_count}")
     
     return 2 if fail_count else 0

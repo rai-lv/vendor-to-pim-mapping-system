@@ -149,17 +149,16 @@ def main():
     for violation in violations:
         print(violation.format())
     
-    # Count files
+    # Count files that were successfully validated (exist and have no violations)
     decisions_dir = REPO_ROOT / "docs" / "decisions"
-    decision_count = 0
-    if decisions_dir.exists():
-        decision_count = len([f for f in decisions_dir.glob("*.md") if f.name != "README.md"])
-    
     log_path = REPO_ROOT / "docs" / "catalogs" / "decision_log.md"
-    total_files = decision_count + (1 if log_path.exists() else 0)
     
-    files_with_violations = len(set(v.path for v in violations))
-    pass_count = total_files - files_with_violations
+    decision_files = [log_path]
+    if decisions_dir.exists():
+        decision_files.extend([f for f in decisions_dir.glob("*.md") if f.name != "README.md"])
+    
+    files_with_violations = set(v.path for v in violations)
+    pass_count = sum(1 for f in decision_files if f.exists() and f not in files_with_violations)
     fail_count = len(violations)
     
     print(f"SUMMARY pass={pass_count} fail={fail_count}")

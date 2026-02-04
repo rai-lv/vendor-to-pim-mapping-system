@@ -207,8 +207,17 @@ def main():
     for violation in violations:
         print(violation.format())
     
-    pass_count = 2 - len(set(v.path for v in violations))  # 2 process docs
+    # Count files that were successfully validated (exist and have no violations)
+    process_dir = REPO_ROOT / "docs" / "process"
+    process_files = [
+        process_dir / "workflow_guide.md",
+        process_dir / "contribution_approval_guide.md",
+    ]
+    
+    files_with_violations = set(v.path for v in violations)
+    pass_count = sum(1 for f in process_files if f.exists() and f not in files_with_violations)
     fail_count = len(violations)
+    
     print(f"SUMMARY pass={pass_count} fail={fail_count}")
     
     return 2 if fail_count else 0

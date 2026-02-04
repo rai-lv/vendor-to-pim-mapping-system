@@ -237,8 +237,19 @@ def main():
     for violation in violations:
         print(violation.format())
     
-    pass_count = 4 - len(set(v.path for v in violations))  # 4 context docs
+    # Count files that were successfully validated (exist and have no violations)
+    context_dir = REPO_ROOT / "docs" / "context"
+    context_files = [
+        context_dir / "development_approach.md",
+        context_dir / "target_agent_system.md",
+        context_dir / "system_context.md",
+        context_dir / "glossary.md",
+    ]
+    
+    files_with_violations = set(v.path for v in violations)
+    pass_count = sum(1 for f in context_files if f.exists() and f not in files_with_violations)
     fail_count = len(violations)
+    
     print(f"SUMMARY pass={pass_count} fail={fail_count}")
     
     return 2 if fail_count else 0

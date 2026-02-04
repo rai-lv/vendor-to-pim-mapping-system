@@ -760,12 +760,31 @@ Specification: `docs/standards/job_inventory_spec.md` Section 2.2.4.
 ## V
 
 ### Verified / Confirmed
-Words that may be used only when explicit evidence is referenced (in the repository or in the conversation).
-Otherwise, the correct status is “unverified”, “unknown”, or “TBD”.
+A claim can be labeled as "verified" or "confirmed" only when explicit evidence is referenced (in the repository or in the conversation) that:
+1. Directly demonstrates the claim
+2. Is deterministic (reproducible given same inputs and context)  
+3. Is referenced explicitly
+4. Is reviewable by any team member with appropriate access
+
+Otherwise, the correct status is "unverified", "unknown", or "TBD".
+Verification provides evidence for approval but is not approval itself.
+Normative definition: `docs/standards/validation_standard.md` Section 2.1.
+
 
 ### Validation / validation evidence
-Validation is the process of checking acceptance criteria and conformance to standards.
+Validation is the process of checking acceptance criteria and conformance to standards using five distinct categories: structure, conformance, consistency, runtime, and manual review.
 Validation evidence is the deterministic output used to support approval decisions.
+Detailed validation rules and categories are defined in `docs/standards/validation_standard.md`.
+
+### Validation categories
+The five categories of validation used in this repository, each with specific purposes and pass criteria:
+1. **Structure Validation** - Checks file structures, naming conventions, and metadata headers
+2. **Conformance Validation** - Validates compliance with normative schemas and specifications
+3. **Consistency Validation** - Ensures internal consistency across related documents (no contradictions, all references resolve)
+4. **Runtime Validation** - Verifies that implemented code/scripts behave as specified in their contracts
+5. **Manual Review Validation** - Judgment-based quality checks that cannot be fully automated
+Each category has defined blocking severity (MUST or SHOULD block progression when failing).
+Specification: `docs/standards/validation_standard.md` Section 4.
 
 ### Versioning (documentation)
 The approach to tracking changes in documentation over time.

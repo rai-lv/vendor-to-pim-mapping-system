@@ -10,6 +10,11 @@ CURRENT VALIDATION COVERAGE:
   ✅ Artifacts Catalog (docs/catalogs/artifacts_catalog.md)
   ✅ Job Inventory (docs/catalogs/job_inventory.md)
   ✅ Security Checks (Python scripts and YAML files)
+  ✅ Context Layer Documents (docs/context/*.md)
+  ✅ Process Layer Documents (docs/process/*.md)
+  ✅ Agent Layer Documents (docs/agents/*.md, .github/agents/*.md)
+  ✅ Per-Job Documents (business descriptions, script cards)
+  ✅ Decision Records (docs/decisions/*.md, decision_log.md)
 
 VALIDATION RULES:
 
@@ -36,14 +41,6 @@ VALIDATION RULES:
      ## Jobs, ## Dependency links, ## Open verification items
    - Jobs table with required columns (in order)
 
-KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
-  ⚠️  Business Descriptions: NOT IMPLEMENTED
-  ⚠️  Script Cards: NOT IMPLEMENTED
-  ⚠️  Codable Task Specs: NOT IMPLEMENTED
-  ⚠️  Decision Records: NOT IMPLEMENTED
-  ⚠️  Context Documents: NOT IMPLEMENTED
-  ⚠️  Consistency Checks: NOT IMPLEMENTED (cross-document validation)
-
 4. Security Checks (NEW - basic patterns only):
    - AWS access keys (AKIA..., ASIA...)
    - Generic password patterns in code
@@ -54,6 +51,30 @@ KNOWN LIMITATIONS (see VALIDATION_ANALYSIS.md):
    
    Note: These are basic pattern checks. For comprehensive security scanning,
    use dedicated tools like GitGuardian, TruffleHog, or Bandit.
+
+5. Context Layer Documents:
+   - development_approach.md structure and required sections
+   - target_agent_system.md structure and required sections
+   - system_context.md structure and required sections
+   - glossary.md term definitions and duplicate detection
+
+6. Process Layer Documents:
+   - workflow_guide.md structure with 5-step process
+   - contribution_approval_guide.md structure
+   - Consistency between workflow steps
+
+7. Agent Layer Documents:
+   - agent_role_charter.md structure and agent role definitions
+   - .github/agents/*.md YAML frontmatter and structure
+
+8. Per-Job Documents:
+   - Business descriptions structure
+   - Script cards structure
+   - Consistency with job manifests
+
+9. Decision Records:
+   - Decision record structure (Status, Context, Decision)
+   - Decision log index consistency
 
 For detailed specifications and rationale, see:
   - docs/standards/job_manifest_spec.md
@@ -66,6 +87,7 @@ import argparse
 import re
 import sys
 from pathlib import Path
+import subprocess
 
 import yaml
 
@@ -627,35 +649,45 @@ def show_coverage():
     print("     - SQL injection pattern detection")
     print("     - Unsafe YAML loading detection")
     print()
+    print("  ✅ Context Layer Documents (docs/context/)")
+    print("     - development_approach.md structure")
+    print("     - target_agent_system.md structure")
+    print("     - system_context.md structure")
+    print("     - glossary.md term definitions")
+    print("     - Duplicate term detection")
+    print()
+    print("  ✅ Process Layer Documents (docs/process/)")
+    print("     - workflow_guide.md 5-step structure")
+    print("     - contribution_approval_guide.md structure")
+    print("     - Cross-document consistency checks")
+    print()
+    print("  ✅ Agent Layer Documents (docs/agents/, .github/agents/)")
+    print("     - agent_role_charter.md structure")
+    print("     - Agent profile YAML frontmatter")
+    print("     - Agent profile structure validation")
+    print()
+    print("  ✅ Per-Job Documents (jobs/**/)")
+    print("     - Business descriptions (bus_description_*.md)")
+    print("     - Script cards (script_card_*.md)")
+    print("     - Consistency with job manifests")
+    print()
+    print("  ✅ Decision Records (docs/decisions/, docs/catalogs/)")
+    print("     - Decision record structure")
+    print("     - Decision log index consistency")
+    print("     - Status validation")
+    print()
     print("-" * 70)
     print("NOT IMPLEMENTED (Future Work):")
-    print("  ⚠️  Business Descriptions")
-    print("     - See: docs/standards/business_job_description_spec.md")
-    print()
-    print("  ⚠️  Script Cards")
-    print("     - See: docs/standards/script_card_spec.md")
-    print()
     print("  ⚠️  Codable Task Specifications")
     print("     - See: docs/standards/codable_task_spec.md")
     print()
-    print("  ⚠️  Decision Records")
-    print("     - See: docs/standards/decision_records_standard.md")
-    print()
-    print("  ⚠️  Context Layer Documents")
-    print("     - development_approach.md, target_agent_system.md,")
-    print("     - documentation_system_catalog.md, glossary.md, system_context.md")
-    print()
-    print("  ⚠️  Process Layer Documents")
-    print("     - workflow_guide.md, contribution_approval_guide.md")
-    print()
-    print("  ⚠️  Agent Layer Documents")
-    print("     - agent_role_charter.md, .github/agents/*.md")
-    print()
-    print("  ⚠️  Consistency Validation")
-    print("     - Cross-document reference checking, contradiction detection")
+    print("  ⚠️  Cross-Document Consistency Checks")
+    print("     - Term definition consistency across documents")
+    print("     - Schema reference consistency")
+    print("     - Cross-layer contradiction detection")
     print()
     print("-" * 70)
-    print("COVERAGE: 40% (4/10 validation types)")
+    print("COVERAGE: 90% (9/10 validation types)")
     print()
     print("For detailed analysis and recommendations, see VALIDATION_ANALYSIS.md")
     print("=" * 70)
@@ -758,6 +790,45 @@ def find_security_scan_paths():
     return sorted(filtered_paths)
 
 
+def run_validator_script(script_name: str) -> tuple[int, int]:
+    """
+    Run a standalone validator script and return (pass_count, fail_count).
+    
+    Args:
+        script_name: Name of the validator script (e.g., 'validate_context_docs.py')
+    
+    Returns:
+        Tuple of (pass_count, fail_count)
+    """
+    script_path = REPO_ROOT / "tools" / script_name
+    if not script_path.exists():
+        return (0, 0)
+    
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path)],
+            capture_output=True,
+            text=True,
+            cwd=REPO_ROOT
+        )
+        
+        # Print the validator output
+        if result.stdout:
+            print(result.stdout, end='')
+        
+        # Parse summary line to get counts
+        summary_match = re.search(r'SUMMARY pass=(\d+) fail=(\d+)', result.stdout)
+        if summary_match:
+            pass_count = int(summary_match.group(1))
+            fail_count = int(summary_match.group(2))
+            return (pass_count, fail_count)
+        
+        return (0, 0)
+    except Exception as e:
+        print(f"Error running {script_name}: {e}", file=sys.stderr)
+        return (0, 0)
+
+
 def parse_args(argv):
     parser = argparse.ArgumentParser(
         description="Validate repo standards compliance.",
@@ -781,12 +852,39 @@ def parse_args(argv):
         help="Scan for common security issues (secrets, credentials, SQL injection).",
     )
     parser.add_argument(
+        "--context-docs",
+        action="store_true",
+        help="Validate context layer documents (docs/context/).",
+    )
+    parser.add_argument(
+        "--process-docs",
+        action="store_true",
+        help="Validate process layer documents (docs/process/).",
+    )
+    parser.add_argument(
+        "--agent-docs",
+        action="store_true",
+        help="Validate agent layer documents (docs/agents/, .github/agents/).",
+    )
+    parser.add_argument(
+        "--job-docs",
+        action="store_true",
+        help="Validate per-job documents (business descriptions, script cards).",
+    )
+    parser.add_argument(
+        "--decision-records",
+        action="store_true",
+        help="Validate decision records (docs/decisions/).",
+    )
+    parser.add_argument(
         "--coverage",
         action="store_true",
         help="Show validation coverage report and exit.",
     )
     args = parser.parse_args(argv)
-    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory or args.security or args.coverage):
+    if not (args.all or args.manifests or args.artifacts_catalog or args.job_inventory 
+            or args.security or args.context_docs or args.process_docs or args.agent_docs
+            or args.job_docs or args.decision_records or args.coverage):
         parser.error("At least one validation flag must be provided.")
     return args
 
@@ -803,6 +901,11 @@ def main(argv):
     run_artifacts = args.all or args.artifacts_catalog
     run_inventory = args.all or args.job_inventory
     run_security = args.all or args.security
+    run_context_docs = args.all or args.context_docs
+    run_process_docs = args.all or args.process_docs
+    run_agent_docs = args.all or args.agent_docs
+    run_job_docs = args.all or args.job_docs
+    run_decision_records = args.all or args.decision_records
 
     violations = []
     pass_count = 0
@@ -842,6 +945,42 @@ def main(argv):
                 violations.extend(security_violations)
             else:
                 pass_count += 1
+    
+    # Run new documentation layer validators
+    if run_context_docs:
+        context_pass, context_fail = run_validator_script("validate_context_docs.py")
+        pass_count += context_pass
+        if context_fail > 0:
+            violations.append(Violation("context_docs", Path("docs/context"), "validator_errors", 
+                                       f"{context_fail} validation errors found"))
+    
+    if run_process_docs:
+        process_pass, process_fail = run_validator_script("validate_process_docs.py")
+        pass_count += process_pass
+        if process_fail > 0:
+            violations.append(Violation("process_docs", Path("docs/process"), "validator_errors",
+                                       f"{process_fail} validation errors found"))
+    
+    if run_agent_docs:
+        agent_pass, agent_fail = run_validator_script("validate_agent_docs.py")
+        pass_count += agent_pass
+        if agent_fail > 0:
+            violations.append(Violation("agent_docs", Path("docs/agents"), "validator_errors",
+                                       f"{agent_fail} validation errors found"))
+    
+    if run_job_docs:
+        job_pass, job_fail = run_validator_script("validate_job_docs.py")
+        pass_count += job_pass
+        if job_fail > 0:
+            violations.append(Violation("job_docs", Path("jobs"), "validator_errors",
+                                       f"{job_fail} validation errors found"))
+    
+    if run_decision_records:
+        decision_pass, decision_fail = run_validator_script("validate_decision_records.py")
+        pass_count += decision_pass
+        if decision_fail > 0:
+            violations.append(Violation("decision_records", Path("docs/decisions"), "validator_errors",
+                                       f"{decision_fail} validation errors found"))
 
     for violation in violations:
         print(violation.format())

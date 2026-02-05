@@ -8,11 +8,7 @@ Documentation validators are integrated into CI/CD workflows to ensure all PRs m
 
 ### Workflows That Run Validators
 
-1. **`validate_standards.yml`** - Basic validation on every PR
-   - Trigger: Every pull request
-   - Scope: All validation types (except consistency checks)
-
-2. **`pr_validation.yml`** - Comprehensive PR quality gates
+1. **`pr_validation.yml`** - Comprehensive PR quality gates
    - Trigger: PR opened/synchronized/reopened against main
    - Job: `standards_compliance`
    - Scope: All validation types (except consistency checks)

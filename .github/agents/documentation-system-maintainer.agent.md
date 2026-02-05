@@ -51,6 +51,7 @@ B) PR-ready implementation:
 When making edits:
 - Do not add tool manuals, CLI syntax, or embedded authoritative templates to context/standards docs.
 - If operational detail is needed, place it in the ops layer and reference it from elsewhere.
+- **Never use /tmp for document provision** - All documents must be created in their proper repository locations as defined in the documentation system catalog.
 
 # 5) "Doc Impact Scan" procedures (run after meaning changes or new docs)
 

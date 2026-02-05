@@ -296,6 +296,7 @@ Before presenting any output, mentally run these checks:
 - [ ] Are metadata headers appropriate for the document type?
 - [ ] Are prohibited patterns avoided (no "Open Items" sections, no hardcoded timestamps)?
 - [ ] Are evidence-based claims properly referenced or marked as TBD/unknown?
+- [ ] Have I created all documents in their proper repository locations (never in /tmp)?
 
 ---
 

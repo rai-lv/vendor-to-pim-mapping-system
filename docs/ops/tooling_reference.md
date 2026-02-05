@@ -126,7 +126,7 @@ python tools/manifest-generator/generate.py \
 
 ### Repository Documentation Validator
 
-**Location:** `tools/validate_repo_docs.py`
+**Location:** `tools/validation-suite/validate_repo_docs.py`
 **Category:** Validation tool (per `docs/context/target_agent_system.md`)
 **Purpose:** Validates repository documentation and artifacts against defined standards and specifications.
 **Usage patterns:** See `docs/agents/agent_tool_interaction_guide.md` for guidance on when and how agents should use this tool.
@@ -141,18 +141,18 @@ python tools/manifest-generator/generate.py \
 
 ```bash
 # Validate all documentation
-python tools/validate_repo_docs.py --all
+python tools/validation-suite/validate_repo_docs.py --all
 
 # Validate specific artifact types
-python tools/validate_repo_docs.py --manifests
-python tools/validate_repo_docs.py --artifacts-catalog
-python tools/validate_repo_docs.py --job-inventory
+python tools/validation-suite/validate_repo_docs.py --manifests
+python tools/validation-suite/validate_repo_docs.py --artifacts-catalog
+python tools/validation-suite/validate_repo_docs.py --job-inventory
 
 # Security scanning
-python tools/validate_repo_docs.py --security
+python tools/validation-suite/validate_repo_docs.py --security
 
 # Show validation coverage report
-python tools/validate_repo_docs.py --coverage
+python tools/validation-suite/validate_repo_docs.py --coverage
 ```
 
 **Parameters:**

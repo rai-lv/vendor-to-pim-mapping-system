@@ -115,7 +115,7 @@ jobs:
           # Consistency checker will be enabled after broken references are fixed
           # Issue: Cross-document consistency checker finds legitimate broken refs in existing docs
           # TODO: Fix broken references and re-enable with --consistency flag
-          python tools/validate_repo_docs.py \
+          python tools/validation-suite/validate_repo_docs.py \
             --manifests \
             --artifacts-catalog \
             --job-inventory \

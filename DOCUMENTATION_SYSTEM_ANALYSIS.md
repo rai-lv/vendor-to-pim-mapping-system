@@ -233,7 +233,7 @@ A comprehensive review validated the implementation against all catalog requirem
 #### 2.1.1 Documentation Layer Validators ✅ **RESOLVED**
 **Purpose:** Validate context, process, agent, and ops layer documents  
 **Current Status:** **IMPLEMENTED** (PR #128, merged 2026-02-05)  
-**Evidence:** Validators implemented in `tools/validate_*.py`, integrated in CI via `.github/workflows/pr_validation.yml`
+**Evidence:** Validators implemented in `tools/validation-suite/validate_*.py`, integrated in CI via `.github/workflows/pr_validation.yml`
 
 **Original Issue (Why It Was Critical):**
 - Foundation documents (context, process) had no validation
@@ -244,16 +244,16 @@ A comprehensive review validated the implementation against all catalog requirem
 
 **Implementation Summary:**
 - ✅ **All 7 Required Validators Delivered:**
-  - `tools/validate_context_docs.py` (259 lines) - validates 4 context layer documents
-  - `tools/validate_process_docs.py` (239 lines) - validates 2 process layer documents
-  - `tools/validate_agent_docs.py` (239 lines) - validates agent_role_charter.md and .github/agents/*.md
-  - `tools/validate_job_docs.py` (256 lines) - validates business descriptions and script cards
-  - `tools/validate_decision_records.py` (170 lines) - validates decision records and decision_log.md
-  - `tools/validate_codable_tasks.py` (151 lines) - validates codable task specifications
-  - `tools/validate_naming_standard.py` (506 lines) - validates naming conventions
+  - `tools/validation-suite/validate_context_docs.py` (259 lines) - validates 4 context layer documents
+  - `tools/validation-suite/validate_process_docs.py` (239 lines) - validates 2 process layer documents
+  - `tools/validation-suite/validate_agent_docs.py` (239 lines) - validates agent_role_charter.md and .github/agents/*.md
+  - `tools/validation-suite/validate_job_docs.py` (256 lines) - validates business descriptions and script cards
+  - `tools/validation-suite/validate_decision_records.py` (170 lines) - validates decision records and decision_log.md
+  - `tools/validation-suite/validate_codable_tasks.py` (151 lines) - validates codable task specifications
+  - `tools/validation-suite/validate_naming_standard.py` (506 lines) - validates naming conventions
 
 - ✅ **All Validators Integrated into Main Validator:**
-  - `tools/validate_repo_docs.py` (39K lines) - orchestrator with 12 validation modes
+  - `tools/validation-suite/validate_repo_docs.py` (39K lines) - orchestrator with 12 validation modes
   - Command-line flags: `--context-docs`, `--process-docs`, `--agent-docs`, `--job-docs`, `--decision-records`, `--codable-tasks`, `--naming`
   - Coverage increased from 40% to **100%** (all 10 document types covered)
 
@@ -286,7 +286,7 @@ A comprehensive review validated the implementation against all catalog requirem
 
 **Validation Details by Layer:**
 
-1. **Context Layer Validator** (`tools/validate_context_docs.py`)
+1. **Context Layer Validator** (`tools/validation-suite/validate_context_docs.py`)
    ✅ Validates development_approach.md structure (required sections, heading hierarchy)
    ✅ Validates target_agent_system.md structure
    ✅ Validates system_context.md structure
@@ -294,40 +294,40 @@ A comprehensive review validated the implementation against all catalog requirem
    ✅ Checks for duplicate term definitions
    ✅ Test result: `SUMMARY pass=4 fail=0`
 
-2. **Process Layer Validator** (`tools/validate_process_docs.py`)
+2. **Process Layer Validator** (`tools/validation-suite/validate_process_docs.py`)
    ✅ Validates workflow_guide.md 5-step structure
    ✅ Validates contribution_approval_guide.md structure
    ✅ Checks for conflicting procedures
    ✅ Test result: `SUMMARY pass=2 fail=0`
 
-3. **Agent Layer Validator** (`tools/validate_agent_docs.py`)
+3. **Agent Layer Validator** (`tools/validation-suite/validate_agent_docs.py`)
    ✅ Validates agent_role_charter.md structure (9 required sections)
    ✅ Validates .github/agents/*.md YAML frontmatter (name, description, scope, model)
    ✅ Checks for role overlap or conflicts
    ✅ Validates agent profile sections (Purpose, Authority, Responsibilities, etc.)
    ✅ Test result: `SUMMARY pass=3 fail=0`
 
-4. **Per-Job Document Validator** (`tools/validate_job_docs.py`)
+4. **Per-Job Document Validator** (`tools/validation-suite/validate_job_docs.py`)
    ✅ Validates business_job_description.md per spec (8 required sections)
    ✅ Validates script_card.md per spec (10 required sections, Identity fields)
    ✅ Checks consistency between manifest and descriptions (job_id matching)
    ✅ Currently detecting 16 violations in existing pre-implementation business descriptions (expected - docs pre-date validator)
    ✅ Test result: `SUMMARY pass=0 fail=16` (all failures in pre-existing docs)
 
-5. **Decision Records Validator** (`tools/validate_decision_records.py`)
+5. **Decision Records Validator** (`tools/validation-suite/validate_decision_records.py`)
    ✅ Validates decision record structure (Status, Context, Decision, Consequences)
    ✅ Checks decision_log.md index consistency
    ✅ Validates status transitions (Proposed → Accepted/Rejected/Superseded)
    ✅ Test result: `SUMMARY pass=1 fail=0`
 
-6. **Codable Task Validator** (`tools/validate_codable_tasks.py`)
+6. **Codable Task Validator** (`tools/validation-suite/validate_codable_tasks.py`)
    ✅ Validates task specifications per codable_task_spec.md
    ✅ Checks for required sections (identity, purpose, boundaries, dependencies, outputs, acceptance criteria)
    ✅ Validates task purpose length (1-3 sentences)
    ✅ Validates acceptance criteria structure
    ✅ Test result: `INFO: No codable task files found (validator ready for when tasks are created)`
 
-7. **Naming Standard Validator** (`tools/validate_naming_standard.py`)
+7. **Naming Standard Validator** (`tools/validation-suite/validate_naming_standard.py`)
    ✅ Validates job IDs (snake_case, no reserved words)
    ✅ Validates job groups (snake_case)
    ✅ Validates script filenames (glue_script.py, glue_script.scala)
@@ -343,22 +343,22 @@ A comprehensive review validated the implementation against all catalog requirem
 **Functionality Verification:**
 ```bash
 # All validators execute successfully
-$ python tools/validate_context_docs.py
+$ python tools/validation-suite/validate_context_docs.py
 SUMMARY pass=4 fail=0
 
-$ python tools/validate_agent_docs.py
+$ python tools/validation-suite/validate_agent_docs.py
 SUMMARY pass=3 fail=0
 
-$ python tools/validate_process_docs.py
+$ python tools/validation-suite/validate_process_docs.py
 SUMMARY pass=2 fail=0
 
-$ python tools/validate_decision_records.py
+$ python tools/validation-suite/validate_decision_records.py
 SUMMARY pass=1 fail=0
 
-$ python tools/validate_job_docs.py
+$ python tools/validation-suite/validate_job_docs.py
 SUMMARY pass=0 fail=16  # Pre-existing doc issues (expected)
 
-$ python tools/validate_codable_tasks.py
+$ python tools/validation-suite/validate_codable_tasks.py
 INFO: No codable task files found (validator ready for when tasks are created)
 SUMMARY pass=0 fail=0
 ```
@@ -368,7 +368,7 @@ SUMMARY pass=0 fail=0
 - ✅ PR quality gate job: `standards_compliance`
 - ✅ Command executed in CI:
   ```bash
-  python tools/validate_repo_docs.py \
+  python tools/validation-suite/validate_repo_docs.py \
     --manifests \
     --artifacts-catalog \
     --job-inventory \
@@ -444,7 +444,7 @@ SUMMARY pass=0 fail=0
 
 **Evidence:**
 - Implementation: PR #128 merged 2026-02-05
-- Validators: 8 Python scripts in `tools/validate_*.py`
+- Validators: 8 Python scripts in `tools/validation-suite/validate_*.py`
 - CI Config: `.github/workflows/pr_validation.yml` (443 lines)
 - Documentation: `docs/ops/VALIDATOR_CI_INTEGRATION.md` (194 lines)
 - Test Results: All validators pass on conforming documents, correctly flag violations in non-conforming documents
@@ -768,7 +768,7 @@ Previously, documentation referenced Python tool scripts in the `tools/` directo
 ---
 
 #### 4.1.2 Validation Coverage Mismatch
-**Documents:** `docs/standards/validation_standard.md` vs `tools/validate_repo_docs.py` vs `VALIDATION_ANALYSIS.md`  
+**Documents:** `docs/standards/validation_standard.md` vs `tools/validation-suite/validate_repo_docs.py` vs `VALIDATION_ANALYSIS.md`  
 **Nature:** Specification-implementation gap  
 **Severity:** **HIGH**
 
@@ -1081,12 +1081,12 @@ Document type numbering (Items 1-29) is sequential but not hierarchical by layer
 - Provide examples
 
 **7. Implement Context Layer Validator** ✅ MEDIUM
-- Tool: `tools/validate_context_docs.py`
+- Tool: `tools/validation-suite/validate_context_docs.py`
 - Validate development_approach.md, target_agent_system.md, system_context.md, glossary.md
 - Check for structural compliance
 
 **8. Implement Per-Job Document Validator** ✅ MEDIUM
-- Tool: `tools/validate_job_docs.py`
+- Tool: `tools/validation-suite/validate_job_docs.py`
 - Validate business descriptions per spec
 - Validate script cards per spec
 - Cross-check with manifests

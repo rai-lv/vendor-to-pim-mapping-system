@@ -116,7 +116,7 @@ import subprocess
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 MANIFEST_REQUIRED_KEYS = {
     "job_id",
@@ -877,7 +877,7 @@ def run_validator_script(script_name: str) -> tuple[int, int]:
     Returns:
         Tuple of (pass_count, fail_count)
     """
-    script_path = REPO_ROOT / "tools" / script_name
+    script_path = REPO_ROOT / "tools" / "validation-suite" / script_name
     if not script_path.exists():
         return (0, 0)
     

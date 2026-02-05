@@ -975,7 +975,7 @@ Validation checkpoints in the 5-step workflow:
 The following validation tools exist in this repository:
 
 #### Repository Documentation Validator
-- **Location:** `tools/validate_repo_docs.py`
+- **Location:** `tools/validation-suite/validate_repo_docs.py`
 - **Purpose:** Validates documentation and manifest files against specifications
 - **Validation types:** Structure validation, conformance validation
 - **Usage:** See `docs/ops/tooling_reference.md`

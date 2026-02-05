@@ -25,7 +25,7 @@ import yaml
 from pathlib import Path
 from typing import List, Set, Tuple
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Violation:

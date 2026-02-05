@@ -80,10 +80,10 @@ Before submitting a PR, run validators locally:
 
 ```bash
 # Run all validators (including consistency and naming checks)
-python tools/validate_repo_docs.py --all
+python tools/validation-suite/validate_repo_docs.py --all
 
 # Run only blocking validators (same as CI, without consistency)
-python tools/validate_repo_docs.py \
+python tools/validation-suite/validate_repo_docs.py \
   --manifests \
   --artifacts-catalog \
   --job-inventory \
@@ -97,13 +97,13 @@ python tools/validate_repo_docs.py \
   --naming
 
 # Run specific validator
-python tools/validate_repo_docs.py --context-docs
+python tools/validation-suite/validate_repo_docs.py --context-docs
 
 # Run naming standard validator
-python tools/validate_repo_docs.py --naming
+python tools/validation-suite/validate_repo_docs.py --naming
 
 # Check coverage
-python tools/validate_repo_docs.py --coverage
+python tools/validation-suite/validate_repo_docs.py --coverage
 ```
 
 ## Interpreting CI Failures
@@ -149,7 +149,7 @@ FAIL naming jobs/.../job_manifest.yaml artifact_casing Artifact 'MyFile.json' co
 
 Current coverage: **100% (12/12 validation types implemented)**
 
-See `python tools/validate_repo_docs.py --coverage` for detailed report.
+See `python tools/validation-suite/validate_repo_docs.py --coverage` for detailed report.
 
 ### All Validators
 

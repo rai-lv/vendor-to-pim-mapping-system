@@ -28,28 +28,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 class TermMatch:
     """Represents a match of a term in a document."""
     
-    def __init__(self, path: Path, line_num: int, line_content: str, context_before: List[str], context_after: List[str]):
+    def __init__(self, path: Path, line_number: int, line_content: str, context_before: List[str], context_after: List[str]):
         self.path = path
-        self.line_num = line_num
+        self.line_number = line_number
         self.line_content = line_content
         self.context_before = context_before
         self.context_after = context_after
     
     def format(self, show_context: bool = True) -> str:
         """Format the match for display."""
-        result = [f"\n{self.path.relative_to(REPO_ROOT)}:{self.line_num}"]
+        result = [f"\n{self.path.relative_to(REPO_ROOT)}:{self.line_number}"]
         
         if show_context and self.context_before:
             for i, line in enumerate(self.context_before):
-                line_no = self.line_num - len(self.context_before) + i
-                result.append(f"  {line_no:4d} | {line}")
+                line_number = self.line_number - len(self.context_before) + i
+                result.append(f"  {line_number:4d} | {line}")
         
-        result.append(f"  {self.line_num:4d} | {self.line_content}")
+        result.append(f"  {self.line_number:4d} | {self.line_content}")
         
         if show_context and self.context_after:
             for i, line in enumerate(self.context_after):
-                line_no = self.line_num + i + 1
-                result.append(f"  {line_no:4d} | {line}")
+                line_number = self.line_number + i + 1
+                result.append(f"  {line_number:4d} | {line}")
         
         return "\n".join(result)
 
@@ -88,20 +88,20 @@ def find_term_occurrences(term: str, docs_dir: Path, changed_doc: Path = None,
             continue
         
         # Find all matches in this file
-        for line_num, line in enumerate(lines, start=1):
+        for line_number, line in enumerate(lines, start=1):
             if pattern.search(line):
                 # Extract context
                 context_before = []
-                for i in range(max(0, line_num - context_lines - 1), line_num - 1):
+                for i in range(max(0, line_number - context_lines - 1), line_number - 1):
                     context_before.append(lines[i])
                 
                 context_after = []
-                for i in range(line_num, min(len(lines), line_num + context_lines)):
+                for i in range(line_number, min(len(lines), line_number + context_lines)):
                     context_after.append(lines[i])
                 
                 match = TermMatch(
                     path=doc_path,
-                    line_num=line_num,
+                    line_number=line_number,
                     line_content=line,
                     context_before=context_before,
                     context_after=context_after

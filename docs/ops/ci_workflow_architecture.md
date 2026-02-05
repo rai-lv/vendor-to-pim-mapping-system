@@ -4,7 +4,7 @@
 
 This document describes the **current** GitHub Actions workflows that automate validation and quality gates in this repository.
 
-**Status**: As of 2026-02-04, only **3 workflows** are active.
+**Status**: As of 2026-02-05, only **2 workflows** are active for PR validation.
 
 **Location**: All workflows must be in `.github/workflows/` (GitHub Actions requirement)
 
@@ -53,22 +53,7 @@ This document describes the **current** GitHub Actions workflows that automate v
 
 ---
 
-### 2. validate_standards.yml - Standards Validation
-
-**Purpose**: Basic standards validation on every PR
-
-**Trigger**: Automatic on all pull requests
-
-**Actions**:
-- Runs repository-wide standards validation
-- Uses `validate_repo_docs.py` with 10 validator types
-- Checks documentation quality and compliance
-
-**Blocking**: Yes ❌ - PRs cannot merge if this fails
-
----
-
-### 3. testing_workflow.yml - Testing Agent Workflow
+### 2. testing_workflow.yml - Testing Agent Workflow
 
 **Purpose**: Execute automated tests and infer test requirements
 
@@ -120,7 +105,6 @@ This document describes the **current** GitHub Actions workflows that automate v
 │ Python Syntax          │ pr_validation   │ CRITICAL     │ YES ❌       │
 │ YAML Syntax            │ pr_validation   │ CRITICAL     │ YES ❌       │
 │ Standards Compliance   │ pr_validation   │ CRITICAL     │ YES ❌       │
-│                        │ validate_std.   │              │              │
 │ Manifest Placeholders  │ pr_validation   │ CRITICAL     │ YES ❌       │
 │ Planning Structure     │ pr_validation   │ WARNING      │ NO ⚠️        │
 │ TODO Comments          │ pr_validation   │ WARNING      │ NO ⚠️        │
@@ -138,21 +122,21 @@ This document describes the **current** GitHub Actions workflows that automate v
 ```
                           Pull Request Created
                                   │
-                    ┌─────────────┼─────────────┐
-                    │             │             │
-                    ▼             ▼             ▼
-          ┌──────────────┐ ┌──────────────┐ ┌──────────────┐
-          │ pr_validation│ │validate_std. │ │testing_wf    │
-          │  (7 jobs)    │ │  (1 job)     │ │ (1 job)      │
-          └──────────────┘ └──────────────┘ └──────────────┘
-                    │             │             │
-                    └─────────────┼─────────────┘
-                                  │
-                          ┌───────┴────────┐
-                          │                │
-                          ▼                ▼
-                    PASS ✅           FAIL ❌
-                 (Can merge)     (Cannot merge)
+                     ┌────────────┴────────────┐
+                     │                         │
+                     ▼                         ▼
+           ┌──────────────┐           ┌──────────────┐
+           │ pr_validation│           │testing_wf    │
+           │  (7 jobs)    │           │ (1 job)      │
+           └──────────────┘           └──────────────┘
+                     │                         │
+                     └─────────────┬───────────┘
+                                   │
+                           ┌───────┴────────┐
+                           │                │
+                           ▼                ▼
+                     PASS ✅           FAIL ❌
+                  (Can merge)     (Cannot merge)
 ```
 
 ---
@@ -183,12 +167,13 @@ The following workflows are documented in planning materials but **not yet imple
 
 ## Maintenance Notes
 
-**Last Updated**: 2026-02-04
+**Last Updated**: 2026-02-05
 
 **Current State**: 
-- 3 active workflows providing comprehensive PR validation
+- 2 active workflows providing comprehensive PR validation
 - 10 of 11 documentation validators enabled as blocking checks
 - Critical path: Syntax + Standards compliance must pass
+- Removed redundant `validate_standards.yml` (duplicate of `pr_validation.yml` standards_compliance job)
 
 **Upcoming**:
 - Enable cross-document consistency checker once broken references are fixed

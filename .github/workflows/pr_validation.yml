@@ -133,7 +133,7 @@ jobs:
         run: |
           echo "Running cross-document consistency checks (informational)..."
           echo "Note: These checks may report pre-existing issues"
-          python tools/check_doc_consistency.py || true
+          python tools/validation-suite/check_doc_consistency.py || true
       
       - name: Validate manifest placeholder style
         run: |

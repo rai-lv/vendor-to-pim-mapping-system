@@ -116,6 +116,8 @@ This sequence ensures artifacts are validated iteratively during work, not just 
 
 **Example tools:**
 - `validate_repo_docs.py` (validates job manifests, artifacts catalog, job inventory against specs)
+- `scan_doc_impact.py` (identifies documents affected by term/concept changes)
+- `check_doc_consistency.py` (detects contradictions and "double truth" across documentation)
 - CI automation workflows (syntax validation, standards compliance checks)
 
 **Example agent usage:**
@@ -249,9 +251,9 @@ The `docs/standards/validation_standard.md` defines five validation categories. 
 **Agent action:** Run validation tools before approval; fix violations when possible; escalate conflicts
 
 ### Consistency Validation
-**Tools:** Validation tools (cross-reference checkers, link validators) and manual review  
-**Evidence format:** Reports showing cross-document consistency (e.g., "all references resolve")  
-**Agent action:** Run cross-reference validation; manually verify logical consistency; flag contradictions
+**Tools:** Validation tools (cross-reference checkers, link validators, documentation impact scanner) and manual review  
+**Evidence format:** Reports showing cross-document consistency (e.g., "all references resolve", "Doc Impact Scan performed")  
+**Agent action:** Run cross-reference validation; use `scan_doc_impact.py` after terminology changes; manually verify logical consistency; flag contradictions
 
 ### Runtime Validation
 **Tools:** Evidence tools (test runners, runtime execution, log analysis)  

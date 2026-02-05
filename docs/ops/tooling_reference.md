@@ -184,6 +184,108 @@ python tools/validation-suite/validate_repo_docs.py --coverage
 
 ---
 
+### Documentation Impact Scanner
+
+**Location:** `tools/doc-impact-scanner/`
+**Category:** Validation tool (per `docs/context/target_agent_system.md`)
+**Purpose:** Identifies all documents potentially affected by a term or concept change. Supports Documentation Support Agent's "Doc Impact Scan" workflows.
+**Usage patterns:** See `docs/agents/agent_tool_interaction_guide.md` for guidance on when and how agents should use this tool.
+
+**When to use:**
+- After changing terminology, definitions, or concepts in documentation
+- During Step 5 validation to check for documentation consistency
+- When performing "Doc Impact Scan" per `docs/process/workflow_guide.md` Section 6
+- To identify potential "double truth" or contradictions after documentation changes
+
+**Usage:**
+
+```bash
+# Basic search for a term
+python tools/doc-impact-scanner/scan_doc_impact.py --term <term>
+
+# Quick summary view
+python tools/doc-impact-scanner/scan_doc_impact.py --term <term> --summary-only
+
+# Search with document context
+python tools/doc-impact-scanner/scan_doc_impact.py --term <term> --document <path>
+
+# Case-sensitive search
+python tools/doc-impact-scanner/scan_doc_impact.py --term <term> --case-sensitive
+
+# Adjust context lines
+python tools/doc-impact-scanner/scan_doc_impact.py --term <term> --context 5
+```
+
+**Parameters:**
+- `--term TERM` (required): The term or concept to search for
+- `--document PATH` (optional): Path to the document that was changed (for context tracking)
+- `--context N` (optional): Number of context lines to show before/after each match (default: 2)
+- `--case-sensitive` (optional): Perform case-sensitive search (default: case-insensitive)
+- `--no-context` (optional): Don't show context lines, just the matching line
+- `--summary-only` (optional): Show only summary statistics, not detailed occurrences
+
+**What it does:**
+- Searches all markdown files in `docs/` and `.github/agents/`
+- Uses whole-word matching (e.g., "agent" won't match "management")
+- Extracts context lines before/after each match
+- Groups results by file with line numbers
+- Provides summary statistics (total occurrences, affected documents)
+
+**Output:**
+- Exit code 0: No matches found
+- Exit code 1: Matches found (informational, not an error)
+- Exit code 2: Error (e.g., docs directory not found)
+- Summary view: List of files with occurrence counts
+- Detailed view: File paths, line numbers, and context snippets
+
+**Example output:**
+
+```
+================================================================================
+Documentation Impact Scan Results
+================================================================================
+Term: 'validation'
+Total occurrences: 556
+Affected documents: 24
+================================================================================
+
+Affected Documents:
+--------------------------------------------------------------------------------
+  docs/agents/agent_role_charter.md                            (12 occurrences)
+  docs/standards/validation_standard.md                        (197 occurrences)
+  ...
+```
+
+**Typical workflow:**
+1. Make documentation change that affects terminology
+2. Run scanner: `python tools/doc-impact-scanner/scan_doc_impact.py --term "changed-term" --document path/to/changed.md`
+3. Review list of affected documents
+4. Update related documentation to maintain consistency
+5. Verify no contradictions or "double truth" were introduced
+
+**Documentation:**
+- README: `tools/doc-impact-scanner/README.md`
+- Per DOCUMENTATION_SYSTEM_ANALYSIS.md Section 2.2.1
+
+**Requirements:**
+- Python 3.8+
+- Standard library only (no external dependencies)
+
+**Version:** v1 (initial release)
+
+**Troubleshooting:**
+
+*Issue:* Too many matches, hard to review
+*Solution:* Use `--summary-only` flag to see just file counts, then run detailed scan on specific high-count files.
+
+*Issue:* Missing expected occurrences
+*Solution:* Check if term has different capitalization. By default, search is case-insensitive. Use `--case-sensitive` if needed.
+
+*Issue:* Want to see more/less context
+*Solution:* Adjust with `--context N` parameter (default is 2 lines before/after).
+
+---
+
 ## Evidence Tools
 
 *[To be documented as evidence tools are created]*

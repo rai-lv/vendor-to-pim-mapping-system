@@ -6,8 +6,8 @@ Identifies all documents potentially affected by a meaning change to a term or c
 Supports the Documentation Support Agent's "Doc Impact Scan" workflows.
 
 Usage:
-    python tools/scan_doc_impact.py --document <path> --term <term>
-    python tools/scan_doc_impact.py --term <term>  # Search all docs
+    python tools/doc-impact-scanner/scan_doc_impact.py --document <path> --term <term>
+    python tools/doc-impact-scanner/scan_doc_impact.py --term <term>  # Search all docs
 
 Output:
     List of potentially affected documents with context snippets showing where
@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import List, Tuple, Set
 
 
-REPO_ROOT = Path(__file__).resolve().parents[1]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 class TermMatch:
@@ -228,19 +228,19 @@ def main():
         epilog="""
 Examples:
   # Scan for all occurrences of "agent"
-  python tools/scan_doc_impact.py --term agent
+  python tools/doc-impact-scanner/scan_doc_impact.py --term agent
   
   # Scan with document context
-  python tools/scan_doc_impact.py --term "workflow" --document docs/process/workflow_guide.md
+  python tools/doc-impact-scanner/scan_doc_impact.py --term "workflow" --document docs/process/workflow_guide.md
   
   # Case-sensitive search
-  python tools/scan_doc_impact.py --term "Pipeline" --case-sensitive
+  python tools/doc-impact-scanner/scan_doc_impact.py --term "Pipeline" --case-sensitive
   
   # Summary only (no detailed context)
-  python tools/scan_doc_impact.py --term "glossary" --summary-only
+  python tools/doc-impact-scanner/scan_doc_impact.py --term "glossary" --summary-only
   
   # More context lines
-  python tools/scan_doc_impact.py --term "validation" --context 5
+  python tools/doc-impact-scanner/scan_doc_impact.py --term "validation" --context 5
         """
     )
     

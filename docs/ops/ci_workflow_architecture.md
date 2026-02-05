@@ -4,7 +4,7 @@
 
 This document describes the **current** GitHub Actions workflows that automate validation and quality gates in this repository.
 
-**Status**: As of 2026-02-05, only **2 workflows** are active for PR validation.
+**Status**: As of 2026-02-05, only **1 workflow** is active for PR validation.
 
 **Location**: All workflows must be in `.github/workflows/` (GitHub Actions requirement)
 
@@ -12,7 +12,7 @@ This document describes the **current** GitHub Actions workflows that automate v
 
 ## Active Workflows
 
-### 1. pr_validation.yml - PR Validation and Quality Gates
+### pr_validation.yml - PR Validation and Quality Gates
 
 **Purpose**: Comprehensive multi-job validation on every pull request
 
@@ -35,38 +35,12 @@ This document describes the **current** GitHub Actions workflows that automate v
    
 4. **Quality Gates** (WARNING - Does not block ⚠️)
    - TODO comment detection
-   - Best practices check
    
-5. **Testing Validation** (WARNING - Does not block ⚠️)
-   - Automated test execution
-   - Test result upload
-   
-6. **Documentation Validation** (WARNING - Does not block ⚠️)
-   - Documentation completeness check
-   - Code-to-docs synchronization reminder
-   
-7. **Validation Summary**
+5. **Validation Summary**
    - Aggregates all results
    - Fails if critical gates fail
 
 **Critical Path**: Jobs 1 & 2 must pass for PR to be mergeable
-
----
-
-### 2. testing_workflow.yml - Testing Agent Workflow
-
-**Purpose**: Execute automated tests and infer test requirements
-
-**Triggers**:
-- Manual (workflow_dispatch) - User-initiated testing
-- Automatic (pull_request) - When code or specs change
-
-**Actions**:
-- `run_tests`: Execute test suite for specifications
-- `infer_tests`: Generate test requirements from specifications
-- `list_logs`: List available test logs
-
-**Blocking**: No ⚠️ - Used for validation feedback, not enforcement
 
 ---
 

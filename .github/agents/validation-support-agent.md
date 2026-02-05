@@ -195,6 +195,9 @@ Before presenting any validation summary or evidence report, mentally run these 
 - [ ] Gaps are described with enough detail to guide next steps.
 - [ ] Proposals for additional validation are specific and actionable.
 
+### Document location check
+- [ ] All validation reports and evidence summaries are created in proper repository locations (never in /tmp).
+
 ---
 
 ## 8) Evidence Assembly Procedures

@@ -231,6 +231,7 @@ Before presenting any output (code, commits, documentation), mentally run these 
 - **When to use:** To generate or update documentation that reflects implementation reality.
 - **Example:** Update per-job documentation to reflect new behavior or contracts.
 - **Important:** Documentation must follow `documentation_spec.md` and maintain layer separation.
+- **Never use /tmp for document provision** - All documents must be created in their proper repository locations as defined in the documentation system catalog.
 
 **Reference:** `agent_tool_interaction_guide.md`, `docs/ops/tooling_reference.md`
 

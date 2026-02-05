@@ -102,6 +102,9 @@ After completing the scan, produce:
 - **Remediation proposals:** Suggested fixes for each issue (re-homing, consolidation, etc.)
 - **Cross-doc impact notes:** Other documents that may need updates
 
+**Note on future tooling:**
+When a cross-document consistency checker tool becomes available, integrate it into the Doc Impact Scan execution steps. The tool should automate Steps 1-4 and provide structured output that can be incorporated into the consistency report.
+
 # 5a) Re-homing procedures (moving content to correct layer)
 
 ## 5a.1) Re-homing decision tree

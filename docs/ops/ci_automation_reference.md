@@ -247,8 +247,7 @@ Please ensure corresponding documentation is updated
 2. Review logs in `logs/tests_logs/*.log`
 3. Identify failing test and root cause
 4. Fix code or update test expectations as appropriate
-5. Run tests locally: `python tools/testing_agent.py run --no-log`
-6. Ensure all tests pass before pushing
+5. Ensure all tests pass before pushing
 
 ### Pattern 6: Documentation Update Remediation
 
@@ -259,7 +258,6 @@ Please ensure corresponding documentation is updated
    - Business descriptions in `docs/business_job_descriptions/`
    - Job manifests (`job_manifest.yaml`)
 3. Verify documentation matches code behavior
-4. Run documentation validation locally: `python tools/documentation_agent.py validate`
 
 ### General Remediation Strategy
 

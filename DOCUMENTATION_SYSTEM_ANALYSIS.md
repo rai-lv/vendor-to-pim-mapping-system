@@ -528,12 +528,14 @@ FAIL consistency docs/standards/naming_standard.md broken_reference [4 violation
 ```bash
 $ python tools/check_doc_consistency.py
 SUMMARY pass=0 fail=10
+Exit code: 2 (non-zero, by design when issues found)
 ```
-- ✅ Checker executes successfully
+- ✅ Checker runs and completes detection
 - ✅ Correctly identifies all 10 broken references
 - ✅ No false negatives (all broken references detected)
 - ✅ Term definition consistency checks working
 - ✅ Role responsibility checks working
+- ⚠️ **Note:** Exits non-zero (code 2) when failures detected; tolerated in CI via `continue-on-error: true` and `|| true`
 
 **Quality Assessment:**
 - **Implementation Quality:** Production-ready

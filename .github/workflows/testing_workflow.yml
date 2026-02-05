@@ -55,51 +55,89 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyyaml
       
-      - name: Run tests (manual)
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: Run tests (manual)
+      #   if: github.event_name == 'workflow_dispatch' && inputs.action == 'run_tests'
+      #   run: |
+      #     if [ -n "${{ inputs.spec_name }}" ]; then
+      #       if [ "${{ inputs.no_log }}" = "true" ]; then
+      #         python tools/testing_agent.py run --spec "${{ inputs.spec_name }}" --no-log
+      #       else
+      #         python tools/testing_agent.py run --spec "${{ inputs.spec_name }}"
+      #       fi
+      #     else
+      #       if [ "${{ inputs.no_log }}" = "true" ]; then
+      #         python tools/testing_agent.py run --no-log
+      #       else
+      #         python tools/testing_agent.py run
+      #       fi
+      #     fi
+      
+      - name: Testing placeholder
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'run_tests'
         run: |
-          if [ -n "${{ inputs.spec_name }}" ]; then
-            if [ "${{ inputs.no_log }}" = "true" ]; then
-              python tools/testing_agent.py run --spec "${{ inputs.spec_name }}" --no-log
-            else
-              python tools/testing_agent.py run --spec "${{ inputs.spec_name }}"
-            fi
-          else
-            if [ "${{ inputs.no_log }}" = "true" ]; then
-              python tools/testing_agent.py run --no-log
-            else
-              python tools/testing_agent.py run
-            fi
-          fi
+          echo "⚠️  Testing functionality is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
+          echo "Test execution should be implemented with available tools"
       
-      - name: Infer tests from specification
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: Infer tests from specification
+      #   if: github.event_name == 'workflow_dispatch' && inputs.action == 'infer_tests'
+      #   run: |
+      #     if [ -z "${{ inputs.spec_name }}" ]; then
+      #       echo "Error: spec_name is required for infer_tests action"
+      #       exit 1
+      #     fi
+      #     python tools/testing_agent.py infer "${{ inputs.spec_name }}"
+      
+      - name: Test inference placeholder
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'infer_tests'
         run: |
-          if [ -z "${{ inputs.spec_name }}" ]; then
-            echo "Error: spec_name is required for infer_tests action"
-            exit 1
-          fi
-          python tools/testing_agent.py infer "${{ inputs.spec_name }}"
+          echo "⚠️  Test inference functionality is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
       
-      - name: List test logs
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: List test logs
+      #   if: github.event_name == 'workflow_dispatch' && inputs.action == 'list_logs'
+      #   run: python tools/testing_agent.py logs
+      
+      - name: List logs placeholder
         if: github.event_name == 'workflow_dispatch' && inputs.action == 'list_logs'
-        run: python tools/testing_agent.py logs
+        run: |
+          echo "⚠️  Log listing functionality is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
+          echo "Available test logs:"
+          ls -la logs/tests_logs/ 2>/dev/null || echo "No test logs found"
       
-      - name: Auto-test on PR
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: Auto-test on PR
+      #   if: github.event_name == 'pull_request'
+      #   run: |
+      #     echo "════════════════════════════════════════════════════════"
+      #     echo "Running tests on pull request..."
+      #     echo "════════════════════════════════════════════════════════"
+      #     python tools/testing_agent.py run --no-log
+      #     echo ""
+      #     echo "✓ PR testing complete"
+      
+      - name: Auto-test placeholder (PR)
         if: github.event_name == 'pull_request'
         run: |
-          echo "════════════════════════════════════════════════════════"
-          echo "Running tests on pull request..."
-          echo "════════════════════════════════════════════════════════"
-          python tools/testing_agent.py run --no-log
-          echo ""
-          echo "✓ PR testing complete"
+          echo "⚠️  Automated PR testing is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
       
-      - name: Auto-test on push to main
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: Auto-test on push to main
+      #   if: github.event_name == 'push'
+      #   run: |
+      #     echo "Running tests after merge to main..."
+      #     python tools/testing_agent.py run
+      
+      - name: Auto-test placeholder (push to main)
         if: github.event_name == 'push'
         run: |
-          echo "Running tests after merge to main..."
-          python tools/testing_agent.py run
+          echo "⚠️  Automated testing on push is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
       
       - name: Upload test logs
         if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && inputs.no_log != 'true'

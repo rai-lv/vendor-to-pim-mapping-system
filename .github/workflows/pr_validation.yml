@@ -329,10 +329,11 @@ jobs:
             echo "✓ No TODO comments found"
           fi
       
-      - name: Check coding best practices
-        run: |
-          echo "Running best practices check..."
-          python tools/coding_agent.py check || echo "⚠️  Best practices check completed with warnings"
+      # DISABLED: coding_agent.py does not exist (legacy tool removed)
+      # - name: Check coding best practices
+      #   run: |
+      #     echo "Running best practices check..."
+      #     python tools/coding_agent.py check || echo "⚠️  Best practices check completed with warnings"
   
   # Job 5: Testing validation
   testing_validation:
@@ -357,10 +358,17 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyyaml
       
-      - name: Run automated tests
+      # DISABLED: testing_agent.py does not exist (legacy tool removed)
+      # - name: Run automated tests
+      #   run: |
+      #     echo "Running Testing Agent validation..."
+      #     python tools/testing_agent.py run --no-log
+      
+      - name: Test validation placeholder
         run: |
-          echo "Running Testing Agent validation..."
-          python tools/testing_agent.py run --no-log
+          echo "⚠️  Automated testing is currently disabled"
+          echo "Legacy testing_agent.py tool has been removed"
+          echo "Test execution should be implemented with available tools"
       
       - name: Upload test results
         if: always()
@@ -395,10 +403,17 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install pyyaml
       
-      - name: Validate documentation
+      # DISABLED: documentation_agent.py does not exist (legacy tool removed)
+      # - name: Validate documentation
+      #   run: |
+      #     echo "Running Documentation Agent validation..."
+      #     python tools/documentation_agent.py validate
+      
+      - name: Documentation validation placeholder
         run: |
-          echo "Running Documentation Agent validation..."
-          python tools/documentation_agent.py validate
+          echo "⚠️  Documentation validation is currently disabled"
+          echo "Legacy documentation_agent.py tool has been removed"
+          echo "Documentation validation should be implemented with available tools"
       
       - name: Check for documentation updates on code changes
         if: contains(github.event.pull_request.changed_files, 'jobs/')

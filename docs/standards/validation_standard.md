@@ -975,9 +975,10 @@ Validation checkpoints in the 5-step workflow:
 The following validation tools exist in this repository:
 
 #### Repository Documentation Validator
-- **Location:** `tools/validation-suite/validate_repo_docs.py`
+- **Location:** `tools/validation-suite/validate_repo_docs.py` (with supporting validators for specific document types)
 - **Purpose:** Validates documentation and manifest files against specifications
 - **Validation types:** Structure validation, conformance validation
+- **Coverage:** 100% of document types defined in this repository (run with `--coverage` flag for details)
 - **Usage:** See `docs/ops/tooling_reference.md`
 
 #### CI Validation Workflow

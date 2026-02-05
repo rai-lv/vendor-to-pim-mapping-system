@@ -981,7 +981,7 @@ The following validation tools exist in this repository:
 - **Usage:** See `docs/ops/tooling_reference.md`
 
 #### CI Validation Workflow
-- **Location:** `.github/workflows/validate_standards.yml`
+- **Location:** `.github/workflows/pr_validation.yml` (standards_compliance job)
 - **Purpose:** Automated validation on PRs
 - **Validation types:** Structure validation, conformance validation
 - **Usage:** See `docs/ops/ci_automation_reference.md`

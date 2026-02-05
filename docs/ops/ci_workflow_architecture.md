@@ -4,7 +4,7 @@
 
 This document describes the **current** GitHub Actions workflows that automate validation and quality gates in this repository.
 
-**Status**: As of 2026-02-05, only **2 workflows** are active for PR validation.
+**Status**: As of 2026-02-05, **2 primary workflows** are active for PR validation, plus 1 legacy stub.
 
 **Location**: All workflows must be in `.github/workflows/` (GitHub Actions requirement)
 
@@ -67,6 +67,23 @@ This document describes the **current** GitHub Actions workflows that automate v
 - `list_logs`: List available test logs
 
 **Blocking**: No ⚠️ - Used for validation feedback, not enforcement
+
+---
+
+### 3. validate_standards.yml - Legacy Stub (Backwards Compatibility)
+
+**Purpose**: Satisfy legacy GitHub branch protection check requirements
+
+**Status**: **STUB ONLY** - Immediately passes with informational message
+
+**Why It Exists**:
+- GitHub branch protection may reference old "validate_standards" check
+- Deleting the workflow file causes "Expected — Waiting for status" to show as pending
+- This stub satisfies the check while directing users to the actual validation
+
+**Actual Standards Validation**: Performed by `pr_validation.yml` → Standards Compliance job
+
+**Blocking**: No ⚠️ - Always passes (real validation in pr_validation.yml)
 
 ---
 
@@ -170,11 +187,13 @@ The following workflows are documented in planning materials but **not yet imple
 **Last Updated**: 2026-02-05
 
 **Current State**: 
-- 2 active workflows providing comprehensive PR validation
+- 2 active validation workflows (`pr_validation.yml`, `testing_workflow.yml`)
+- 1 legacy stub workflow (`validate_standards.yml` - backwards compatibility only)
 - 10 of 11 documentation validators enabled as blocking checks
 - Critical path: Syntax + Standards compliance must pass
-- Removed redundant `validate_standards.yml` (duplicate of `pr_validation.yml` standards_compliance job)
+- **Note**: `validate_standards.yml` is a stub that immediately passes; actual validation in `pr_validation.yml`
 
 **Upcoming**:
+- Repository admin should remove `validate_standards` from branch protection rules (if configured)
 - Enable cross-document consistency checker once broken references are fixed
 - Consider implementing planning phase workflows as repository matures

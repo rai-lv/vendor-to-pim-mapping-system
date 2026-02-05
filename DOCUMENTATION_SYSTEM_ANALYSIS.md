@@ -572,19 +572,29 @@ Exit code: 2 (non-zero, by design when issues found)
 
 ### 2.2 Enhancement Tools (Nice to Have)
 
-#### 2.2.1 Documentation Impact Scanner
+#### 2.2.1 Documentation Impact Scanner ✅ **RESOLVED**
 **Purpose:** Identify all documents affected by a meaning change  
 **Referenced In:** Agent Role Charter (Documentation Support Agent responsibilities)  
-**Current Status:** **NOT IMPLEMENTED**
+**Current Status:** **IMPLEMENTED** (2026-02-05)
 
 **Why Useful:**
 - Speeds up "Doc Impact Scan" workflows
 - Reduces risk of missed updates
 - Supports Documentation Support Agent
 
-**Implementation:** `tools/scan_doc_impact.py`
+**Implementation:** `tools/doc-impact-scanner/scan_doc_impact.py`
 - Input: Changed document path and changed term/concept
 - Output: List of potentially affected documents with context snippets
+- Location: Organized in dedicated subfolder per repository conventions
+- Documentation: `tools/doc-impact-scanner/README.md` and `docs/ops/tooling_reference.md`
+
+**Implementation Summary:**
+- ✅ **Command-line tool created** (296 lines)
+- ✅ **Whole-word regex search** across `docs/` and `.github/agents/`
+- ✅ **Multiple output modes** (summary-only, detailed with context, no-context)
+- ✅ **Configurable options** (context lines, case sensitivity, document tracking)
+- ✅ **Comprehensive documentation** (README with examples, usage guide in tooling reference)
+- ✅ **Following repository patterns** (dedicated subfolder, consistent with other tools)
 
 **Priority:** **LOW** - Nice to have but not critical
 

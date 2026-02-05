@@ -8,17 +8,12 @@
 
 ## Automation Overview
 
-This repository uses GitHub Actions for continuous integration with two main workflows:
+This repository uses GitHub Actions for continuous integration with the primary workflow:
 
-1. **PR Validation and Quality Gates** (`.github/workflows/pr_validation.yml`)
-   - Primary CI workflow that enforces standards and quality gates
-   - Runs comprehensive validation on all pull requests
-   - Multi-job pipeline with dependency management
-
-2. **Testing Agent Workflow** (`.github/workflows/testing_workflow.yml`)
-   - Automated and manual testing execution
-   - Triggered by code changes or manual dispatch
-   - Produces test logs and artifacts
+**PR Validation and Quality Gates** (`.github/workflows/pr_validation.yml`)
+- Primary CI workflow that enforces standards and quality gates
+- Runs comprehensive validation on all pull requests
+- Multi-job pipeline with dependency management
 
 ---
 
@@ -40,24 +35,7 @@ on:
 - `standards_compliance`: Runs after syntax validation
 - `planning_validation`: Conditional - only if changes in `docs/roadmaps/` or `docs/specifications/`
 - `quality_gates`: Conditional - only if changes in `jobs/` or `tools/`
-- `testing_validation`: Conditional - only if changes in `jobs/` or `docs/specifications/`
-- `documentation_validation`: Conditional - only if changes in `docs/script_cards/`, `docs/business_job_descriptions/`, or `jobs/`
 - `validation_summary`: Always runs after all jobs complete (uses `if: always()`)
-
-### Testing Workflow
-
-**Trigger conditions:**
-```yaml
-on:
-  workflow_dispatch:  # Manual execution with inputs
-  pull_request:       # On code changes (jobs/, tools/, docs/specifications/)
-  push:               # On merge to main (jobs/, tools/)
-```
-
-**Manual dispatch inputs:**
-- `action`: run_tests, infer_tests, or list_logs
-- `spec_name`: Optional specification name
-- `no_log`: Skip log file writing
 
 ---
 
@@ -65,29 +43,11 @@ on:
 
 ### PR Validation Workflow
 
-1. **Test Results** (from `testing_validation` job)
-   - **Artifact name:** `test-results`
-   - **Path:** `logs/tests_logs/*.log`
-   - **Retention:** 7 days
-   - **Condition:** Always uploaded if job runs
-
-2. **Console Outputs**
+1. **Console Outputs**
    - Syntax validation results (Python and YAML files)
    - Standards compliance reports
    - Placeholder style validation results
-   - Quality gate warnings (TODO comments, best practices)
-
-### Testing Workflow
-
-1. **Test Logs** (from automated/manual runs)
-   - **Artifact name:** `test-logs`
-   - **Path:** `logs/tests_logs/*.log`
-   - **Retention:** 30 days
-   - **Condition:** Uploaded on push/manual dispatch (unless `no_log` flag set)
-
-2. **Committed Logs** (main branch only)
-   - Test logs committed directly to repository after merge to main
-   - Enables historical test result tracking
+   - Quality gate warnings (TODO comments)
 
 ---
 
@@ -162,21 +122,14 @@ jobs/example/script.py:42: TODO: implement error handling
 - Coding agent checks coding standards
 - May produce warnings without failing the build
 
-#### 5. Testing Validation Failures
+#### 5. Quality Gate Failures
 
-**Test execution failures:**
-- Testing agent runs all automated tests
-- Failures indicate broken functionality in jobs or specification violations
-- Check uploaded test-results artifact for detailed logs
-
-#### 6. Documentation Validation Failures
-
-**Missing documentation:**
+**TODO comments detected:**
 ```
-⚠️ Code changes detected in jobs/ directory
-Please ensure corresponding documentation is updated
+⚠️ Found 5 TODO comments:
+jobs/example/script.py:42: TODO: implement error handling
 ```
-**Indicates:** Changes in code without corresponding documentation updates
+**Note:** These produce warnings but don't fail the build
 
 ---
 
@@ -234,30 +187,6 @@ Please ensure corresponding documentation is updated
    - Create issue for future work and remove TODO
    - If intentional, convert to tracked issue reference
 3. Goal: Zero TODOs before merge (policy dependent)
-
-**For best practices warnings:**
-1. Review output from coding agent check
-2. Address critical issues, consider recommendations for non-critical
-3. Consult team standards for best practices guidance
-
-### Pattern 5: Testing Failure Remediation
-
-**For test failures:**
-1. Download test-results artifact from workflow run
-2. Review logs in `logs/tests_logs/*.log`
-3. Identify failing test and root cause
-4. Fix code or update test expectations as appropriate
-5. Ensure all tests pass before pushing
-
-### Pattern 6: Documentation Update Remediation
-
-**For code changes without documentation:**
-1. Review changed files in `jobs/` directory
-2. Update corresponding documentation:
-   - Script cards in `docs/script_cards/`
-   - Business descriptions in `docs/business_job_descriptions/`
-   - Job manifests (`job_manifest.yaml`)
-3. Verify documentation matches code behavior
 
 ### General Remediation Strategy
 

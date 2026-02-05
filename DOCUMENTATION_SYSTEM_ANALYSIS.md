@@ -673,18 +673,15 @@ No shadow specifications created:
 - ✅ Does NOT embed artifact schemas (correctly references Job Manifest Spec, Script Card Spec, etc.)
 - ✅ Does NOT create tool documentation (correctly references tooling_reference.md)
 
-**⚠️ Minor Integration Issue Identified:**
+**✅ Minor Integration Issue Resolved:**
 
-**Issue:** Inconsistent agent reference pattern in `workflow_guide.md`
+**Issue:** Inconsistent agent reference pattern in `workflow_guide.md` (tracked as part of Issue 4.3.2)
 - **Location:** `docs/process/workflow_guide.md`, line 226
 - **Severity:** LOW (documentation routing inconsistency, not a behavioral issue)
-- **Details:**
-  - Steps 1-3 reference pattern: "Agent Name (see `.github/agents/agent-file.md`). Role definition: Role Name in `agent_role_charter.md`."
-  - Step 4 current pattern: "Coding Agent (see `agent_role_charter.md`)."
-  - Missing direct reference to `.github/agents/coding-agent.md`
-- **Impact:** Minor discoverability issue; pattern inconsistency across workflow steps
-- **Logged as:** New issue 4.3.1 (Minor Integration Issues)
-- **Resolution Required:** Single-line edit to align with established pattern
+- **Resolution Status:** ✅ **RESOLVED** (2026-02-05, see Issue 4.3.2 for full details)
+- **Fix Applied:** Line 226 updated to match established pattern from Steps 1-3:
+  - Changed from: "Coding Agent (see `agent_role_charter.md`)."
+  - Changed to: "Coding Agent (see `.github/agents/coding-agent.md`). Role definition: Coding Agent in `agent_role_charter.md`."
 
 **Quality Assessment:**
 - **Implementation Quality:** A (Production-ready, comprehensive, well-structured)
@@ -693,7 +690,7 @@ No shadow specifications created:
 
 **Current Status:**
 - ✅ **Issue RESOLVED** - Coding Agent fully implemented and operational
-- ✅ **No Critical Issues Introduced** - One minor integration issue identified and logged separately
+- ✅ **No Issues Outstanding** - Minor integration issue (agent reference pattern) was resolved as part of Issue 4.3.2
 - ✅ **Step 4 Support Complete** - Contributors can now invoke Coding Agent for implementation tasks
 - ✅ **5-Step Workflow Complete** - Core agent support now exists for all critical workflow steps
 
@@ -773,18 +770,15 @@ No shadow specifications created:
 - ✅ Does NOT embed tool documentation (correctly references tooling_reference.md concepts)
 - ✅ Section 2 explicitly states "Authority & Operating Rules (Applied, Not Redefined)"
 
-**⚠️ Minor Integration Issue Identified:**
+**✅ Minor Integration Issue Resolved:**
 
-**Issue:** Inconsistent agent reference pattern in `workflow_guide.md`
+**Issue:** Inconsistent agent reference pattern in `workflow_guide.md` (tracked as part of Issue 4.3.2)
 - **Location:** `docs/process/workflow_guide.md`, line 263
 - **Severity:** LOW (documentation routing inconsistency, not a behavioral issue)
-- **Details:**
-  - Steps 1-3 reference pattern: "Agent Name (see `.github/agents/agent-file.md`). Role definition: Role Name in `agent_role_charter.md`."
-  - Step 5 current pattern: "Validation Support Agent and Documentation Support Agent (see `agent_role_charter.md`)."
-  - Missing direct reference to `.github/agents/validation-support-agent.md`
-- **Impact:** Minor discoverability issue; pattern inconsistency across workflow steps (same issue as Step 4)
-- **Note:** This is part of the existing Issue 4.3.2 (Agent Reference Pattern Inconsistency) - now affects both Steps 4 and 5
-- **Resolution Required:** Single-line edit to align with established pattern (addressed in Issue 4.3.2)
+- **Resolution Status:** ✅ **RESOLVED** (see Issue 4.3.2 for full details)
+- **Fix Applied:** Line 263 updated to match established pattern from Steps 1-3:
+  - Changed from: "Validation Support Agent and Documentation Support Agent (see `agent_role_charter.md`)."
+  - Changed to: "Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-system-maintainer.agent.md`). Role definitions in `agent_role_charter.md`."
 
 **Quality Assessment:**
 - **Implementation Quality:** A (Production-ready, comprehensive, well-structured)
@@ -793,7 +787,7 @@ No shadow specifications created:
 
 **Current Status:**
 - ✅ **Issue RESOLVED** - Validation Support Agent fully implemented and operational
-- ✅ **No Critical Issues Introduced** - One minor integration issue identified (same pattern as Step 4, tracked in Issue 4.3.2)
+- ✅ **No Issues Outstanding** - Minor integration issue (agent reference pattern) was resolved as part of Issue 4.3.2
 - ✅ **Step 5 Support Complete** - Contributors can now invoke Validation Support Agent for evidence assembly and validation tasks
 - ✅ **5-Step Workflow Complete** - All critical workflow steps now have dedicated agent support
 
@@ -874,15 +868,13 @@ No shadow specifications created:
 - **Suggested refinement (optional):** Could change "when...becomes available" to "integrate with the cross-document consistency checker tool" for precision
 - **Decision:** Not actionable as issue - wording does not prevent agent from functioning correctly
 
-**⚠️ Existing Minor Integration Issue (Already Tracked):**
+**✅ Existing Minor Integration Issue (Now Resolved):**
 
-**Issue:** Inconsistent agent reference pattern in `workflow_guide.md`
+**Issue:** Inconsistent agent reference pattern in `workflow_guide.md` (tracked as part of Issue 4.3.2)
 - **Location:** `docs/process/workflow_guide.md`, line 263
-- **Already tracked as:** Issue 4.3.2 (Agent Reference Pattern Inconsistency in Workflow Guide)
-- **Details:** Step 5 references "Documentation Support Agent (see `agent_role_charter.md`)" without direct link to `.github/agents/documentation-system-maintainer.agent.md`
-- **Impact:** Minor discoverability issue (same pattern as Steps 4 and 5 for other agents)
-- **Status:** Logged in Issue 4.3.2; resolution deferred to that issue's fix
-- **Note:** This issue existed before PR #142 and is not introduced by the fix
+- **Resolution Status:** ✅ **RESOLVED** (2026-02-05, see Issue 4.3.2 for full details)
+- **Fix Applied:** Step 5 now references both canonical agent definitions and role definitions consistently
+- **Note:** This issue existed before PR #142 and has been resolved as part of Issue 4.3.2
 
 **Quality Assessment:**
 - **Implementation Quality:** A (Production-ready, comprehensive, well-structured)
@@ -891,7 +883,7 @@ No shadow specifications created:
 
 **Current Status:**
 - ✅ **Issue RESOLVED** - Documentation Support Agent fully operational with all required procedures
-- ✅ **No New Issues Introduced** - One trivial wording refinement opportunity noted (not actionable); one existing minor integration issue confirmed (already tracked in 4.3.2)
+- ✅ **No Issues Outstanding** - Minor integration issue (agent reference pattern) was resolved as part of Issue 4.3.2
 - ✅ **Charter Requirements Met** - All Section 4.6 responsibilities now have documented procedures
 - ✅ **Documentation Consistency Support Complete** - Agent can now perform Doc Impact Scans, re-homing, and consistency checks
 

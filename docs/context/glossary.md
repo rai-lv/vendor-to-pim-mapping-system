@@ -24,6 +24,12 @@ A definition file in `.github/agents/` that specifies agent instructions, tools,
 Agent profiles use YAML frontmatter for metadata (GitHub Copilot requirement) and contain complete agent instructions in a single file.
 Specification: `docs/standards/documentation_spec.md` Section 3.6.
 
+### Agent Layer
+Documentation layer defining agent roles, responsibilities, and interaction guidance.
+Canonical locations: `docs/agents/` and `.github/agents/`.
+Must not contain tool manuals or embedded authoritative templates.
+Related: Layer (documentation layer), Agent profile.
+
 ### AI-supported
 A development approach where humans remain the decision-makers (approval gates), agents accelerate drafting/review/implementation under human oversight, and tools provide deterministic scaffolding/validation/evidence.
 This describes the fundamental operating model of the vendor-to-PIM mapping system.
@@ -59,6 +65,13 @@ Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.1.
 A stable pattern describing a category of artifacts, distinguished from specific run instances.
 Example: artifact type = "vendor_products.json for vendor X", instance = "vendor_products.json written on 2026-01-30 at 14:23:45".
 Catalog entries document artifact types, not individual instances.
+
+### Artifacts Catalog
+Living catalog documenting all persistent artifact types in the system, including their identifiers, producers, consumers, content contracts, and storage locations.
+Canonical location: `docs/catalogs/artifacts_catalog.md`.
+Specification: `docs/standards/artifacts_catalog_spec.md`.
+Note: Used in both singular ("Artifact Catalog") and plural ("Artifacts Catalog") forms in documentation; both refer to the same catalog.
+Related: Artifact type, artifact_id, Catalog entry.
 
 ### Auto-revocation
 Automatic invalidation of approval when specific conditions occur: material changes after approval, dependency approval revoked, required decision record rejected, or conflict discovered affecting approved work.
@@ -184,6 +197,13 @@ A minimal parse and validation contract for an artifact, describing its structur
 Includes: top_level_type, primary_keying, required_sections, empty_behavior, and notes.
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.10.
 
+### Context Layer
+Documentation layer containing intent, shared meaning, and system framing documents.
+Canonical location: `docs/context/`.
+Must not contain operational instructions, tool syntax, or normative schemas.
+Documents include: development_approach.md, target_agent_system.md, system_context.md, glossary.md, documentation_system_catalog.md.
+Related: Layer (documentation layer).
+
 ### Cross-reference
 A link from one document to another, typically using relative paths from the repository root.
 Cross-references enable navigation and must be kept up-to-date when documents are moved or renamed.
@@ -238,6 +258,12 @@ The phase at which documentation is created: during development (prospective, in
 - **For existing jobs (retroactive):** Business descriptions document observed behavior from code analysis and operational knowledge.
 Retroactive documentation must mark interpretations with `ASSUMPTION:` and uncertain behaviors with `TBD`.
 Specification: `docs/standards/business_job_description_spec.md` Section 0.4.
+
+### Doc Impact Scan
+A systematic consistency check procedure run after documentation changes to verify: (1) term consistency across documents, (2) catalog alignment with actual document set, (3) layer boundary preservation, (4) cross-reference authority validity, (5) documentation completeness.
+Required before approval gates involving documentation changes.
+Evidence format: Doc Impact Scan report or consistency check pass.
+Related: Validation / validation evidence, Double truth, Cross-reference.
 
 ### Deprecated
 Marked as obsolete but retained temporarily for historical reference and migration support.
@@ -356,6 +382,12 @@ Terminal filename pattern (last segment after final `/`), which may contain plac
 Represents a stable pattern, not a concrete run-instance filename.
 Examples: `vendor_products.json`, `${vendor_name}_products.json`.
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.2.
+
+### 5-step workflow
+The development approach consisting of five sequential stages: (1) Define Objective, (2) Plan Pipeline, (3) Define Capabilities, (4) Execute Tasks, (5) Validate and Document.
+Step transitions require approval gates; iteration within steps is permitted.
+Also referred to as "five-step approach", "five-step workflow", or "5-step approach".
+Related: Process (workflow step), Approval gate, Iteration within a step, Step 1, Step 2, Step 3, Step 4, Step 5.
 
 ---
 
@@ -530,6 +562,14 @@ Includes: critical failure behavior affecting business continuity, output behavi
 Should be used sparingly to maintain separation between business view (business description) and operational detail (script card).
 Specification: `docs/standards/business_job_description_spec.md` Section 7.
 
+### Ops Layer
+Documentation layer containing technical manuals for tools and automation.
+Canonical location: `docs/ops/`.
+Contains tool usage, parameters, troubleshooting, and operational procedures.
+Must not contain normative rules that belong in standards.
+Also referred to as "Operational Layer" or "Operational reference layer".
+Related: Layer (documentation layer).
+
 ### Observability
 The signals and artifacts that enable monitoring, troubleshooting, and verification of job execution.
 Includes: logs (INFO/ERROR/DEBUG levels), metrics (CloudWatch, custom counters), run receipts (structured execution summaries), and operator verification artifacts.
@@ -550,6 +590,13 @@ Expressed in natural language describing what stakeholders care about (e.g., "en
 Typically 4-12 steps; complex jobs may use multi-phase structure (PART 1, PART 2, etc.).
 Distinct from operational steps in script cards which describe technical execution.
 Specification: `docs/standards/business_job_description_spec.md` Section 4.
+
+### Process Layer
+Documentation layer containing how-to guidance for executing the 5-step workflow.
+Canonical location: `docs/process/`.
+Provides practical procedures, checkpoints, and escalation triggers.
+Must reference but not redefine schemas or tool syntax.
+Related: Layer (documentation layer).
 
 ### Placeholder (manifest)
 A template variable in a job manifest's `bucket` or `key_pattern` field, represented as `${NAME}`.
@@ -715,6 +762,13 @@ Outdated information that no longer reflects current implementation, decisions, 
 Stale documentation reduces accuracy and misleads users.
 Currency is validated through git commit dates and comparison with runtime behavior.
 
+### Standards Layer
+Documentation layer containing normative rules, schemas, and validation requirements.
+Canonical location: `docs/standards/`.
+Specifications are authoritative and validator-enforceable.
+Must not contain per-job implementations or tool manuals.
+Related: Layer (documentation layer).
+
 ### Side effect (job)
 A job behavior that modifies S3 state beyond its declared outputs.
 Types:
@@ -732,6 +786,41 @@ Other documents may reference it but must not redefine it.
 Default governance principle: an artifact type MUST have exactly one producing job to simplify orchestration and reduce coordination complexity.
 Multi-writer artifacts are allowed only via the shared artifact exception.
 Specification: `docs/standards/artifacts_catalog_spec.md` Section 3.6.
+
+### Step 1 (Define Objective)
+First stage of the 5-step workflow where high-level intent, success criteria, and scope boundaries are defined and approved.
+Output: Approved objective artifact.
+Approval required for transition to Step 2.
+Related: 5-step workflow, Objective, Approval gate.
+
+### Step 2 (Plan Pipeline)
+Second stage of the 5-step workflow where required capabilities are identified, ordered, and approved.
+Output: Approved pipeline plan.
+Approval required for transition to Step 3.
+Related: 5-step workflow, Pipeline, Capability.
+
+### Step 3 (Define Capabilities)
+Third stage of the 5-step workflow where individual capabilities are specified with acceptance criteria, codable tasks defined, and approved before implementation.
+Output: Approved capability definitions with codable task specifications.
+Approval required for transition to Step 4.
+Related: 5-step workflow, Capability definition, Codable task, Development Step Document.
+
+### Step 4 (Execute Tasks)
+Fourth stage of the 5-step workflow where codable tasks are implemented, tested, and integrated.
+Output: Working implementation.
+Approval required for transition to Step 5.
+Related: 5-step workflow, Codable task.
+
+### Step 5 (Validate and Document)
+Fifth stage of the 5-step workflow where integrated work is validated against objective success criteria and documented.
+Output: Validation evidence and completed documentation.
+Related: 5-step workflow, Validation / validation evidence, Success criteria.
+
+### Step Transition
+Movement from one workflow step to the next in the 5-step approach.
+Step transitions require explicit approval; distinguished from iteration within a step which does not require re-approval.
+Related: Approval gate, Iteration within a step, Process (workflow step).
+
 ### Success criteria
 Concrete conditions that define when an objective is achieved.
 Success criteria inform capability planning and validation evidence.

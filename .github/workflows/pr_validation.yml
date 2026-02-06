@@ -188,7 +188,7 @@ jobs:
           
           # Check for required sections in objective documents
           for file in docs/roadmaps/*.md; do
-            if [ -f "$file" ] && [[ ! "$file" =~ _pipeline_plan\.md$ ]]; then
+            if [ -f "$file" ] && [[ ! "$file" =~ _pipeline_plan\.md$ ]] && [[ ! "$file" =~ README\.md$ ]]; then
               echo "Checking: $file"
               
               # Check for required sections

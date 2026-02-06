@@ -1064,10 +1064,16 @@ STANDARDS_DIR = REPO_ROOT / "docs" / "standards"  # ← Correct
 - ✅ **Verified:** All actual tool scripts in the `tools/` directory use correct path references
 - ✅ **Cleaned up:** References to non-existent scripts with incorrect path handling have been removed
 
+**Additional Resolution (Current PR):**
+- ✅ **Created:** Missing `docs/roadmaps/` and `docs/specifications/` directories with documentation
+- ✅ **Updated:** CI workflow to exclude README.md files from planning artifact validation
+- ✅ **Verified:** All references in documentation catalog, workflow guide, and CI are now aligned
+
 **Current State:**
 - ✅ All existing validation tools (`validate_*.py`, `check_*.py`) use correct path references
 - ✅ No hardcoded path issues identified in actual implemented tools
 - ✅ Clear documentation structure in place
+- ✅ Planning artifact directories exist and match catalog/CI definitions
 
 **Priority:** ✅ **RESOLVED** - Issue was based on non-existent code references
 

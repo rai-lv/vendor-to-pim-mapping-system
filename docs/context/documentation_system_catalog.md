@@ -221,9 +221,38 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ---
 
+### Planning artifacts layer (`docs/roadmaps/` and `docs/specifications/`)
+
+#### 22) Objective Definitions (Step 1 planning artifacts)
+
+**Canonical location:** `docs/roadmaps/`
+**Purpose statement:** Documents the high-level statement of intent for what the system aims to achieve, produced during Step 1 of the 5-step workflow.
+**Why necessary:** Provides context and direction for all subsequent planning and development; enables validation of final outcomes against initial intent.
+**Must contain:** Objective Statement; Expected Outcomes; Out-of-Scope boundaries; Success Criteria.
+**Must not contain:** Implementation details; pipeline decomposition; capability-level specifications.
+
+#### 23) Pipeline Plans (Step 2 planning artifacts)
+
+**Canonical location:** `docs/roadmaps/`
+**Purpose statement:** Documents the breakdown of an objective into ordered capabilities with dependencies, produced during Step 2 of the 5-step workflow.
+**Why necessary:** Provides the approved roadmap for capability development; establishes processing sequence and artifact flow.
+**Must contain:** Processing Sequence; Conceptual Artifacts (or Artifacts section); capability identification and ordering; dependencies between capabilities.
+**Must not contain:** Detailed capability specifications; codable task breakdowns; implementation code.
+
+#### 24) Capability Specifications (Step 3 planning artifacts)
+
+**Canonical location:** `docs/specifications/`
+**Purpose statement:** Documents individual capability definitions with acceptance criteria and codable task breakdowns, produced during Step 3 of the 5-step workflow.
+**Why necessary:** Provides approved, bounded specifications for implementation; enables traceability from capability to tasks to code; supports validation against acceptance criteria.
+**Must contain:** Capability boundary statement (what it does and does NOT do); Acceptance criteria (evaluable); Codable task breakdown with task identity, purpose, boundaries, dependencies, intended outputs, and acceptance criteria per `docs/standards/codable_task_spec.md`.
+**Must not contain:** Full code solutions; operational run instructions; normative contract schemas.
+**Storage alternatives:** GitHub Issues (for issue-tracked work), YAML or Markdown files in `docs/specifications/`, or PR descriptions (for single-PR capabilities).
+
+---
+
 ### Operational reference layer (`docs/ops/`)
 
-#### 22) Tooling Reference
+#### 25) Tooling Reference
 
 **Canonical location:** `docs/ops/`
 **Purpose statement:** Technical manual for repo tools and agent-support tools, including usage and troubleshooting.
@@ -231,7 +260,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Tool inventory; usage; parameters; outputs; troubleshooting; version notes.
 **Must not contain:** Normative rules that belong in standards.
 
-#### 23) CI / Automation Reference
+#### 26) CI / Automation Reference
 
 **Canonical location:** `docs/ops/`
 **Purpose statement:** Explains what automation runs, what evidence it produces, and how to interpret failures.
@@ -243,7 +272,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 
 ### Living catalogs and per-job documentation (`docs/catalogs/` and `docs/jobs/`)
 
-#### 24) Job Inventory (instance)
+#### 27) Job Inventory (instance)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Living catalog of all jobs, conforming to Job Inventory Spec.
@@ -251,7 +280,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Job entries; links/references; status signals.
 **Must not contain:** Schema definitions.
 
-#### 25) Artifact Catalog (instance)
+#### 28) Artifact Catalog (instance)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Living catalog of artifact contracts, conforming to Artifacts Catalog Entry Specification.
@@ -259,7 +288,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Artifact entries; content expectations; producer/consumer relations.
 **Must not contain:** Schema definitions.
 
-#### 26) Per-job Business Description
+#### 29) Per-job Business Description
 
 **Canonical location:** `jobs/<job_group>/<job_id>/`
 **Purpose statement:** Job-local business intent: purpose, scope boundaries, and business rules.
@@ -267,7 +296,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Purpose; scope; rules; job-local assumptions/unknowns.
 **Must not contain:** Operational run instructions or normative contract schemas.
 
-#### 27) Per-job Script Card
+#### 30) Per-job Script Card
 
 **Canonical location:** `jobs/<job_group>/<job_id>/`
 **Purpose statement:** Job-local operational behavior: how it runs, invariants, failure modes, observability.
@@ -275,7 +304,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Behavior summary; failure modes; invariants; observability expectations.
 **Must not contain:** Business rationale or normative contract schemas.
 
-#### 28) Decision Log (index)
+#### 31) Decision Log (index)
 
 **Canonical location:** `docs/catalogs/`
 **Purpose statement:** Index of recorded decision records for navigation and traceability.
@@ -283,7 +312,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** List of decisions with status/tags/links.
 **Must not contain:** Decision templates.
 
-#### 29) Repository README
+#### 32) Repository README
 
 **Canonical location:** repository root
 **Purpose statement:** Entry point for contributors to understand the repo and find the documentation system quickly.

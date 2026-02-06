@@ -182,7 +182,7 @@ Make one capability implementable without uncontrolled decomposition.
 Capability plans (including capability definitions and codable task breakdowns) SHOULD be stored in one of the following locations based on project workflow:
 
 1. **GitHub Issues** — For ongoing work tracked in issue form, capability plans can be documented in issue descriptions with task breakdowns in checklists.
-2. **Planning documents** — For more detailed or multi-capability planning, create Markdown documents in `docs/planning/capability_<name>.md` or similar project-specific location.
+2. **Capability specification documents** — For more detailed or multi-capability planning, create YAML or Markdown documents in `docs/specifications/` following the naming pattern `<capability_name>_capability.yaml` or `<capability_name>_capability.md`.
 3. **PR descriptions** — For smaller capabilities implemented in a single PR, the capability plan and task breakdown can be documented in the PR description.
 
 **Required elements regardless of storage location:**

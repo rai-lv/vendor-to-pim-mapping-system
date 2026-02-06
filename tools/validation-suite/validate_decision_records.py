@@ -13,7 +13,9 @@ import sys
 from pathlib import Path
 from typing import List, Set, Dict
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -125,8 +127,8 @@ def validate_decision_records() -> List[Violation]:
     """Validate all decision records and the decision log."""
     violations = []
     
-    decisions_dir = REPO_ROOT / "docs" / "decisions"
-    log_path = REPO_ROOT / "docs" / "catalogs" / "decision_log.md"
+    decisions_dir = TOOL_PATHS.docs_decisions
+    log_path = TOOL_PATHS.decision_log
     
     # Validate decision log
     violations.extend(validate_decision_log(log_path))
@@ -150,8 +152,8 @@ def main():
         print(violation.format())
     
     # Count files that were successfully validated (exist and have no violations)
-    decisions_dir = REPO_ROOT / "docs" / "decisions"
-    log_path = REPO_ROOT / "docs" / "catalogs" / "decision_log.md"
+    decisions_dir = TOOL_PATHS.docs_decisions
+    log_path = TOOL_PATHS.decision_log
     
     decision_files = [log_path]
     if decisions_dir.exists():

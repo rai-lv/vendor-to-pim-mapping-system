@@ -15,7 +15,9 @@ from typing import List, Set, Dict
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -194,8 +196,8 @@ def validate_agent_layer() -> List[Violation]:
     """Validate all agent layer documents."""
     violations = []
     
-    agents_dir = REPO_ROOT / "docs" / "agents"
-    github_agents_dir = REPO_ROOT / ".github" / "agents"
+    agents_dir = TOOL_PATHS.docs_agents
+    github_agents_dir = TOOL_PATHS.github_agents
     
     # Validate agent_role_charter.md
     charter_path = agents_dir / "agent_role_charter.md"
@@ -219,8 +221,8 @@ def main():
         print(violation.format())
     
     # Count files that were successfully validated (exist and have no violations)
-    agents_dir = REPO_ROOT / "docs" / "agents"
-    github_agents_dir = REPO_ROOT / ".github" / "agents"
+    agents_dir = TOOL_PATHS.docs_agents
+    github_agents_dir = TOOL_PATHS.github_agents
     
     agent_files = [agents_dir / "agent_role_charter.md"]
     if github_agents_dir.exists():

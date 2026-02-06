@@ -16,7 +16,9 @@ from typing import List, Set
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -207,7 +209,7 @@ def validate_job_docs() -> List[Violation]:
     """Validate all per-job documentation."""
     violations = []
     
-    jobs_base = REPO_ROOT / "jobs"
+    jobs_base = TOOL_PATHS.jobs_root
     
     if not jobs_base.exists():
         return violations
@@ -237,7 +239,7 @@ def main():
         print(violation.format())
     
     # Count files that were successfully validated (exist and have no violations)
-    jobs_base = REPO_ROOT / "jobs"
+    jobs_base = TOOL_PATHS.jobs_root
     job_doc_files = []
     if jobs_base.exists():
         job_doc_files.extend(jobs_base.glob("*/*/bus_description_*.md"))

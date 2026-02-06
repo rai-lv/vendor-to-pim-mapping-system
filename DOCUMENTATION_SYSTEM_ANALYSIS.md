@@ -1554,10 +1554,14 @@ The consistency checker tool (`tools/validation-suite/check_doc_consistency.py`)
 - ✅ Add remediation patterns
 - ✅ **Issue 4.2.2.1 RESOLVED (PR #147):** Non-existent tool references removed
 
-**10. Fix Tool Script Path References** ✅ MEDIUM
-- Audit all `tools/*.py` for hardcoded paths
-- Update to match actual structure
-- Consider configuration file
+**10. Fix Tool Script Path References** ✅ **COMPLETED (2026-02-06)**
+- ✅ Created centralized configuration file (`tools/config.py`)
+- ✅ Audited all `tools/*.py` for hardcoded paths
+- ✅ Updated all validation-suite tools to use configuration
+- ✅ Updated doc-impact-scanner to use configuration
+- ✅ Added configuration documentation to `tools/README.md`
+- **Status:** Implemented and tested. All 12 tools now use `TOOL_PATHS` for consistent path references
+- **Evidence:** PR copilot/fix-tool-script-path-references, commit b5188d0
 
 ### 6.3 Medium-Term Priority (Complete Within 2-3 Months)
 

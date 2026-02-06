@@ -13,7 +13,9 @@ import sys
 from pathlib import Path
 from typing import List
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -187,7 +189,7 @@ def validate_process_layer() -> List[Violation]:
     """Validate all process layer documents."""
     violations = []
     
-    process_dir = REPO_ROOT / "docs" / "process"
+    process_dir = TOOL_PATHS.docs_process
     
     # Validate each document
     workflow_path = process_dir / "workflow_guide.md"
@@ -209,7 +211,7 @@ def main():
         print(violation.format())
     
     # Count files that were successfully validated (exist and have no violations)
-    process_dir = REPO_ROOT / "docs" / "process"
+    process_dir = TOOL_PATHS.docs_process
     process_files = [
         process_dir / "workflow_guide.md",
         process_dir / "contribution_approval_guide.md",

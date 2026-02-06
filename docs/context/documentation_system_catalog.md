@@ -115,7 +115,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 **Must contain:** Required/optional fields; semantic meaning; placeholder rules; compatibility/breaking-change rules.
 **Must not contain:** Per-job content or embedded authoritative examples.
 
-#### 10) Artifact Contract Spec
+#### 10) Artifacts Catalog Entry Specification
 
 **Canonical location:** `docs/standards/`
 **Purpose statement:** Defines the normative schema for describing artifact contracts and content expectations.
@@ -254,7 +254,7 @@ This catalog is **descriptive and governing**: it defines what each document is 
 #### 25) Artifact Catalog (instance)
 
 **Canonical location:** `docs/catalogs/`
-**Purpose statement:** Living catalog of artifact contracts, conforming to Artifact Contract Spec.
+**Purpose statement:** Living catalog of artifact contracts, conforming to Artifacts Catalog Entry Specification.
 **Why necessary:** Stable shared contracts and producer/consumer visibility.
 **Must contain:** Artifact entries; content expectations; producer/consumer relations.
 **Must not contain:** Schema definitions.

@@ -398,10 +398,10 @@ SUMMARY pass=0 fail=0
   - **Assessment:** This is a FEATURE, not a bug - validator is working as designed
   - **Action Required:** Separate issue to fix pre-existing business descriptions (not caused by this fix)
 
-- ✅ **Naming validator** correctly identifies 19 violations in legacy artifacts
+- ✅ **Naming validator** correctly identifies 18 violations in legacy artifacts
   - Legacy job ID `preprocessIncomingBmecat` uses camelCase (grandfathered)
   - Multiple artifacts use incorrect casing (legacy naming)
-  - 1 filename typo: `bus_desription_mapping_method_training.md` (should be `bus_description_`)
+  - ~~1 filename typo: `bus_desription_mapping_method_training.md` (should be `bus_description_`)~~ **FIXED**
   - **Assessment:** These are pre-existing issues, validator correctly flags them
   - **Action Required:** Separate issue to fix legacy naming violations (not caused by this fix)
 

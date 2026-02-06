@@ -778,7 +778,7 @@ No shadow specifications created:
 - **Resolution Status:** ✅ **RESOLVED** (see Issue 4.3.2 for full details)
 - **Fix Applied:** Line 263 updated to match established pattern from Steps 1-3:
   - Changed from: "Validation Support Agent and Documentation Support Agent (see `agent_role_charter.md`)."
-  - Changed to: "Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-system-maintainer.agent.md`). Role definitions in `agent_role_charter.md`."
+  - Changed to: "Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-support-agent.md`). Role definitions in `agent_role_charter.md`."
 
 **Quality Assessment:**
 - **Implementation Quality:** A (Production-ready, comprehensive, well-structured)
@@ -1355,7 +1355,7 @@ Should reference BOTH:
 ```
 
 Should reference BOTH:
-1. The canonical agent definitions in `.github/agents/validation-support-agent.md` and `.github/agents/documentation-system-maintainer.agent.md`
+1. The canonical agent definitions in `.github/agents/validation-support-agent.md` and `.github/agents/documentation-support-agent.md`
 2. The role definitions in `agent_role_charter.md`
 
 **Why It Matters:**
@@ -1387,7 +1387,7 @@ To:
 
 To:
 ```
-**Agent support:** Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-system-maintainer.agent.md`). Role definitions in `agent_role_charter.md`.
+**Agent support:** Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-support-agent.md`). Role definitions in `agent_role_charter.md`.
 ```
 
 **Files Affected:**
@@ -1403,7 +1403,8 @@ To:
   - `.github/agents/combined-planning-agent.md` ✅
   - `.github/agents/coding-agent.md` ✅
   - `.github/agents/validation-support-agent.md` ✅
-  - `.github/agents/documentation-system-maintainer.agent.md` ✅
+  - `.github/agents/documentation-support-agent.md` ✅
+  - `.github/agents/documentation-system-maintainer.agent.md` ✅ (separate from Documentation Support Agent)
   - `docs/agents/agent_role_charter.md` ✅
 
 **New Issues Introduced:** **NONE**

@@ -160,7 +160,7 @@ def main():
         )
         logger.error(msg)
         print("DEBUG:", msg)
-        output_key = f"{output_prefix}/{vendor_name}_categoryMatchingProposals.json"
+        output_key = f"{output_prefix}/{vendor_name}_category_matching_proposals.json"
         write_json_dict_to_s3(output_bucket, output_key, {}, logger)
         job.commit()
         logger.info("========== JOB END (NO INPUT FILE) ==========")
@@ -168,7 +168,7 @@ def main():
 
     input_key = resolved_input_key
     input_uri = f"s3://{input_bucket}/{input_key}"
-    output_key = f"{output_prefix}/{vendor_name}_categoryMatchingProposals.json"
+    output_key = f"{output_prefix}/{vendor_name}_category_matching_proposals.json"
 
     logger.info(f"Resolved input S3 key: {input_key}")
     logger.info(f"Input URI: {input_uri}")
@@ -665,7 +665,7 @@ def main():
         )
 
         output_key_one_to_one = (
-            f"{output_prefix}/{vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json"
+            f"{output_prefix}/{vendor_name}_category_matching_proposals_one_vendor_to_one_pim_match.json"
         )
         logger.info(
             "Step 10 (Part-2): Writing oneVendor_to_onePim JSON to S3: "

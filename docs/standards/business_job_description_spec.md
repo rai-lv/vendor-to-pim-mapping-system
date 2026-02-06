@@ -121,8 +121,8 @@ Business descriptions MUST use the following section structure. Section numberin
   - "Required input files" for data inputs
   - "Optional inputs" with behavior if absent
 - Bullet list of artifact names + parenthetical meaning, e.g.:
-  - `${vendor_name}_categoryMatchingProposals.json` (full proposals)
-  - `${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json` (1→1 subset)
+  - `${vendor_name}_category_matching_proposals.json` (full proposals)
+  - `${vendor_name}_category_matching_proposals_one_vendor_to_one_pim_match.json` (1→1 subset)
 
 **Note on placeholder notation:**
 - PREFERRED: Use `${parameter_name}` format for consistency with manifests

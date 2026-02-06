@@ -16,8 +16,8 @@ Concretely, it:
 
 The job expects the vendor run’s Step2 outputs:
 
-* `.../<vendor>_categoryMatchingProposals.json` (full)
-* `.../<vendor>_categoryMatchingProposals_oneVendor_to_onePim_match.json` (1→1 subset)
+* `.../<vendor>_category_matching_proposals.json` (full)
+* `.../<vendor>_category_matching_proposals_one_vendor_to_one_pim_match.json` (1→1 subset)
 
 Those keys are carried in the run receipt / config as `step2_full_key` and `step2_1to1_key`. 
 

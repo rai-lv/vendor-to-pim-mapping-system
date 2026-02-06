@@ -48,11 +48,11 @@ It writes two JSON outputs (pretty printed, not NDJSON):
 
 1. **Full proposals**
 
-* `<prepared_output_prefix>/<vendor>_categoryMatchingProposals.json`
+* `<prepared_output_prefix>/<vendor>_category_matching_proposals.json`
 
 2. **Subset: one vendor category → one PIM match**
 
-* `<prepared_output_prefix>/<vendor>_categoryMatchingProposals_oneVendor_to_onePim_match.json` 
+* `<prepared_output_prefix>/<vendor>_category_matching_proposals_one_vendor_to_one_pim_match.json` 
 
 Both outputs are JSON dictionaries keyed by `vendor_category_id`. 
 

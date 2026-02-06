@@ -19,11 +19,11 @@ inputs:
 
 outputs:
   - bucket: ${OUTPUT_BUCKET}
-    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_categoryMatchingProposals.json
+    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_category_matching_proposals.json
     format: json
     required: true
   - bucket: ${OUTPUT_BUCKET}
-    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json
+    key_pattern: ${prepared_output_prefix_norm}${vendor_name}_category_matching_proposals_one_vendor_to_one_pim_match.json
     format: json
     required: true
 

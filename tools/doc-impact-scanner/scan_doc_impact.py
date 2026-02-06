@@ -161,7 +161,7 @@ def scan_documentation_impact(term: str, changed_doc: str = None,
     Returns:
         0 if no matches found, 1 if matches found (not an error)
     """
-    docs_dir = REPO_ROOT / "docs"
+    docs_dir = TOOL_PATHS.docs_root
     if not docs_dir.exists():
         print("ERROR: docs directory not found", file=sys.stderr)
         return 2
@@ -182,7 +182,7 @@ def scan_documentation_impact(term: str, changed_doc: str = None,
     )
     
     # Also search .github/agents if it exists
-    github_agents_dir = REPO_ROOT / ".github" / "agents"
+    github_agents_dir = TOOL_PATHS.github_agents
     if github_agents_dir.exists():
         agent_matches = find_term_occurrences(
             term=term,

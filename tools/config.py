@@ -5,8 +5,7 @@ Tool Configuration Module
 Centralized configuration for tool paths and settings.
 Provides consistent path references across all tools in the repository.
 
-This replaces hardcoded path strings with configurable constants,
-per DOCUMENTATION_SYSTEM_ANALYSIS.md recommendation #10.
+This replaces hardcoded path strings with configurable constants.
 """
 from pathlib import Path
 

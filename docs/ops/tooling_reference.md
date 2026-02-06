@@ -265,7 +265,7 @@ Affected Documents:
 
 **Documentation:**
 - README: `tools/doc-impact-scanner/README.md`
-- Per DOCUMENTATION_SYSTEM_ANALYSIS.md Section 2.2.1
+- Workflow guide: `docs/process/workflow_guide.md` Section 6 (Doc Impact Scan procedures)
 
 **Requirements:**
 - Python 3.8+

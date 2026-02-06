@@ -207,7 +207,7 @@ A comprehensive review validated the implementation against all catalog requirem
 # Artifacts Catalog (instance)
 
 **Canonical location:** `docs/catalogs/`
-**Purpose statement:** Living catalog of artifact contracts, conforming to Artifact Contract Spec.
+**Purpose statement:** Living catalog of artifact contracts, conforming to Artifacts Catalog Entry Specification.
 **Why necessary:** Stable shared contracts and producer/consumer visibility.
 **Must contain:** Artifact entries; content expectations; producer/consumer relations.
 **Must not contain:** Schema definitions.
@@ -226,7 +226,7 @@ A comprehensive review validated the implementation against all catalog requirem
 - Violates "stable shared contracts" purpose
 
 **Required Content (from catalog):**
-- Artifact entries conforming to Artifact Contract Spec
+- Artifact entries conforming to Artifacts Catalog Entry Specification
 - Content expectations per artifact
 - Producer/consumer relations
 - Must NOT contain: Schema definitions
@@ -1583,7 +1583,7 @@ The consistency checker tool (`tools/validation-suite/check_doc_consistency.py`)
 **13. Populate Artifact Catalog** ✅ MEDIUM
 - Add actual artifact entries
 - Document producer/consumer relationships
-- Conform to Artifact Contract Spec
+- Conform to Artifacts Catalog Entry Specification
 
 **14. Implement Documentation Impact Scanner** ✅ **COMPLETED (2026-02-05)**
 - ✅ Tool: `tools/doc-impact-scanner/scan_doc_impact.py` (296 lines)
@@ -1639,7 +1639,7 @@ The consistency checker tool (`tools/validation-suite/check_doc_consistency.py`)
 | 7 | Validation Standard | docs/standards/ | ✅ EXISTS | Needs coverage update |
 | 8 | Documentation Spec | docs/standards/ | ✅ EXISTS | Complete |
 | 9 | Job Manifest Spec | docs/standards/ | ✅ EXISTS | Complete |
-| 10 | Artifact Contract Spec | docs/standards/ | ✅ EXISTS | As artifacts_catalog_spec.md |
+| 10 | Artifacts Catalog Entry Specification | docs/standards/ | ✅ EXISTS | As artifacts_catalog_spec.md |
 | 11 | Job Inventory Spec | docs/standards/ | ✅ EXISTS | Complete |
 | 12 | Business Job Description Spec | docs/standards/ | ✅ EXISTS | Complete |
 | 13 | Script Card Spec | docs/standards/ | ✅ EXISTS | Complete |

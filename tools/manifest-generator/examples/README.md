@@ -2,15 +2,15 @@
 
 This directory contains example outputs from the manifest generator tool to demonstrate its capabilities.
 
-## Example 1: preprocessIncomingBmecat (python_shell runtime)
+## Example 1: preprocess_incoming_bmecat (python_shell runtime)
 
 A Python Shell Glue job that processes BMEcat XML files.
 
 **Command:**
 ```bash
 python tools/manifest-generator/generate.py \
-  --script jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py \
-  --output tools/manifest-generator/examples/preprocessIncomingBmecat_generated.yaml
+  --script jobs/vendor_input_processing/preprocess_incoming_bmecat/glue_script.py \
+  --output tools/manifest-generator/examples/preprocess_incoming_bmecat_generated.yaml
 ```
 
 **What the tool detected:**

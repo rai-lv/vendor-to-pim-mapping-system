@@ -166,9 +166,6 @@ A `job_id` is the canonical identifier for a job. It serves as:
 - `preprocess_incoming_bmecat`
 - `generate_vendor_report`
 
-**Valid (legacy camelCase - grandfathered):**
-- `preprocessIncomingBmecat` (existing job; allowed for backward compatibility)
-
 **Invalid:**
 - `PreprocessIncomingBmecat` (PascalCase; should start lowercase)
 - `preprocess-incoming-bmecat` (kebab-case; not allowed)
@@ -178,8 +175,7 @@ A `job_id` is the canonical identifier for a job. It serves as:
 #### Compatibility expectations
 
 **Current pattern:**
-- **snake_case is the standard** for all new jobs (verified against 3 out of 4 existing jobs in `vendor_input_processing`)
-- One legacy camelCase job (`preprocessIncomingBmecat`) is grandfathered for backward compatibility
+- **snake_case is the standard** for all jobs (verified against all 4 existing jobs in `vendor_input_processing`)
 
 **Stable:**
 - Job IDs MUST NOT change after deployment without a breaking change decision
@@ -190,8 +186,7 @@ A `job_id` is the canonical identifier for a job. It serves as:
 
 **Evolving:**
 - New jobs MUST use snake_case
-- Existing camelCase jobs MAY remain as-is (no forced migration)
-- If a camelCase job is renamed for other reasons, it SHOULD be migrated to snake_case
+- If a job is renamed for other reasons, it SHOULD use snake_case
 
 ---
 
@@ -390,7 +385,7 @@ Documentation filenames identify standards, context docs, process guides, and pe
 **Per-job docs (`jobs/<job_group>/<job_id>/`):**
 - Business description: `bus_description_<job_id>.md`
 - Script card: `script_card_<job_id>.md`
-- Examples: `bus_description_preprocessIncomingBmecat.md`, `script_card_matchingProposals.md`
+- Examples: `bus_description_preprocess_incoming_bmecat.md`, `script_card_matching_proposals.md`
 
 **Agent profiles (`.github/agents/`):**
 - Pattern: `<agent-name>.md` (kebab-case allowed for GitHub Copilot compatibility)
@@ -407,7 +402,7 @@ Documentation filenames identify standards, context docs, process guides, and pe
 - `job_manifest_spec.md`
 - `workflow_guide.md`
 - `agent_role_charter.md`
-- `bus_description_preprocessIncomingBmecat.md`
+- `bus_description_preprocess_incoming_bmecat.md`
 - `DR-0001-adopt-snake-case-naming.md` (decision record)
 - `DR-0042-migrate-artifacts-catalog-schema.md` (decision record)
 - `code-reviewer.md` (agent profile in `.github/agents/`)
@@ -636,7 +631,7 @@ An `artifact_id` is the stable canonical identifier for an artifact type in the 
 **Pattern:** `<producer_anchor>__<artifact_type_snake_case>`
 
 **Producer anchor:**
-- For artifacts produced in-repo: producer_anchor = producing job_id (e.g., `preprocessIncomingBmecat`)
+- For artifacts produced in-repo: producer_anchor = producing job_id (e.g., `preprocess_incoming_bmecat`)
 - For external artifacts (not produced in repo): producer_anchor = `external` (permanent, never changes)
 
 **Separator:** Double underscore `__` (not single underscore)
@@ -654,14 +649,14 @@ An `artifact_id` is the stable canonical identifier for an artifact type in the 
 #### Examples
 
 **Valid:**
-- `preprocessIncomingBmecat__vendor_products` (in-repo producer)
+- `preprocess_incoming_bmecat__vendor_products` (in-repo producer)
 - `external__bmecat_input` (external artifact)
 - `matching_proposals__category_mappings` (in-repo producer)
 
 **Invalid:**
-- `preprocessIncomingBmecat_vendor_products` (single underscore; should be double)
-- `preprocessIncomingBmecat__VendorProducts` (PascalCase type; should be snake_case)
-- `preprocessIncomingBmecat__${vendor_name}_products` (contains placeholder; should be normalized)
+- `preprocess_incoming_bmecat_vendor_products` (single underscore; should be double)
+- `preprocess_incoming_bmecat__VendorProducts` (PascalCase type; should be snake_case)
+- `preprocess_incoming_bmecat__${vendor_name}_products` (contains placeholder; should be normalized)
 
 #### Cross-reference
 - Full artifact_id derivation rules: `docs/standards/artifacts_catalog_spec.md` Section 3.1

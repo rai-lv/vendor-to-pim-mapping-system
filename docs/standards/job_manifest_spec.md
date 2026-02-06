@@ -66,7 +66,7 @@ For each job folder:
 **Rule 2: glue_job_name matches job_id**
 - The deployed Glue job name MUST equal the `job_id` (and therefore the folder name)
 - The manifest MUST contain `glue_job_name` key whose value matches `job_id` exactly
-- Example: folder `preprocessIncomingBmecat` → `glue_job_name: preprocessIncomingBmecat`
+- Example: folder `preprocess_incoming_bmecat` → `glue_job_name: preprocess_incoming_bmecat`
 - If `glue_job_name ≠ job_id`, this is a spec violation
 
 **Verification:**

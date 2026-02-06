@@ -1,5 +1,5 @@
-job_id: preprocessIncomingBmecat
-glue_job_name: preprocessIncomingBmecat
+job_id: preprocess_incoming_bmecat
+glue_job_name: preprocess_incoming_bmecat
 runtime: python_shell
 entrypoint: glue_script.py
 
@@ -100,7 +100,7 @@ logging_and_receipt:
   counters_observed: []
 
 notes:
-  - "job_id: Derived from folder name 'preprocessIncomingBmecat'"
+  - "job_id: Derived from folder name 'preprocess_incoming_bmecat'"
   - "runtime: Detected 'python_shell' from awsglue.utils without Spark imports (line 8)"
   - "parameters: Extracted 5 parameters from getResolvedOptions call (line 22)"
   - "S3 operations: Found 3 read operations and 15 write operations"

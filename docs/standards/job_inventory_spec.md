@@ -157,7 +157,7 @@ Every job inventory entry MUST contain the following fields:
 **`inputs` (MUST)**
 - Meaning: List of artifact identifiers consumed by job
 - Representation:
-  - Known artifacts: Semicolon-separated list aligned to manifest order (e.g., `external__bmecat_input; preprocessIncomingBmecat__vendor_products`)
+  - Known artifacts: Semicolon-separated list aligned to manifest order (e.g., `external__bmecat_input; preprocess_incoming_bmecat__vendor_products`)
   - Individual unknown positions: `TBD` in specific position
   - Provably empty: `NONE`
   - Entirely unknown: `TBD`
@@ -199,7 +199,7 @@ When a job produces artifacts that are consumed by multiple jobs (shared artifac
 **`upstream_job_ids` (MUST)**
 - Meaning: Jobs that produce artifacts consumed by this job
 - Representation:
-  - Known dependencies: Comma-separated job IDs (e.g., `preprocessIncomingBmecat, external_data_source`)
+  - Known dependencies: Comma-separated job IDs (e.g., `preprocess_incoming_bmecat, external_data_source`)
   - Unknown: `TBD`
 - Derivation: Artifact-level evidence (jobs producing artifacts this job consumes)
 - Order: Lexicographic sort for stability
@@ -442,16 +442,16 @@ Validators SHOULD check:
 The following example shows a complete job inventory entry. This is for illustration only and is not normative.
 
 ```yaml
-job_id: preprocessIncomingBmecat
-job_dir: jobs/vendor_input_processing/preprocessIncomingBmecat/
+job_id: preprocess_incoming_bmecat
+job_dir: jobs/vendor_input_processing/preprocess_incoming_bmecat/
 executor: aws_glue
-deployment_name: preprocessIncomingBmecat
+deployment_name: preprocess_incoming_bmecat
 runtime: pyspark
 owner: vendor_integration_team
 business_purpose: Extract and standardize product data from vendor BMEcat XML files
 parameters: INPUT_BUCKET, Vendor_name, Bmecat_input_key, Bmecat_output_prefix
 inputs: external__bmecat_input
-outputs: preprocessIncomingBmecat__vendor_products; preprocessIncomingBmecat__vendor_categories
+outputs: preprocess_incoming_bmecat__vendor_products; preprocess_incoming_bmecat__vendor_categories
 side_effects: deletes_inputs=false; overwrites_outputs=true
 evidence_artifacts: run_receipt=true; counters=products_processed, categories_extracted
 upstream_job_ids: TBD

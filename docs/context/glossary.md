@@ -243,7 +243,7 @@ Specification: `docs/standards/decision_records_standard.md` Section 4.
 ### Development Step Document
 A container document that holds the list of codable task specifications for a capability, serving as a control instrument for implementation tracking and execution.
 The Development Step Document is created during Step 3 (Capability Planning) and contains the complete breakdown of codable tasks with their boundaries, dependencies, and acceptance criteria.
-Storage location options: GitHub Issues (for issue-tracked work), planning documents (`docs/planning/`), or PR descriptions (for single-PR capabilities).
+Storage location options: GitHub Issues (for issue-tracked work), capability specification documents in `docs/specifications/`, or PR descriptions (for single-PR capabilities).
 See `docs/process/workflow_guide.md` Section 4 and `docs/standards/codable_task_spec.md`.
 
 ### Deployment name

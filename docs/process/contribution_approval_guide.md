@@ -232,7 +232,7 @@ A "material change" is a change that affects scope boundaries, success criteria,
 
 **Approval storage/discoverability (from workflow guide Section 4):**
 - **GitHub Issues** — For issue-tracked work, capability plans in issue descriptions
-- **Planning documents** — Markdown files in `docs/planning/` or project-specific location
+- **Capability specification documents** — YAML or Markdown files in `docs/specifications/` following naming pattern `<capability_name>_capability.yaml` or `<capability_name>_capability.md`
 - **PR descriptions** — For single-PR capabilities
 
 **Required traceability:**
@@ -462,7 +462,7 @@ All approval evidence MUST meet the following requirements:
 - **Retention:** Permanent; superseded decisions remain for historical reference
 
 #### Planning documents
-- **Storage:** Git commit history for documents in `docs/planning/` or job-specific locations
+- **Storage:** Git commit history for documents in `docs/roadmaps/` (objective definitions and pipeline plans) and `docs/specifications/` (capability specifications)
 - **Discovery:** Document references in issues, PRs, or capability plans
 - **Retention:** Permanent via Git history
 

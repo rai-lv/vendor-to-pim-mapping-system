@@ -1060,7 +1060,7 @@ STANDARDS_DIR = REPO_ROOT / "docs" / "standards"  # ← Correct
 - References to non-existent tool scripts created false expectations about path handling
 
 **Resolution (PR #133):**
-- ✅ **Confirmed:** The referenced tool scripts (`tools/coding_agent.py` and others with "_agent" naming") were never implemented
+- ✅ **Confirmed:** The referenced tool scripts (`tools/coding_agent.py` and others with "_agent" naming) were never implemented
 - ✅ **Verified:** All actual tool scripts in the `tools/` directory use correct path references
 - ✅ **Cleaned up:** References to non-existent scripts with incorrect path handling have been removed
 

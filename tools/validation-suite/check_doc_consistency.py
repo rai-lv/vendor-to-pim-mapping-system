@@ -17,7 +17,7 @@ Usage:
   --include-all: Scan all markdown files in repository (root, tools, jobs, logs)
                  Default: Only scan docs/ and .github/agents/ directories
 
-Per DOCUMENTATION_SYSTEM_ANALYSIS.md Section 2.1.2.
+See docs/standards/validation_standard.md for consistency validation requirements.
 """
 import argparse
 import re

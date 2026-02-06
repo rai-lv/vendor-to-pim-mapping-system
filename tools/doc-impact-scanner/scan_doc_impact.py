@@ -13,7 +13,7 @@ Output:
     List of potentially affected documents with context snippets showing where
     the term appears, including file paths and line numbers.
 
-Per DOCUMENTATION_SYSTEM_ANALYSIS.md Section 2.2.1.
+See docs/process/workflow_guide.md Section 6 for Doc Impact Scan procedures.
 """
 import argparse
 import re

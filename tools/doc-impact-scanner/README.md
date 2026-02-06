@@ -10,8 +10,6 @@ The Documentation Impact Scanner supports the Documentation Support Agent's "Doc
 
 When modifying documentation that introduces or changes terminology, definitions, or concepts, this tool helps identify all locations that may need review or updates to maintain consistency.
 
-Per DOCUMENTATION_SYSTEM_ANALYSIS.md Section 2.2.1.
-
 ## Usage
 
 ```bash
@@ -125,6 +123,6 @@ See `docs/process/workflow_guide.md` Section 6 for Doc Impact Scan procedures.
 ## Related Documentation
 
 - **Validation standard**: `docs/standards/validation_standard.md`
-- **Workflow guide**: `docs/process/workflow_guide.md` Section 6
+- **Workflow guide**: `docs/process/workflow_guide.md` Section 6 (Doc Impact Scan procedures)
 - **Agent role charter**: `docs/agents/agent_role_charter.md` Section 4.6
-- **Analysis document**: `DOCUMENTATION_SYSTEM_ANALYSIS.md` Section 2.2.1
+- **Tooling reference**: `docs/ops/tooling_reference.md`

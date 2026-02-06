@@ -111,8 +111,8 @@ def main():
     s3_client = boto3.client("s3")
 
     step2_prefix = f"{prepared_output_prefix}/"
-    step2_full_key = f"{step2_prefix}{vendor_name}_categoryMatchingProposals.json"
-    step2_1to1_key = f"{step2_prefix}{vendor_name}_categoryMatchingProposals_oneVendor_to_onePim_match.json"
+    step2_full_key = f"{step2_prefix}{vendor_name}_category_matching_proposals.json"
+    step2_1to1_key = f"{step2_prefix}{vendor_name}_category_matching_proposals_one_vendor_to_one_pim_match.json"
 
     category_mapping_reference_key = select_latest_category_mapping_reference(s3_client, input_bucket)
     stable_training_set_key = "canonical_mappings/stable_training_sets/StableTrainingSet.json"

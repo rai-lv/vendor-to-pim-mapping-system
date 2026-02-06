@@ -116,7 +116,9 @@ import subprocess
 
 import yaml
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 MANIFEST_REQUIRED_KEYS = {
     "job_id",
@@ -670,7 +672,7 @@ def validate_job_inventory(path: Path):
 
 
 def find_manifest_paths():
-    return sorted(REPO_ROOT.glob("jobs/*/*/job_manifest.yaml"))
+    return sorted(REPO_ROOT.glob(TOOL_PATHS.job_manifests_pattern()))
 
 
 def show_coverage():
@@ -877,7 +879,7 @@ def run_validator_script(script_name: str) -> tuple[int, int]:
     Returns:
         Tuple of (pass_count, fail_count)
     """
-    script_path = REPO_ROOT / "tools" / "validation-suite" / script_name
+    script_path = TOOL_PATHS.validation_suite / script_name
     if not script_path.exists():
         return (0, 0)
     
@@ -1020,8 +1022,8 @@ def main(argv):
                 pass_count += 1
 
     if run_artifacts:
-        catalog_path = REPO_ROOT / "docs" / "catalogs" / "artifacts_catalog.md"
-        allowlist_path = REPO_ROOT / "docs" / "registries" / "shared_artifacts_allowlist.yaml"
+        catalog_path = TOOL_PATHS.artifacts_catalog
+        allowlist_path = TOOL_PATHS.shared_artifacts_allowlist
         allowlist = load_shared_artifacts_allowlist(allowlist_path)
         artifacts_violations = validate_artifacts_catalog(catalog_path, allowlist)
         if artifacts_violations:
@@ -1030,7 +1032,7 @@ def main(argv):
             pass_count += 1
 
     if run_inventory:
-        inventory_path = REPO_ROOT / "docs" / "catalogs" / "job_inventory.md"
+        inventory_path = TOOL_PATHS.job_inventory
         inventory_violations = validate_job_inventory(inventory_path)
         if inventory_violations:
             violations.extend(inventory_violations)
@@ -1051,49 +1053,49 @@ def main(argv):
         context_pass, context_fail = run_validator_script("validate_context_docs.py")
         pass_count += context_pass
         if context_fail > 0:
-            violations.append(Violation("context_docs", Path("docs/context"), "validator_errors", 
+            violations.append(Violation("context_docs", TOOL_PATHS.docs_context, "validator_errors", 
                                        f"{context_fail} validation errors found"))
     
     if run_process_docs:
         process_pass, process_fail = run_validator_script("validate_process_docs.py")
         pass_count += process_pass
         if process_fail > 0:
-            violations.append(Violation("process_docs", Path("docs/process"), "validator_errors",
+            violations.append(Violation("process_docs", TOOL_PATHS.docs_process, "validator_errors",
                                        f"{process_fail} validation errors found"))
     
     if run_agent_docs:
         agent_pass, agent_fail = run_validator_script("validate_agent_docs.py")
         pass_count += agent_pass
         if agent_fail > 0:
-            violations.append(Violation("agent_docs", Path("docs/agents"), "validator_errors",
+            violations.append(Violation("agent_docs", TOOL_PATHS.docs_agents, "validator_errors",
                                        f"{agent_fail} validation errors found"))
     
     if run_job_docs:
         job_pass, job_fail = run_validator_script("validate_job_docs.py")
         pass_count += job_pass
         if job_fail > 0:
-            violations.append(Violation("job_docs", Path("jobs"), "validator_errors",
+            violations.append(Violation("job_docs", TOOL_PATHS.jobs_root, "validator_errors",
                                        f"{job_fail} validation errors found"))
     
     if run_decision_records:
         decision_pass, decision_fail = run_validator_script("validate_decision_records.py")
         pass_count += decision_pass
         if decision_fail > 0:
-            violations.append(Violation("decision_records", Path("docs/decisions"), "validator_errors",
+            violations.append(Violation("decision_records", TOOL_PATHS.docs_decisions, "validator_errors",
                                        f"{decision_fail} validation errors found"))
     
     if run_codable_tasks:
         task_pass, task_fail = run_validator_script("validate_codable_tasks.py")
         pass_count += task_pass
         if task_fail > 0:
-            violations.append(Violation("codable_tasks", Path("docs/tasks"), "validator_errors",
+            violations.append(Violation("codable_tasks", TOOL_PATHS.docs_tasks, "validator_errors",
                                        f"{task_fail} validation errors found"))
     
     if run_consistency:
         consistency_pass, consistency_fail = run_validator_script("check_doc_consistency.py")
         pass_count += consistency_pass
         if consistency_fail > 0:
-            violations.append(Violation("consistency", Path("docs"), "validator_errors",
+            violations.append(Violation("consistency", TOOL_PATHS.docs_root, "validator_errors",
                                        f"{consistency_fail} validation errors found"))
     
     if run_naming:

@@ -25,7 +25,9 @@ import yaml
 from pathlib import Path
 from typing import List, Set, Tuple
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -451,13 +453,13 @@ def validate_docs_structure(docs_dir: Path) -> List[Violation]:
             violations.extend(validate_doc_filename(doc.name, layer, doc))
     
     # Check .github/agents/
-    github_agents = REPO_ROOT / ".github" / "agents"
+    github_agents = TOOL_PATHS.github_agents
     if github_agents.exists():
         for doc in github_agents.glob("*.md"):
             violations.extend(validate_doc_filename(doc.name, ".github/agents", doc))
     
     # Check README.md at root
-    readme = REPO_ROOT / "README.md"
+    readme = TOOL_PATHS.readme
     if readme.exists():
         # README.md is exempted, validation handled in validate_doc_filename
         pass
@@ -470,11 +472,11 @@ def validate_naming_standard() -> List[Violation]:
     violations = []
     
     # Validate jobs structure
-    jobs_dir = REPO_ROOT / "jobs"
+    jobs_dir = TOOL_PATHS.jobs_root
     violations.extend(validate_job_structure(jobs_dir))
     
     # Validate documentation structure
-    docs_dir = REPO_ROOT / "docs"
+    docs_dir = TOOL_PATHS.docs_root
     violations.extend(validate_docs_structure(docs_dir))
     
     return violations
@@ -487,8 +489,8 @@ def main():
         print(violation.format())
     
     # Count files validated
-    jobs_dir = REPO_ROOT / "jobs"
-    docs_dir = REPO_ROOT / "docs"
+    jobs_dir = TOOL_PATHS.jobs_root
+    docs_dir = TOOL_PATHS.docs_root
     
     job_count = sum(1 for _ in jobs_dir.glob("*/*")) if jobs_dir.exists() else 0
     doc_count = sum(1 for _ in docs_dir.glob("**/*.md")) if docs_dir.exists() else 0

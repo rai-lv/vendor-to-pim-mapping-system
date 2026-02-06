@@ -21,8 +21,9 @@ import sys
 from pathlib import Path
 from typing import List, Tuple, Set
 
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class TermMatch:

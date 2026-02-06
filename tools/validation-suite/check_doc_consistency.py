@@ -25,7 +25,9 @@ import sys
 from pathlib import Path
 from typing import List, Dict, Set
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -52,33 +54,28 @@ def get_scan_directories(include_all: bool = False) -> List[Path]:
     dirs = []
     
     # Always scan docs/ directory (normative documentation)
-    docs_dir = REPO_ROOT / "docs"
-    if docs_dir.exists():
-        dirs.append(docs_dir)
+    if TOOL_PATHS.docs_root.exists():
+        dirs.append(TOOL_PATHS.docs_root)
     
     # Always scan .github/agents/ directory (agent profiles)
-    github_agents_dir = REPO_ROOT / ".github" / "agents"
-    if github_agents_dir.exists():
-        dirs.append(github_agents_dir)
+    if TOOL_PATHS.github_agents.exists():
+        dirs.append(TOOL_PATHS.github_agents)
     
     if include_all:
         # Add root-level markdown files (as individual file paths, not directory)
         # We'll handle these specially in scanning functions
         
         # Add tools/ directory (tool documentation)
-        tools_dir = REPO_ROOT / "tools"
-        if tools_dir.exists():
-            dirs.append(tools_dir)
+        if TOOL_PATHS.tools_root.exists():
+            dirs.append(TOOL_PATHS.tools_root)
         
         # Add jobs/ directory (per-job documentation)
-        jobs_dir = REPO_ROOT / "jobs"
-        if jobs_dir.exists():
-            dirs.append(jobs_dir)
+        if TOOL_PATHS.jobs_root.exists():
+            dirs.append(TOOL_PATHS.jobs_root)
         
         # Add logs/ directory (logs documentation)
-        logs_dir = REPO_ROOT / "logs"
-        if logs_dir.exists():
-            dirs.append(logs_dir)
+        if TOOL_PATHS.logs_root.exists():
+            dirs.append(TOOL_PATHS.logs_root)
     
     return dirs
 
@@ -384,7 +381,7 @@ def validate_cross_references(include_all: bool = False) -> List[Violation]:
     """Validate that document cross-references point to existing files."""
     violations = []
     
-    docs_dir = REPO_ROOT / "docs"
+    docs_dir = TOOL_PATHS.docs_root
     
     # Get directories to scan based on include_all flag
     search_dirs = get_scan_directories(include_all)
@@ -452,8 +449,8 @@ def check_role_consistency() -> List[Violation]:
     """Check consistency between agent_role_charter.md and agent profile implementations."""
     violations = []
     
-    charter_path = REPO_ROOT / "docs" / "agents" / "agent_role_charter.md"
-    github_agents_dir = REPO_ROOT / ".github" / "agents"
+    charter_path = TOOL_PATHS.agent_role_charter
+    github_agents_dir = TOOL_PATHS.github_agents
     
     if not charter_path.exists() or not github_agents_dir.exists():
         return violations
@@ -484,7 +481,7 @@ def check_doc_consistency(include_all: bool = False) -> List[Violation]:
     violations = []
     
     # 1. Term definition consistency
-    glossary_path = REPO_ROOT / "docs" / "context" / "glossary.md"
+    glossary_path = TOOL_PATHS.glossary
     glossary_terms = extract_glossary_terms(glossary_path)
     violations.extend(check_term_redefinitions(glossary_terms, include_all))
     

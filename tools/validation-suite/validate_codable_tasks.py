@@ -20,7 +20,9 @@ import sys
 from pathlib import Path
 from typing import List
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+# Import centralized configuration
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+from tools.config import TOOL_PATHS, REPO_ROOT
 
 
 class Violation:
@@ -93,8 +95,8 @@ def validate_codable_task(path: Path) -> List[Violation]:
 def find_codable_task_files() -> List[Path]:
     """Find all codable task specification files in the repository."""
     search_patterns = [
-        REPO_ROOT / "docs" / "tasks",
-        REPO_ROOT / "jobs",
+        TOOL_PATHS.docs_tasks,
+        TOOL_PATHS.jobs_root,
     ]
     
     task_files = []

@@ -690,7 +690,7 @@ Example (artifact deprecated with replacement):
 ```yaml
 deprecated:
   status: true
-  superseded_by: preprocessIncomingBmecat__vendor_products_v2
+  superseded_by: preprocess_incoming_bmecat__vendor_products_v2
   deprecation_date: 2026-01-15
   removal_date: 2026-06-30
   reason: "Migrating to new schema with enhanced validation. See ADR-042 for migration guide."

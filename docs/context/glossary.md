@@ -85,7 +85,7 @@ Defined in `docs/process/contribution_approval_guide.md` Section 3.5.
 ### BMEcat
 An XML-based standard for product catalog data exchange, commonly used by vendors in B2B contexts.
 In this system, BMEcat files are ingested as input to the vendor_input_processing pipeline.
-Reference: `jobs/vendor_input_processing/preprocessIncomingBmecat/`.
+Reference: `jobs/vendor_input_processing/preprocess_incoming_bmecat/`.
 
 ### Bootstrap order
 The required sequence for deriving job inventory entries from source artifacts to resolve cross-references correctly.

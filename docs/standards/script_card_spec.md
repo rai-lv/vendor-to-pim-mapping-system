@@ -92,11 +92,11 @@ Every script card MUST contain the following sections in order. Each section's r
 
 | Field | Description | Allowed values | Example |
 |-------|-------------|----------------|---------|
-| `job_id` | Repository folder identifier | Must match folder name | `preprocessIncomingBmecat` |
-| `glue_job_name` | AWS Glue job name | Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown | `preprocessIncomingBmecat` |
+| `job_id` | Repository folder identifier | Must match folder name | `preprocess_incoming_bmecat` |
+| `glue_job_name` | AWS Glue job name | Exact name for Glue jobs; `N/A` for non-Glue runtimes; `TBD` if unknown | `preprocess_incoming_bmecat` |
 | `runtime` | Execution runtime | Must match job manifest runtime value (see job_manifest_spec.md Section 5.2) | `pyspark` |
-| `repo_path` | Path to entry script | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/glue_script.py` |
-| `manifest_path` | Path to job manifest | Relative from repo root | `jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml` |
+| `repo_path` | Path to entry script | Relative from repo root | `jobs/vendor_input_processing/preprocess_incoming_bmecat/glue_script.py` |
+| `manifest_path` | Path to job manifest | Relative from repo root | `jobs/vendor_input_processing/preprocess_incoming_bmecat/job_manifest.yaml` |
 
 **Format:** Bullet list.
 
@@ -214,7 +214,7 @@ Every script card MUST contain the following sections in order. Each section's r
 
 | Field | Description | Allowed values | Example |
 |-------|-------------|----------------|---------|
-| `artifact_id` | Reference to artifacts catalog entry | Artifact ID or `TBD` | `preprocessIncomingBmecat__normalized_vendor_products` |
+| `artifact_id` | Reference to artifacts catalog entry | Artifact ID or `TBD` | `preprocess_incoming_bmecat__normalized_vendor_products` |
 | `bucket` | S3 bucket | Bucket name or placeholder or `TBD` | `vendor-input-processed` |
 | `key_pattern` | S3 key pattern | Pattern with placeholders or `TBD` | `preprocessed/${vendor_name}/products.json` |
 | `format` | File format | Format string or `TBD` | `json` |
@@ -345,9 +345,9 @@ Every script card MUST contain the following sections in order. Each section's r
 
 | Subfield | Description | Example |
 |----------|-------------|---------|
-| `job_manifest` | Path to job manifest | `jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml` |
-| `business_description` | Path to business description | `jobs/vendor_input_processing/preprocessIncomingBmecat/bus_description_preprocess_incoming_bmecat.md` |
-| `artifacts_catalog_entries` | Artifact IDs referenced | `external__vendor_bmecat_xml, preprocessIncomingBmecat__normalized_vendor_products` or `TBD` |
+| `job_manifest` | Path to job manifest | `jobs/vendor_input_processing/preprocess_incoming_bmecat/job_manifest.yaml` |
+| `business_description` | Path to business description | `jobs/vendor_input_processing/preprocess_incoming_bmecat/bus_description_preprocess_incoming_bmecat.md` |
+| `artifacts_catalog_entries` | Artifact IDs referenced | `external__vendor_bmecat_xml, preprocess_incoming_bmecat__normalized_vendor_products` or `TBD` |
 | `upstream_jobs` | Jobs this job depends on (derived from artifacts catalog) | Job IDs (comma-separated) or `TBD` or `NONE` |
 | `downstream_jobs` | Jobs that consume this job's outputs (derived from artifacts catalog) | Job IDs (comma-separated) or `TBD` or `NONE` |
 
@@ -545,8 +545,8 @@ When documenting existing jobs retroactively:
 
 ## 8.3 Complete Script Card Example
 
-For a reference implementation of a complete script card covering all required sections, see the preprocessIncomingBmecat job:
-- **Location:** `jobs/vendor_input_processing/preprocessIncomingBmecat/script_card_preprocessIncomingBmecat.md` (when created)
+For a reference implementation of a complete script card covering all required sections, see the preprocess_incoming_bmecat job:
+- **Location:** `jobs/vendor_input_processing/preprocess_incoming_bmecat/script_card_preprocess_incoming_bmecat.md` (when created)
 - **Covers:** All 10 required sections (2.1-2.10) plus optional sections
 - **Demonstrates:** Proper formatting, field completion, cross-references, and TBD usage
 

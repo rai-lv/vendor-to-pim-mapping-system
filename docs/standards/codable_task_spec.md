@@ -223,7 +223,7 @@ Parent capability: "Process incoming BMEcat files" (see capability_plan_001.md)
 **Example:**
 ```
 **Intended outputs:**
-- New function `validate_bmecat_xml(xml_string) -> ValidationResult` in `jobs/vendor_input_processing/preprocessIncomingBmecat/validation.py`
+- New function `validate_bmecat_xml(xml_string) -> ValidationResult` in `jobs/vendor_input_processing/preprocess_incoming_bmecat/validation.py`
 - Unit tests for validation function in `tests/unit/test_validation.py`
 - Error messages added to `exceptions.py` for validation failure cases
 - Validation behavior documented in script card Section 2.4
@@ -513,7 +513,7 @@ Dependencies:
 
 **Correct approach:**
 ```
-Task: Integrate validation function into preprocessIncomingBmecat job
+Task: Integrate validation function into preprocess_incoming_bmecat job
 
 Intended outputs:
 - validation.py integrated into job's glue_script.py
@@ -542,12 +542,12 @@ Acceptance criteria:
 
 **Correct approach:**
 ```
-Task: Create job manifest for preprocessIncomingBmecat
+Task: Create job manifest for preprocess_incoming_bmecat
 
 Purpose: Create machine-readable manifest per job_manifest_spec.md
 
 Acceptance criteria:
-1. Manifest file exists at jobs/vendor_input_processing/preprocessIncomingBmecat/job_manifest.yaml
+1. Manifest file exists at jobs/vendor_input_processing/preprocess_incoming_bmecat/job_manifest.yaml
 2. Manifest conforms to schema in docs/standards/job_manifest_spec.md (validated by manifest validator tool)
 3. Manifest declares inputs, outputs, parameters per capability plan
 4. Manifest passes validation checks with zero errors

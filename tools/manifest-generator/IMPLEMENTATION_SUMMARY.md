@@ -15,7 +15,7 @@ tools/manifest-generator/
 ├── generate_v1.py         # Backup of initial version
 └── examples/
     ├── README.md
-    ├── preprocessIncomingBmecat_generated.yaml
+    ├── preprocess_incoming_bmecat_generated.yaml
     └── category_mapping_generated.yaml
 ```
 
@@ -67,7 +67,7 @@ tools/manifest-generator/
 - Receipt and counters detection
 
 ✅ **Test against existing 4 manifests**
-- Tested on preprocessIncomingBmecat ✓
+- Tested on preprocess_incoming_bmecat ✓
 - Tested on category_mapping_to_canonical ✓
 - Ready to test on matching_proposals
 - Ready to test on mapping_method_training
@@ -119,7 +119,7 @@ tools/manifest-generator/
 
 ## Testing Results
 
-### preprocessIncomingBmecat (Python Shell, 980 lines)
+### preprocess_incoming_bmecat (Python Shell, 980 lines)
 ```
 Runtime: python_shell ✓
 Parameters: 5 extracted (INPUT_BUCKET, OUTPUT_BUCKET, vendor_name, bmecat_input_key, bmecat_output_prefix)

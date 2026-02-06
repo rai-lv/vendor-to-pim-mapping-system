@@ -1,5 +1,5 @@
-job_id: preprocessIncomingBmecat
-glue_job_name: preprocessIncomingBmecat
+job_id: preprocess_incoming_bmecat
+glue_job_name: preprocess_incoming_bmecat
 runtime: python_shell
 entrypoint: glue_script.py
 

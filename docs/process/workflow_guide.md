@@ -260,7 +260,7 @@ Implement approved tasks and produce reviewable changes aligned to the capabilit
 
 ## 6) Step 5 — Validate, test, and document
 
-**Agent support:** Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-system-maintainer.agent.md`). Role definitions in `agent_role_charter.md`.
+**Agent support:** Validation Support Agent (see `.github/agents/validation-support-agent.md`) and Documentation Support Agent (see `.github/agents/documentation-support-agent.md`). Role definitions in `agent_role_charter.md`.
 
 ### Practical goal
 Produce evidence that acceptance criteria are met and update documentation to match reality without creating double truth.
